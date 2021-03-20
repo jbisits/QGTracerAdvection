@@ -1,5 +1,5 @@
 # QG_tracer_advection
-Passive tracer flow using quasigeostrophic flow
+## Passive tracer advection using quasigeostrophic flow
 
 Hi all!
 
