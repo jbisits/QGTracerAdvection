@@ -18,7 +18,7 @@
   Note: I think this is flexible enough so that you could use any amount of layers in the QG problem.
 =#
 
-module TracerAdvDiff
+module TracerAdvDiff_QG
 
 export
    Problem,

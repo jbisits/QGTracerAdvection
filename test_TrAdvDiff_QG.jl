@@ -1,8 +1,8 @@
 #Test TracerAdvDiff_copy.jl using a two layer QG flow (from the geophysical flows package).
 
-using .TracerAdvDiff
+using .TracerAdvDiff_QG
 
-using Markdown, FourierFlows, Plots
+using FourierFlows, Plots
 using FFTW: rfft, irfft
 import GeophysicalFlows.MultiLayerQG
 
