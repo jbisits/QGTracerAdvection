@@ -70,14 +70,14 @@ function Problem(;
 ###################################################################################################
   #Added conditional if input is a GeophysicalFlows.Problem
   if isnothing(prob) == false
-    nlayers = prob.params.nlayers;
-    nx = prob.grid.nx;
-    ny = nx;
-    Lx = prob.grid.Lx;
-    Ly = Lx;
-    grid = prob.grid;
-    dt = prob.clock.dt;
-    stepper = "FilteredRK4"; #I had to hard code this
+    nlayers = prob.params.nlayers
+    nx = prob.grid.nx
+    ny = nx
+    Lx = prob.grid.Lx
+    Ly = Lx
+    grid = prob.grid
+    dt = prob.clock.dt
+    stepper = "FilteredRK4" #I had to hard code this
   end
 ###################################################################################################
 
@@ -88,10 +88,10 @@ function Problem(;
   else;                            pr = ConstDiffParams(eta, kap, u, v)
   end
 
-  vs = Vars(grid,nlayers)
+  vs = Vars(grid, nlayers)
   eq = Equation(pr, grid)
 
-  FourierFlows.Problem(eq, stepper, dt, grid, vs, pr)
+  return FourierFlows.Problem(eq, stepper, dt, grid, vs, pr)
 end
 
 
@@ -119,6 +119,7 @@ struct ConstDiffParams{T} <: AbstractConstDiffParams
   u::Function            # Advecting x-velocity
   v::Function            # Advecting y-velocity
 end
+
 ConstDiffParams(eta, kap, u, v) = ConstDiffParams(eta, kap, 0eta, 0, u, v)
 
 """
@@ -139,7 +140,8 @@ function ConstDiffSteadyFlowParams(eta, kap, kaph, nkaph, u::Function, v::Functi
   x, y = gridpoints(g)
   ugrid = u.(x, y)
   vgrid = v.(x, y)
-  ConstDiffSteadyFlowParams(eta, kap, kaph, nkaph, ugrid, vgrid)
+  
+  return ConstDiffSteadyFlowParams(eta, kap, kaph, nkaph, ugrid, vgrid)
 end
 
 ConstDiffSteadyFlowParams(eta, kap, u, v, g) = ConstDiffSteadyFlowParams(eta, kap, 0eta, 0, u, v, g)
@@ -157,11 +159,12 @@ mutable struct QGFlowParams{T,A,Trfft} <: AbstractQGFlowParams
 end
 
 function set_QGFlowParams(eta, kap, prob)
-  uvel = prob.vars.u;
-  vvel = prob.vars.v;
-  nlayers = prob.params.nlayers;
-  rfftplan = prob.params.rfftplan;
-  return QGFlowParams(nlayers,eta,kap,0eta,0,uvel,vvel,rfftplan) 
+  uvel = prob.vars.u
+  vvel = prob.vars.v
+  nlayers = prob.params.nlayers
+  rfftplan = prob.params.rfftplan
+  
+  return QGFlowParams(nlayers, eta, kap, 0eta, 0, uvel, vvel, rfftplan) 
 end
 #################################################################################################
 
@@ -174,24 +177,28 @@ end
 Returns the equation for constant diffusivity problem with params p and grid g.
 """
 function Equation(p::ConstDiffParams, g::AbstractGrid{T}) where T
-  LC = zero(g.Krsq)
-  @. LC = -p.eta*g.kr^2 - p.kap*g.l^2 - p.kaph*g.Krsq^p.nkaph
-  FourierFlows.Equation(LC, calcN!, g)
+  L = zero(g.Krsq)
+  @. L = -p.eta * g.kr^2 - p.kap * g.l^2 - p.kaph * g.Krsq^p.nkaph
+  
+  return FourierFlows.Equation(LC, calcN!, g)
 end
 
 function Equation(p::ConstDiffSteadyFlowParams, g::AbstractGrid{T}) where T
-  LC = zero(g.Krsq)
-  @. LC = -p.eta*g.kr^2 - p.kap*g.l^2 - p.kaph*g.Krsq^p.nkaph
-  FourierFlows.Equation(LC, calcN_steadyflow!, g)
+  L = zero(g.Krsq)
+  @. L = -p.eta * g.kr^2 - p.kap * g.l^2 - p.kaph * g.Krsq^p.nkaph
+  
+  return FourierFlows.Equation(LC, calcN_steadyflow!, g)
 end
 #################################################################################################
 function Equation(p::QGFlowParams, g::AbstractGrid{T}) where T
-  nlayers = p.nlayers;
-  LC = zeros(g.nkr,g.nl,nlayers);
+  nlayers = p.nlayers
+  
+  L = zeros(g.nkr, g.nl, nlayers)
   for n in 1:nlayers
-    @. LC[:,:,n] = -p.eta*g.kr^2 - p.kap*g.l^2 - p.kaph*g.Krsq^p.nkaph
+    @. L[:, :, n] = -p.eta * g.kr^2 - p.kap * g.l^2 - p.kaph * g.Krsq^p.nkaph
   end
-  FourierFlows.Equation(LC, calcN_QGflow!, g)
+  
+  return FourierFlows.Equation(L, calcN_QGflow!, g)
 end
 #################################################################################################
 
@@ -240,9 +247,11 @@ function calcN!(N, sol, t, cl, v, p::AbstractConstDiffParams, g)
   ldiv!(v.cy, g.rfftplan, v.cyh) # destroys v.cyh when using fftw
 
   x, y = gridpoints(g)
-  @. v.cx = -p.u(x, y, cl.t)*v.cx - p.v(x, y, cl.t)*v.cy # copies over v.cx so v.cx = N in physical space
+  @. v.cx = -p.u(x, y, cl.t) * v.cx - p.v(x, y, cl.t) * v.cy # copies over v.cx so v.cx = N in physical space
+  
   mul!(N, g.rfftplan, v.cx)
-  nothing
+  
+  return nothing
 end
 
 
@@ -252,16 +261,18 @@ Calculate the advective terms for a tracer equation with constant diffusivity an
 """
 function calcN_steadyflow!(N, sol, t, cl, v, p::AbstractSteadyFlowParams, g)
  
-  @. v.cxh = im*g.kr*sol
-  @. v.cyh = im*g.l*sol
+  @. v.cxh = im * g.kr * sol
+  @. v.cyh = im * g.l  * sol
 
 
   ldiv!(v.cx, g.rfftplan, v.cxh) # destroys v.cxh when using fftw
   ldiv!(v.cy, g.rfftplan, v.cyh) # destroys v.cyh when using fftw
 
-  @. v.cx = -p.u*v.cx - p.v*v.cy # copies over v.cx so v.cx = N in physical space
+  @. v.cx = -p.u * v.cx - p. v* v.cy # copies over v.cx so v.cx = N in physical space
+  
   mul!(N, g.rfftplan, v.cx)
-  nothing
+  
+  return nothing
 end
 #################################################################################################
 """
@@ -269,16 +280,17 @@ end
 Calculate the advective terms for a tracer equation with constant diffusivity and flow from a QG problem.
 """
 function calcN_QGflow!(N, sol, t, cl, v, p::AbstractQGFlowParams, g)
+  @. v.cxh = im * g.kr * sol
+  @. v.cyh = im * g.l  * sol
 
-  @. v.cxh = im*g.kr*sol
-  @. v.cyh = im*g.l*sol
+  MultiLayerQG.invtransform!(v.cx, v.cxh, p)
+  MultiLayerQG.invtransform!(v.cy, v.cyh, p)
 
-  MultiLayerQG.invtransform!(v.cx,v.cxh,p);
-  MultiLayerQG.invtransform!(v.cy,v.cyh,p);
-
-  @. v.cx = -p.u*v.cx - p.v*v.cy # copies over v.cx so v.cx = N in physical space
-  MultiLayerQG.fwdtransform!(N,v.cx,p);
-  nothing
+  @. v.cx = -p.u * v.cx - p.v * v.cy # copies over v.cx so v.cx = N in physical space
+  
+  MultiLayerQG.fwdtransform!(N, v.cx, p)
+  
+  return nothing
 end
 #################################################################################################
 
@@ -295,7 +307,8 @@ function updatevars!(prob)
   v.ch .= sol
   ch1 = deepcopy(v.ch)
   ldiv!(v.c, g.rfftplan, ch1)
-  nothing
+  
+  return nothing
 end
 
 #################################################################################################
@@ -303,8 +316,9 @@ function QGupdatevars!(prob)
   v, g, sol = prob.vars, prob.grid, prob.sol
   v.ch .= sol
   ch1 = deepcopy(v.ch)
-  MultiLayerQG.invtransform!(v.c,ch1,prob.params)
-  nothing
+  MultiLayerQG.invtransform!(v.c, ch1, prob.params)
+  
+  return nothing
 end
 #################################################################################################
 
@@ -319,39 +333,48 @@ function set_c!(prob, c)
 
   mul!(sol, g.rfftplan, c)
   updatevars!(prob)
-  nothing
+  
+  return nothing
 end
 
 function set_c!(prob, c::Function)
   sol, v, g = prob.sol, prob.vars, prob.grid
 
   x, y = gridpoints(g)
+  
   cgrid = c.(x, y)
+  
   mul!(sol, g.rfftplan, cgrid)
   updatevars!(prob)
-  nothing
+  
+  return nothing
 end
 
 #################################################################################################
 function QGset_c!(prob, c)
   sol, v, g, nlayers = prob.sol, prob.vars, prob.grid, prob.params.nlayers
-  C = zeros(g.nx,g.ny,nlayers);
+  
+  C = zeros(g.nx, g.ny, nlayers)
+  
   for n in 1:nlayers
-    C[:,:,n] = c;
+    C[:, :, n] = c
   end
+  
   MultiLayerQG.fwdtransform!(sol, C, prob.params)
   QGupdatevars!(prob)
-  nothing
+  
+  return nothing
 end
 #################################################################################################
 
 #################################################################################################
 function vel_field_update!(QG_prob,AD_prob)
-  MultiLayerQG.stepforward!(QG_prob);
-  MultiLayerQG.updatevars!(QG_prob);
-  AD_prob.params.u = QG_prob.vars.u;
-  AD_prob.params.v = QG_prob.vars.v;
-  nothing
+  MultiLayerQG.stepforward!(QG_prob)
+  MultiLayerQG.updatevars!(QG_prob)
+  AD_prob.params.u = QG_prob.vars.u
+  AD_prob.params.v = QG_prob.vars.v
+  
+  return nothing
 end
 #################################################################################################
 end # module
