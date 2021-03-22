@@ -36,12 +36,12 @@ Then a backspace will bring you back to normal Julia's REPL:
 julia>
 ```
 
-You can now run the `test_TrAdvDiff_QG.jl` vie
+You can now run the `test_TrAdvDiff_QG.jl` via
 ```julia
 julia> include("test_TrAdvDiff_QG.jl")
 ```
 
-Alternatively, after you've instantiate the project, you can run the `test_TrAdvDiff_QG.jl` script from the terminal  by calling
+Alternatively, after you've instantiated the project, you can run the `test_TrAdvDiff_QG.jl` script straight from the terminal via
 
 ```
 $ julia --project test_TrAdvDiff_QG.jl
