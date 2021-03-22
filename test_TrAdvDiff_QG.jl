@@ -62,10 +62,12 @@ MultiLayerQG.set_q!(QG_prob, q_i);
 AD_prob = TracerAdvDiff_QG.Problem(;prob = QG_prob, kap = κ);
 sol_AD, cl_AD, v_AD, p_AD, g_AD = AD_prob.sol, AD_prob.clock, AD_prob.vars, AD_prob.params, AD_prob.grid;
 x_AD, y_AD = gridpoints(g_AD);
+#Set the (same) initial condition in both layers.
 a = 20;
 C₀_func(x,y) = log.(1 .+ cosh(a)^2 ./(cosh.(a*sqrt.(x.^2 + y.^2)).^2))/(2*a);
 C₀ = C₀_func(x_AD, y_AD);
 TracerAdvDiff_QG.QGset_c!(AD_prob, C₀);
+#Plot of initial condition in the upper layer.
 heatmap(x_AD[:,1], y_AD[1,:], v_AD.c[:,:,1]', title = "Initial tracer concentration", xlabel = "x", ylabel = "y", color = :balance, aspecetratio = 1);
 
 #Define blank arrays in which to store the plots of tracer diffusion in each layer.
