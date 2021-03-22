@@ -88,13 +88,7 @@ upper_layer_tracer_plots_AD = Plots.Plot{Plots.GRBackend}[]
 #plot_time_AD is when to get the first plot, plot_time_inc is at what interval subsequent plots are created.
 #Setting them the same gives plots at equal time increments. (Might be a better work around)
 plot_time_AD, plot_time_inc = 0.2, 0.2
-#Step the tracer advection problem forward and plot at the desired time step.
-#=
-aspectratio = 1,
-c = :balance,
-xlabel = "x",
-ylabel = "y",
-=#
+#Define arguments for plots.
 kwargs = (
          xlabel = "x",
          ylabel = "y",
@@ -105,7 +99,7 @@ kwargs = (
            ylim = (-g_AD.Ly/2, g_AD.Ly/2)
 )
 
-
+#Step the tracer advection problem forward and plot at the desired time step.
 while cl_AD.step <= nsteps
     if cl_AD.step == 0
         tp_u = heatmap(x_AD[:, 1], y_AD[1, :], v_AD.c[:, :, 1],
