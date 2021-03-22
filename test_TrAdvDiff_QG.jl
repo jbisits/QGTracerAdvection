@@ -14,13 +14,13 @@ import GeophysicalFlows.MultiLayerQG
 dev = CPU();
 
 #Numerical and time-stepping parameters
-nx = 64;        # 2D resolution = nx^2
+nx = 32;        # 2D resolution = nx^2
 ny = nx;
 
 stepper = "FilteredRK4";  # timestepper
 Δt = 0.02;                # timestep
-nsubs  = 100;              # number of time-steps for plotting (nsteps must be multiple of nsubs)
-nsteps = 100nsubs;            # total number of time-steps
+nsubs  = 1;              # number of time-steps for plotting (nsteps must be multiple of nsubs)
+nsteps = 1000nsubs;            # total number of time-steps
 
 
 #Physical parameters for a two layer QG_problem
@@ -79,7 +79,6 @@ upper_layer_tracer_plots_AD = Plots.Plot{Plots.GRBackend}[];
 plot_time_AD, plot_time_inc = 0.2, 0.2;
 #Step the tracer advection problem forward and plot at the desired time step.
 while cl_AD.step <= nsteps
-    println(cl_AD.step)
     if cl_AD.step == 0
         tp_u = heatmap(x_AD[:,1], y_AD[1,:], v_AD.c[:,:,1],
         aspectratio = 1,
@@ -115,7 +114,7 @@ while cl_AD.step <= nsteps
     stepforward!(AD_prob, nsubs);
     TracerAdvDiff_QG.QGupdatevars!(AD_prob);
     #Updates the velocity field in advection problem to the velocity field in the MultiLayerQG.Problem at each timestep.
-    vel_field_update!(AD_prob, QG_prob);
+    vel_field_update!(AD_prob, QG_prob, nsubs);
 end
 #Need to set this up so this does not need to be hardcoded.
 #Display the tracer advection in the upper layer.

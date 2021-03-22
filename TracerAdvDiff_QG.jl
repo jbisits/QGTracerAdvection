@@ -368,8 +368,8 @@ end
 #################################################################################################
 
 #################################################################################################
-function vel_field_update!(AD_prob, QG_prob)
-  MultiLayerQG.stepforward!(QG_prob)
+function vel_field_update!(AD_prob, QG_prob, nsubs)
+  MultiLayerQG.stepforward!(QG_prob, nsubs)
   MultiLayerQG.updatevars!(QG_prob)
   AD_prob.params.u = QG_prob.vars.u
   AD_prob.params.v = QG_prob.vars.v
