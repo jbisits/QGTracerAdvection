@@ -89,12 +89,12 @@ upper_layer_tracer_plots_AD = Plots.Plot{Plots.GRBackend}[]
 #Setting them the same gives plots at equal time increments. (Might be a better work around)
 plot_time_AD, plot_time_inc = 0.2, 0.2
 #Step the tracer advection problem forward and plot at the desired time step.
-
+#=
 aspectratio = 1,
 c = :balance,
 xlabel = "x",
 ylabel = "y",
-
+=#
 kwargs = (
          xlabel = "x",
          ylabel = "y",
@@ -142,7 +142,7 @@ while cl_AD.step <= nsteps
     stepforward!(AD_prob, nsubs)
     TracerAdvDiff_QG.QGupdatevars!(AD_prob)
     #Updates the velocity field in advection problem to the velocity field in the MultiLayerQG.Problem at each timestep.
-    vel_field_update!(AD_prob, QG_prob, nsubs)
+    TracerAdvDiff_QG.vel_field_update!(AD_prob, QG_prob, nsubs)
 end
 #Need to set this up so this does not need to be hardcoded.
 #Display the tracer advection in the upper layer.
