@@ -1,0 +1,26 @@
+**/*.swp
+**/*.jld
+**/*.jld2
+**/*.png
+**/*.mp4
+**/*.mem
+**/*.pdf
+**/.nfs*
+**/*.cov
+
+docs/build/
+docs/site/
+docs/src/generated
+coverage/
+
+**/Manifest.toml
+
+# Model output
+**/*.jld
+**/*.jld2
+
+# MacOS stuff
+*.DS_Store
+
+# VScode
+.vscode/
