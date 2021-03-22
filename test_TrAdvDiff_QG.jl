@@ -74,19 +74,21 @@ heatmap(x_AD[:,1], y_AD[1,:], v_AD.c[:,:,1]', title = "Initial tracer concentrat
 lower_layer_tracer_plots_AD = Plots.Plot{Plots.GRBackend}[];
 upper_layer_tracer_plots_AD = Plots.Plot{Plots.GRBackend}[];
 #Define frequency at which to save a plot.
-plot_time_AD = 0.2;
+#plot_time_AD is when to get the first plot, plot_time_inc is at what interval subsequent plots are created.
+#Setting them the same gives plots at equal time increments. (Might be a better work around)
+plot_time_AD, plot_time_inc = 0.2, 0.2;
 #Step the tracer advection problem forward and plot at the desired time step.
 while cl_AD.step <= nsteps
     println(cl_AD.step)
     if cl_AD.step == 0
-        tp_u = heatmap(x_AD[:,1], y_AD[1,:], v_AD.c[:,:,1]',
+        tp_u = heatmap(x_AD[:,1], y_AD[1,:], v_AD.c[:,:,1],
         aspectratio = 1,
         c = :balance,
         xlabel = "x",
         ylabel = "y",
         title = "C(x,y,t), t = "*string(round(cl_AD.t; digits = 2)));
-    push!(upper_layer_tracer_plots_AD, tp_u);
-        tp_l = heatmap(x_AD[:,1], y_AD[1,:], v_AD.c[:,:,2]',
+        push!(upper_layer_tracer_plots_AD, tp_u);
+        tp_l = heatmap(x_AD[:,1], y_AD[1,:], v_AD.c[:,:,2],
             aspectratio = 1,
             c = :balance,
             xlabel = "x",
@@ -94,27 +96,28 @@ while cl_AD.step <= nsteps
             title = "C(x,y,t), t = "*string(round(cl_AD.t; digits = 2)));
         push!(lower_layer_tracer_plots_AD, tp_l);
     elseif round(Int64, cl_AD.step) == round(Int64, plot_time_AD*nsteps);
-        tp_u = heatmap(x_AD[:,1], y_AD[1,:], v_AD.c[:,:,1]',
+        tp_u = heatmap(x_AD[:,1], y_AD[1,:], v_AD.c[:,:,1],
         aspectratio = 1,
         c = :balance,
         xlabel = "x",
         ylabel = "y",
         title = "C(x,y,t), t = "*string(round(cl_AD.t; digits = 2)));
-    push!(upper_layer_tracer_plots_AD, tp_u);
-        tp_l = heatmap(x_AD[:,1], y_AD[1,:], v_AD.c[:,:,2]',
+        push!(upper_layer_tracer_plots_AD, tp_u);
+        tp_l = heatmap(x_AD[:,1], y_AD[1,:], v_AD.c[:,:,2],
             aspectratio = 1,
             c = :balance,
             xlabel = "x",
             ylabel = "y",
             title = "C(x,y,t), t = "*string(round(cl_AD.t; digits = 2)));
         push!(lower_layer_tracer_plots_AD, tp_l);
-        global plot_time_AD = 0.2 + plot_time_AD;
+        global plot_time_AD += plot_time_inc;
     end
     stepforward!(AD_prob, nsubs);
     TracerAdvDiff_QG.QGupdatevars!(AD_prob);
     #Updates the velocity field in advection problem to the velocity field in the MultiLayerQG.Problem at each timestep.
     vel_field_update!(AD_prob, QG_prob);
 end
+#Need to set this up so this does not need to be hardcoded.
 #Display the tracer advection in the upper layer.
 plot(upper_layer_tracer_plots_AD[1], upper_layer_tracer_plots_AD[2], 
      upper_layer_tracer_plots_AD[3], upper_layer_tracer_plots_AD[4],
