@@ -1,5 +1,7 @@
 #Test TracerAdvDiff_copy.jl using a two layer QG flow (from the geophysical flows package).
 
+include("TracerAdvDiff_QG.jl")
+
 using .TracerAdvDiff_QG
 
 using FourierFlows, Plots
@@ -56,13 +58,13 @@ MultiLayerQG.set_q!(QG_prob, q_i);
 
 κ = 0.01;
 #Set the tracer advection probelm by passing in the QG problem 
-AD_prob = TracerAdvDiff.Problem(;prob = QG_prob, kap = κ);
+AD_prob = TracerAdvDiff_QG.Problem(;prob = QG_prob, kap = κ);
 sol_AD, cl_AD, v_AD, p_AD, g_AD = AD_prob.sol, AD_prob.clock, AD_prob.vars, AD_prob.params, AD_prob.grid;
 x_AD, y_AD = gridpoints(g_AD);
 a = 20;
 C₀_func(x,y) = log.(1 .+ cosh(a)^2 ./(cosh.(a*sqrt.(x.^2 + y.^2)).^2))/(2*a);
 C₀ = C₀_func(x_AD,y_AD);
-TracerAdvDiff.QGset_c!(AD_prob,C₀);
+TracerAdvDiff_QG.QGset_c!(AD_prob,C₀);
 heatmap(x_AD[:,1], y_AD[1,:],v_AD.c[:,:,1]', title = "Initial tracer concentration", xlabel = "x", ylabel = "y", color = :balance, aspecetratio = 1);
 
 lower_layer_tracer_plots_AD = Plots.Plot{Plots.GRBackend}[];
@@ -103,7 +105,7 @@ while cl_AD.step <= nsteps
         global plot_time_AD = 0.2 + plot_time_AD;
     end
     stepforward!(AD_prob, nsubs);
-    TracerAdvDiff.QGupdatevars!(AD_prob);
+    TracerAdvDiff_QG.QGupdatevars!(AD_prob);
     vel_field_update!(QG_prob,AD_prob);
 end
 plot(upper_layer_tracer_plots_AD[1],upper_layer_tracer_plots_AD[2],upper_layer_tracer_plots_AD[3],upper_layer_tracer_plots_AD[4],upper_layer_tracer_plots_AD[5],upper_layer_tracer_plots_AD[6]);
