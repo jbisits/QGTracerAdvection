@@ -346,7 +346,7 @@ end
 #################################################################################################
 
 #################################################################################################
-function vel_field_update!(QG_prob,AD_prob)
+function vel_field_update!(AD_prob,QG_prob)
   MultiLayerQG.stepforward!(QG_prob);
   MultiLayerQG.updatevars!(QG_prob);
   AD_prob.params.u = QG_prob.vars.u;
