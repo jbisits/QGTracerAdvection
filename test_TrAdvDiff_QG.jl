@@ -64,9 +64,9 @@ sol_AD, cl_AD, v_AD, p_AD, g_AD = AD_prob.sol, AD_prob.clock, AD_prob.vars, AD_p
 x_AD, y_AD = gridpoints(g_AD);
 a = 20;
 C₀_func(x,y) = log.(1 .+ cosh(a)^2 ./(cosh.(a*sqrt.(x.^2 + y.^2)).^2))/(2*a);
-C₀ = C₀_func(x_AD,y_AD);
-TracerAdvDiff_QG.QGset_c!(AD_prob,C₀);
-heatmap(x_AD[:,1], y_AD[1,:],v_AD.c[:,:,1]', title = "Initial tracer concentration", xlabel = "x", ylabel = "y", color = :balance, aspecetratio = 1);
+C₀ = C₀_func(x_AD, y_AD);
+TracerAdvDiff_QG.QGset_c!(AD_prob, C₀);
+heatmap(x_AD[:,1], y_AD[1,:], v_AD.c[:,:,1]', title = "Initial tracer concentration", xlabel = "x", ylabel = "y", color = :balance, aspecetratio = 1);
 
 #Define blank arrays in which to store the plots of tracer diffusion in each layer.
 lower_layer_tracer_plots_AD = Plots.Plot{Plots.GRBackend}[];
@@ -83,14 +83,14 @@ while cl_AD.step <= nsteps
         xlabel = "x",
         ylabel = "y",
         title = "C(x,y,t), t = "*string(round(cl_AD.t; digits = 2)));
-    push!(upper_layer_tracer_plots_AD,tp_u);
+    push!(upper_layer_tracer_plots_AD, tp_u);
         tp_l = heatmap(x_AD[:,1], y_AD[1,:], v_AD.c[:,:,2]',
             aspectratio = 1,
             c = :balance,
             xlabel = "x",
             ylabel = "y",
             title = "C(x,y,t), t = "*string(round(cl_AD.t; digits = 2)));
-        push!(lower_layer_tracer_plots_AD,tp_l);
+        push!(lower_layer_tracer_plots_AD, tp_l);
     elseif round(Int64, cl_AD.step) == round(Int64, plot_time_AD*nsteps);
         tp_u = heatmap(x_AD[:,1], y_AD[1,:], v_AD.c[:,:,1]',
         aspectratio = 1,
@@ -98,20 +98,26 @@ while cl_AD.step <= nsteps
         xlabel = "x",
         ylabel = "y",
         title = "C(x,y,t), t = "*string(round(cl_AD.t; digits = 2)));
-    push!(upper_layer_tracer_plots_AD,tp_u);
+    push!(upper_layer_tracer_plots_AD, tp_u);
         tp_l = heatmap(x_AD[:,1], y_AD[1,:], v_AD.c[:,:,2]',
             aspectratio = 1,
             c = :balance,
             xlabel = "x",
             ylabel = "y",
             title = "C(x,y,t), t = "*string(round(cl_AD.t; digits = 2)));
-        push!(lower_layer_tracer_plots_AD,tp_l);
+        push!(lower_layer_tracer_plots_AD, tp_l);
         global plot_time_AD = 0.2 + plot_time_AD;
     end
     stepforward!(AD_prob, nsubs);
     TracerAdvDiff_QG.QGupdatevars!(AD_prob);
     #Updates the velocity field in advection problem to the velocity field in the MultiLayerQG.Problem at each timestep.
-    vel_field_update!(AD_prob,QG_prob);
+    vel_field_update!(AD_prob, QG_prob);
 end
-plot(upper_layer_tracer_plots_AD[1],upper_layer_tracer_plots_AD[2],upper_layer_tracer_plots_AD[3],upper_layer_tracer_plots_AD[4],upper_layer_tracer_plots_AD[5],upper_layer_tracer_plots_AD[6]);
-plot(lower_layer_tracer_plots_AD[1],lower_layer_tracer_plots_AD[2],lower_layer_tracer_plots_AD[3],lower_layer_tracer_plots_AD[4],lower_layer_tracer_plots_AD[5],lower_layer_tracer_plots_AD[6]);
+#Display the tracer advection in the upper layer.
+plot(upper_layer_tracer_plots_AD[1], upper_layer_tracer_plots_AD[2], 
+     upper_layer_tracer_plots_AD[3], upper_layer_tracer_plots_AD[4],
+     upper_layer_tracer_plots_AD[5], upper_layer_tracer_plots_AD[6]);
+#Display the tracer advection in the lower layer.
+plot(lower_layer_tracer_plots_AD[1], lower_layer_tracer_plots_AD[2], 
+     lower_layer_tracer_plots_AD[3], lower_layer_tracer_plots_AD[4],
+     lower_layer_tracer_plots_AD[5], lower_layer_tracer_plots_AD[6]);
