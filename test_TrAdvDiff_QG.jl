@@ -68,7 +68,7 @@ C₀_func(x,y) = log.(1 .+ cosh(a)^2 ./(cosh.(a*sqrt.(x.^2 + y.^2)).^2))/(2*a);
 C₀ = C₀_func(x_AD, y_AD);
 TracerAdvDiff_QG.QGset_c!(AD_prob, C₀);
 #Plot of initial condition in the upper layer.
-heatmap(x_AD[:,1], y_AD[1,:], v_AD.c[:,:,1]', title = "Initial tracer concentration", xlabel = "x", ylabel = "y", color = :balance, aspecetratio = 1);
+heatmap(x_AD[:,1], y_AD[1,:], v_AD.c[:,:,1], title = "Initial tracer concentration", xlabel = "x", ylabel = "y", color = :balance, aspecetratio = 1);
 
 #Define blank arrays in which to store the plots of tracer diffusion in each layer.
 lower_layer_tracer_plots_AD = Plots.Plot{Plots.GRBackend}[];
