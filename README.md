@@ -14,3 +14,35 @@ Be great to have your thoughts!
 If it looks to be doing the right thing I am happy to add it to the PassiveTracerAdvection module (provided Navid and Greg are happy about this!)
 
 Thanks very much!
+
+
+
+To run first clone the repository, e.g.,
+
+```
+git clone https://github.com/jbisits/QG_tracer_advection.git
+```
+
+Then while in the repository's local directory open Julia, activate, and instantiate the project
+
+```julia
+julia>]
+(@v1.5) pkg> activate .
+(QG_tracer_advection) pkg> instantiate
+```
+
+Then a backspace will bring you back to normal Julia's REPL:
+```julia
+julia>
+```
+
+You can now run the `test_TrAdvDiff_QG.jl` vie
+```julia
+julia> include("test_TrAdvDiff_QG.jl")
+```
+
+Alternatively, after you've instantiate the project, you can run the `test_TrAdvDiff_QG.jl` script from the terminal  by calling
+
+```
+$ julia --project test_TrAdvDiff_QG.jl
+```
