@@ -28,8 +28,7 @@ export
    QGset_c!,
    updatevars!,
    QGupdatevars!,
-   vel_field_update!,
-   tracer_drop_in_time_v2!
+   vel_field_update!
 
 using
   FFTW,
@@ -56,6 +55,7 @@ function Problem(;
   #################################################################################################
   prob = nothing,
   delay_time = 0,
+  nsubs = 0,
   #################################################################################################
     nx = 128,
     Lx = 2π,
@@ -87,7 +87,7 @@ function Problem(;
 
   if steadyflow;                   pr = ConstDiffSteadyFlowParams(eta, kap, u, v, grid)
   #################################################################################################
-  elseif isnothing(prob) == false; pr = set_QGFlowParams(eta, kap, prob, delay_time)
+  elseif isnothing(prob) == false; pr = set_QGFlowParams(eta, kap, prob, delay_time, nsubs)
   #################################################################################################
   else;                            pr = ConstDiffParams(eta, kap, u, v)
   end
@@ -162,9 +162,9 @@ mutable struct QGFlowParams{T,A,Trfft} <: AbstractQGFlowParams
   rfftplan :: Trfft # rfft plan for MultiLayerQG
 end
 
-function set_QGFlowParams(eta, kap, prob, delay_time)
+function set_QGFlowParams(eta, kap, prob, delay_time, nsubs)
   if isequal(delay_time, 0) == false
-    tracer_drop_in_time!(prob, delay_time)
+    tracer_drop_in_time!(prob, delay_time, nsubs)
   end
   uvel = prob.vars.u
   vvel = prob.vars.v
@@ -386,26 +386,13 @@ end
 #################################################################################################
 
 #################################################################################################
-function tracer_drop_in_time!(QG_prob, delay_time)
-
-  while QG_prob.clock.t < delay_time
-    MultiLayerQG.stepforward!(QG_prob)
-    MultiLayerQG.updatevars!(QG_prob)
-  end
-
-  return nothing
-end
-#################################################################################################
-#################################################################################################
-function tracer_drop_in_time_v2!(AD_prob, QG_prob, delay_time, nsubs)
+function tracer_drop_in_time!(QG_prob, delay_time, nsubs)
 
   while QG_prob.clock.t < delay_time
     MultiLayerQG.stepforward!(QG_prob, nsubs)
     MultiLayerQG.updatevars!(QG_prob)
   end
-  AD_prob.params.u = QG_prob.vars.u
-  AD_prob.params.v = QG_prob.vars.v
-  
+
   return nothing
 end
 #################################################################################################
