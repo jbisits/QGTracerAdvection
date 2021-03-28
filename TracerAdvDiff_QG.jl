@@ -10,6 +10,8 @@
      MultiLayerQG.Problem. It defualts to one so should not change the way it currently works.
   7. Wrote new Equation and calcN_QGflow! fucntions that also make this adjustment to allow for flow advected in multiple layers at the same time.
   8. Wrote a QG version of updatevars! and set_c!. They needed to be able to deal with the multidimensional arrays that the two layer probem has.
+  9. Add function to let user drop the tracer into a flow at time they choose. This is done in two ways and not sure which is best.
+     Will ask the others to take a look at it.
 
   All my additions have a line of # on either side.
 
@@ -52,6 +54,8 @@ noflow(args...) = 0.0 # used as defaults for u, v functions in Problem()
 function Problem(;
   #################################################################################################
   prob = nothing,
+  delay_time = 0,
+  nsubs = 0,
   #################################################################################################
     nx = 128,
     Lx = 2π,
@@ -83,7 +87,7 @@ function Problem(;
 
   if steadyflow;                   pr = ConstDiffSteadyFlowParams(eta, kap, u, v, grid)
   #################################################################################################
-  elseif isnothing(prob) == false; pr = set_QGFlowParams(eta, kap, prob)
+  elseif isnothing(prob) == false; pr = set_QGFlowParams(eta, kap, prob, delay_time, nsubs)
   #################################################################################################
   else;                            pr = ConstDiffParams(eta, kap, u, v)
   end
@@ -148,17 +152,20 @@ ConstDiffSteadyFlowParams(eta, kap, u, v, g) = ConstDiffSteadyFlowParams(eta, ka
 
 #################################################################################################
 mutable struct QGFlowParams{T,A,Trfft} <: AbstractQGFlowParams
-  nlayers::Int64  # Number of layers in the QG_flow problem
-  eta::T          # Constant horizontal diffusivity
-  kap::T          # Constant vertical diffusivity
-  kaph::T         # Constant isotropic hyperdiffusivity
-  nkaph::Int      # Constant isotropic hyperdiffusivity order
-  u::A            # Advecting x-velocity. These will be updated at each step of the problem.
-  v::A            # Advecting y-velocity
+  nlayers::Int64    # Number of layers in the QG_flow problem
+  eta::T            # Constant horizontal diffusivity
+  kap::T            # Constant vertical diffusivity
+  kaph::T           # Constant isotropic hyperdiffusivity
+  nkaph::Int        # Constant isotropic hyperdiffusivity order
+  u::A              # Advecting x-velocity. These will be updated at each step of the problem.
+  v::A              # Advecting y-velocity
   rfftplan :: Trfft # rfft plan for MultiLayerQG
 end
 
-function set_QGFlowParams(eta, kap, prob)
+function set_QGFlowParams(eta, kap, prob, delay_time, nsubs)
+  if isequal(delay_time, 0) == false
+    flow_till_delay_time!(prob, delay_time, nsubs)
+  end
   uvel = prob.vars.u
   vvel = prob.vars.v
   nlayers = prob.params.nlayers
@@ -374,6 +381,18 @@ function vel_field_update!(AD_prob, QG_prob, nsubs)
   AD_prob.params.u = QG_prob.vars.u
   AD_prob.params.v = QG_prob.vars.v
   
+  return nothing
+end
+#################################################################################################
+
+#################################################################################################
+function flow_till_delay_time!(QG_prob, delay_time, nsubs)
+
+  while QG_prob.clock.t < delay_time
+    MultiLayerQG.stepforward!(QG_prob, nsubs)
+    MultiLayerQG.updatevars!(QG_prob)
+  end
+
   return nothing
 end
 #################################################################################################

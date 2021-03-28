@@ -61,8 +61,10 @@ MultiLayerQG.set_q!(QG_prob, q_i)
 
 #Set diffusivity
 κ = 0.01
+#Set delay time (that is flow for t seconds, then drop tracer in)
+delay_time = 20
 #Set the tracer advection probelm by passing in the QG problem 
-AD_prob = TracerAdvDiff_QG.Problem(;prob = QG_prob, kap = κ)
+AD_prob = TracerAdvDiff_QG.Problem(;prob = QG_prob, delay_time = delay_time, nsubs = nsubs, kap = κ)
 sol_AD, cl_AD, v_AD, p_AD, g_AD = AD_prob.sol, AD_prob.clock, AD_prob.vars, AD_prob.params, AD_prob.grid
 x_AD, y_AD = gridpoints(g_AD)
 #Set the (same) initial condition in both layers.
