@@ -164,7 +164,7 @@ end
 
 function set_QGFlowParams(eta, kap, prob, delay_time, nsubs)
   if isequal(delay_time, 0) == false
-    tracer_drop_in_time!(prob, delay_time, nsubs)
+    flow_till_delay_time!(prob, delay_time, nsubs)
   end
   uvel = prob.vars.u
   vvel = prob.vars.v
@@ -386,7 +386,7 @@ end
 #################################################################################################
 
 #################################################################################################
-function tracer_drop_in_time!(QG_prob, delay_time, nsubs)
+function flow_till_delay_time!(QG_prob, delay_time, nsubs)
 
   while QG_prob.clock.t < delay_time
     MultiLayerQG.stepforward!(QG_prob, nsubs)
