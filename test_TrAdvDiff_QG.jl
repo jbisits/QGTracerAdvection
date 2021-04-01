@@ -4,7 +4,7 @@ include("TracerAdvDiff_QG.jl")
 
 using .TracerAdvDiff_QG
 
-using FourierFlows, Plots
+using FourierFlows, Plots, Distributions
 using FFTW: rfft, irfft
 import GeophysicalFlows.MultiLayerQG
 
@@ -62,18 +62,33 @@ MultiLayerQG.set_q!(QG_prob, q_i)
 #Set diffusivity
 κ = 0.01
 #Set delay time (that is flow for t seconds, then drop tracer in)
-delay_time = 20
+delay_time = 0
 #Set the tracer advection probelm by passing in the QG problem 
 AD_prob = TracerAdvDiff_QG.Problem(;prob = QG_prob, delay_time = delay_time, nsubs = nsubs, kap = κ)
 sol_AD, cl_AD, v_AD, p_AD, g_AD = AD_prob.sol, AD_prob.clock, AD_prob.vars, AD_prob.params, AD_prob.grid
 x_AD, y_AD = gridpoints(g_AD)
 #Set the (same) initial condition in both layers.
-a = 20
-C₀_func(x, y) = log(1 + cosh(a)^2 / (cosh(a * sqrt(x^2 + y^2))^2)) / (2 * a)
 
-C₀ = @. C₀_func(x_AD, y_AD)
+#A Gaussian blob centred at μIC 
+#=
+μIC = [0, 0]
+Σ = [1 0; 0 1]
+blob = MvNormal(μIC, Σ)
+blob_IC(x, y) = pdf(blob, [x, y])
+C₀ = @. blob_IC(x_AD, y_AD)
+=#
 
-TracerAdvDiff_QG.QGset_c!(AD_prob, C₀)
+#A Gaussian strip around centred at μIC.
+μIC = 0
+σ² = 0.5
+strip = Normal(μIC, σ²)
+strip_IC(x) = pdf(strip, x)
+C₀ = Array{Float64}(undef, g_AD.nx, g_AD.ny)
+for i in 1:g_AD.nx
+    C₀[:, i] = strip_IC(y_AD[i, :])
+end
+
+TracerAdvDiff_QG.QGset_c!(AD_prob, C₀') #For horizontal strip remove the adjoint
 
 #Plot of initial condition in the upper layer.
 heatmap(x_AD[:, 1], y_AD[1, :], v_AD.c[:, :, 1],
@@ -152,3 +167,11 @@ plot_bottom = plot(lower_layer_tracer_plots_AD[1], lower_layer_tracer_plots_AD[2
                    lower_layer_tracer_plots_AD[5], lower_layer_tracer_plots_AD[6])
 
 plot(plot_top, plot_bottom, layout=(2, 1), size=(1200, 1200))
+
+#Code to create a video from the array of plots in the top (or bottom) layer. Make plot_time_inc = Δt = plot_time_AD
+#=
+anim = @animate for i in 1:length(upper_layer_tracer_plots_AD)
+    plot(upper_layer_tracer_plots_AD[i])
+end
+mp4(anim, "tracer_ad.mp4", fps = 18)
+=#
