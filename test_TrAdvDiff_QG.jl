@@ -67,6 +67,7 @@ delay_time = 0
 AD_prob = TracerAdvDiff_QG.Problem(;prob = QG_prob, delay_time = delay_time, nsubs = nsubs, kap = κ)
 sol_AD, cl_AD, v_AD, p_AD, g_AD = AD_prob.sol, AD_prob.clock, AD_prob.vars, AD_prob.params, AD_prob.grid
 x_AD, y_AD = gridpoints(g_AD)
+x, y = g_AD.x, g_AD.y
 #Set the (same) initial condition in both layers.
 
 #A Gaussian blob centred at μIC 
@@ -92,7 +93,7 @@ end
 TracerAdvDiff_QG.QGset_c!(AD_prob, C₀) #For horizontal strip add the adjoint
 
 #Plot of initial condition in the upper layer.
-heatmap(x_AD[:, 1], y_AD[1, :], v_AD.c[:, :, 1],
+heatmap(x, y, v_AD.c[:, :, 1],
         title = "Initial tracer concentration",
         xlabel = "x",
         ylabel = "y",
@@ -120,14 +121,14 @@ kwargs = (
 #Step the tracer advection problem forward and plot at the desired time step.
 while cl_AD.step <= nsteps
     if cl_AD.step == 0
-        tp_u = heatmap(x_AD[:, 1], y_AD[1, :], v_AD.c[:, :, 1]',
+        tp_u = heatmap(x, y, v_AD.c[:, :, 1]',
         aspectratio = 1,
         c = :balance,
         xlabel = "x",
         ylabel = "y",
         title = "C(x,y,t), t = "*string(round(cl_AD.t; digits = 2)));
         push!(upper_layer_tracer_plots_AD, tp_u)
-        tp_l = heatmap(x_AD[:, 1], y_AD[1, :], v_AD.c[:, :, 2]',
+        tp_l = heatmap(x, y, v_AD.c[:, :, 2]',
             aspectratio = 1,
             c = :balance,
             xlabel = "x",
@@ -135,14 +136,14 @@ while cl_AD.step <= nsteps
             title = "C(x,y,t), t = "*string(round(cl_AD.t; digits = 2)))
         push!(lower_layer_tracer_plots_AD, tp_l)
     elseif round(Int64, cl_AD.step) == round(Int64, plot_time_AD*nsteps)
-        tp_u = heatmap(x_AD[:, 1], y_AD[1, :], v_AD.c[:, :, 1]',
+        tp_u = heatmap(x, y, v_AD.c[:, :, 1]',
         aspectratio = 1,
         c = :balance,
         xlabel = "x",
         ylabel = "y",
         title = "C(x,y,t), t = "*string(round(cl_AD.t; digits = 2)))
         push!(upper_layer_tracer_plots_AD, tp_u)
-        tp_l = heatmap(x_AD[:, 1], y_AD[1, :], v_AD.c[:, :, 2]',
+        tp_l = heatmap(x, y, v_AD.c[:, :, 2]',
             aspectratio = 1,
             c = :balance,
             xlabel = "x",
