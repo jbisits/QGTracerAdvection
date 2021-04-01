@@ -167,3 +167,11 @@ plot_bottom = plot(lower_layer_tracer_plots_AD[1], lower_layer_tracer_plots_AD[2
                    lower_layer_tracer_plots_AD[5], lower_layer_tracer_plots_AD[6])
 
 plot(plot_top, plot_bottom, layout=(2, 1), size=(1200, 1200))
+
+#Code to create a video from the array of plots in the top (or bottom) layer. Make plot_time_inc = Δt = plot_time_AD
+#=
+anim = @animate for i in 1:length(upper_layer_tracer_plots_AD)
+    plot(upper_layer_tracer_plots_AD[i])
+end
+mp4(anim, "tracer_ad.mp4", fps = 18)
+=#
