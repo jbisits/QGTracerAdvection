@@ -79,6 +79,7 @@ C₀ = @. blob_IC(x_AD, y_AD)
 =#
 
 #A Gaussian strip around centred at μIC.
+
 μIC = 0
 σ² = 0.5
 strip = Normal(μIC, σ²)
@@ -88,7 +89,7 @@ for i in 1:g_AD.nx
     C₀[:, i] = strip_IC(y_AD[i, :])
 end
 
-TracerAdvDiff_QG.QGset_c!(AD_prob, C₀') #For horizontal strip remove the adjoint
+TracerAdvDiff_QG.QGset_c!(AD_prob, C₀) #For horizontal strip add the adjoint
 
 #Plot of initial condition in the upper layer.
 heatmap(x_AD[:, 1], y_AD[1, :], v_AD.c[:, :, 1],
@@ -119,14 +120,14 @@ kwargs = (
 #Step the tracer advection problem forward and plot at the desired time step.
 while cl_AD.step <= nsteps
     if cl_AD.step == 0
-        tp_u = heatmap(x_AD[:, 1], y_AD[1, :], v_AD.c[:, :, 1],
+        tp_u = heatmap(x_AD[:, 1], y_AD[1, :], v_AD.c[:, :, 1]',
         aspectratio = 1,
         c = :balance,
         xlabel = "x",
         ylabel = "y",
         title = "C(x,y,t), t = "*string(round(cl_AD.t; digits = 2)));
         push!(upper_layer_tracer_plots_AD, tp_u)
-        tp_l = heatmap(x_AD[:, 1], y_AD[1, :], v_AD.c[:, :, 2],
+        tp_l = heatmap(x_AD[:, 1], y_AD[1, :], v_AD.c[:, :, 2]',
             aspectratio = 1,
             c = :balance,
             xlabel = "x",
@@ -134,14 +135,14 @@ while cl_AD.step <= nsteps
             title = "C(x,y,t), t = "*string(round(cl_AD.t; digits = 2)))
         push!(lower_layer_tracer_plots_AD, tp_l)
     elseif round(Int64, cl_AD.step) == round(Int64, plot_time_AD*nsteps)
-        tp_u = heatmap(x_AD[:, 1], y_AD[1, :], v_AD.c[:, :, 1],
+        tp_u = heatmap(x_AD[:, 1], y_AD[1, :], v_AD.c[:, :, 1]',
         aspectratio = 1,
         c = :balance,
         xlabel = "x",
         ylabel = "y",
         title = "C(x,y,t), t = "*string(round(cl_AD.t; digits = 2)))
         push!(upper_layer_tracer_plots_AD, tp_u)
-        tp_l = heatmap(x_AD[:, 1], y_AD[1, :], v_AD.c[:, :, 2],
+        tp_l = heatmap(x_AD[:, 1], y_AD[1, :], v_AD.c[:, :, 2]',
             aspectratio = 1,
             c = :balance,
             xlabel = "x",
