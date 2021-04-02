@@ -93,7 +93,7 @@ end
 TracerAdvDiff_QG.QGset_c!(AD_prob, C₀) #For horizontal strip add the adjoint
 
 #Plot of initial condition in the upper layer.
-heatmap(x, y, v_AD.c[:, :, 1],
+heatmap(x, y, v_AD.c[:, :, 1]',
         title = "Initial tracer concentration",
         xlabel = "x",
         ylabel = "y",
