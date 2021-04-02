@@ -50,6 +50,6 @@ Alternatively, after you've instantiated the project, you can run the `test_TrAd
 $ julia --project test_TrAdvDiff_QG.jl
 ```
 # References
-[1] : Gregory L. Wagner & Navid C. Constantinou. (2018). FourierFlows/FourierFlows.jl. Zenodo. https://doi.org/10.5281/zenodo.1161724
+[1]: Gregory L. Wagner & Navid C. Constantinou. (2018). FourierFlows/FourierFlows.jl. Zenodo. https://doi.org/10.5281/zenodo.1161724
 
-[2] : Navid C. Constantinou, Gregory L. Wagner, and co-contributors. (2021). FourierFlows/GeophysicalFlows.jl: GeophysicalFlows v0.11.5 (Version v0.11.5). Zenodo. http://doi.org/10.5281/zenodo.1463809
+[2]: Navid C. Constantinou, Gregory L. Wagner, and co-contributors. (2021). FourierFlows/GeophysicalFlows.jl: GeophysicalFlows v0.11.5 (Version v0.11.5). Zenodo. http://doi.org/10.5281/zenodo.1463809
