@@ -15,6 +15,7 @@ Here the `MultiLayerQG.Problem` from the [documentation](https://fourierflows.gi
 There are two different initial conditions that can be used:
 * a Gaussian "blob"
 * a Guassian "strip"
+
 Both can be moved to different locations on the grid by altering the mean and the concentration about the mean is changed by altering the variance.
 
 ## Using the module
@@ -50,4 +51,5 @@ $ julia --project test_TrAdvDiff_QG.jl
 ```
 # References
 [^1] Gregory L. Wagner & Navid C. Constantinou. (2018). FourierFlows/FourierFlows.jl. Zenodo. https://doi.org/10.5281/zenodo.1161724
+
 [^2] Navid C. Constantinou, Gregory L. Wagner, and co-contributors. (2021). FourierFlows/GeophysicalFlows.jl: GeophysicalFlows v0.11.5 (Version v0.11.5). Zenodo. http://doi.org/10.5281/zenodo.1463809
