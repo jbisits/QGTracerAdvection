@@ -2,7 +2,7 @@
 
 ## Passive tracer advection using quasigeostrophic flow
 
-The module `TracerAdvDiff_QG` builds on the pre-existing module `TraverAdvDiff` from the [`PassiveTracerFlows`][1] package.
+The module `TracerAdvDiff_QG` builds on the pre-existing module `TraverAdvDiff` from the `PassiveTracerFlows`[1] package.
 The `TracerAdvDiff_QG` module can as input a `MultiLayerQG.Problem` from the [`GeophysicalFlows`][2] package and advect a passive tracer in the quasigeosrophic flow the problem generates.
 An initial condition for tracer concentration is set in both layers then either a series of plots or a movie (or both) are generated showing the tracer advection.
 
@@ -50,6 +50,6 @@ Alternatively, after you've instantiated the project, you can run the `test_TrAd
 $ julia --project test_TrAdvDiff_QG.jl
 ```
 # References
-[1]: Gregory L. Wagner & Navid C. Constantinou. (2018). FourierFlows/FourierFlows.jl. Zenodo. https://doi.org/10.5281/zenodo.1161724
+[1] Gregory L. Wagner & Navid C. Constantinou. (2018). FourierFlows/FourierFlows.jl. Zenodo. https://doi.org/10.5281/zenodo.1161724
 
-[2]: Navid C. Constantinou, Gregory L. Wagner, and co-contributors. (2021). FourierFlows/GeophysicalFlows.jl: GeophysicalFlows v0.11.5 (Version v0.11.5). Zenodo. http://doi.org/10.5281/zenodo.1463809
+[2] Navid C. Constantinou, Gregory L. Wagner, and co-contributors. (2021). FourierFlows/GeophysicalFlows.jl: GeophysicalFlows v0.11.5 (Version v0.11.5). Zenodo. http://doi.org/10.5281/zenodo.1463809
