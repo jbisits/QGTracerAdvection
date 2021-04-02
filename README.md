@@ -2,7 +2,7 @@
 
 ## Passive tracer advection using quasigeostrophic flow
 
-The module `TracerAdvDiff_QG` builds on the pre-existing module `TraverAdvDiff` from the `PassiveTracerFlows`(https://fourierflows.github.io/PassiveTracerFlowsDocumentation/v0.1.0/)[1] package.
+The module `TracerAdvDiff_QG` builds on the pre-existing module `TraverAdvDiff` from the [`PassiveTracerFlows`](https://fourierflows.github.io/PassiveTracerFlowsDocumentation/v0.1.0/)[1] package.
 The `TracerAdvDiff_QG` module sets up a `TracerAdvDiff_QG.Problem` from a `MultiLayerQG.Problem` (from the [`GeophysicalFlows`](https://fourierflows.github.io/GeophysicalFlowsDocumentation/stable/)[2] package) and advects a passive tracer in the quasigeosrophic flow the `MultiLayerQG.Problem` generates.
 An initial condition for tracer concentration is set in both layers then either a series of plots or a movie (or both) are generated showing the tracer advection.
 
