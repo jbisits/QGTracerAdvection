@@ -12,10 +12,7 @@ The tracer advection in either a steady flow or a time dependent flow remains un
 
 An example of how the module advects a passive tracer in a QG flow is given in the script `test_TracerAdvDiff.jl`. 
 Here the `MultiLayerQG.Problem` from the [documentation](https://fourierflows.github.io/GeophysicalFlowsDocumentation/stable/generated/multilayerqg_2layer/) is used as the flow to advect the tracer.
-There are two different initial conditions that can be used:
-* a Gaussian "blob"
-* a Guassian "strip"
-
+There are two different initial conditions that can be used: a Gaussian "blob" or a Guassian "strip".
 Both can be moved to different locations on the grid by altering the mean and the concentration about the mean is changed by altering the variance.
 The same initial condition is set in both layers then the problem is stepped forward and the tracer is advected.
 The output is then a series of plots showing the tracer advection.
