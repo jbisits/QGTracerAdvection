@@ -10,6 +10,7 @@ The tracer advection in either a steady flow or a time dependent flow remains un
 
 ## Examples
 
+### Tracer advection with QG flow 
 An example of how the module advects a passive tracer in a QG flow is given in the script `test_TracerAdvDiff.jl`. 
 Here the `MultiLayerQG.Problem` from the [documentation](https://fourierflows.github.io/GeophysicalFlowsDocumentation/stable/generated/multilayerqg_2layer/) is used as the flow to advect the tracer.
 There are two different initial conditions in the script: a Gaussian "blob" or a Guassian "strip".
@@ -17,6 +18,17 @@ Both can be moved to different locations on the grid by altering the mean and th
 The same initial condition is set in both layers then the problem is stepped forward and the tracer is advected.
 The output is then a series of plots showing the tracer advection.
 
+### Tracer advection with a steady flow
+An example of how the module advects a passive tracer in a steady flow is given in the script `steadyflow_example.jl`.
+In this case only one `Problem` is initialised but the velocity fields `u` and `v` must be provided as functions of `x` and `y`.
+**Note this script can also be run using the `PassiveTracerFlows` package.**
+There are instructions in the script as to how to do this.
+
+### Tracer advection with a time dependent flow
+An example of how the module advects a passive tracer in a time dependent flow is given in the script `timedep_example.jl`.
+In this case only one `Problem` is initialised but the velocity fields `u` and `v` must be provided as functions of `x`, `y` and `t`.
+**Note this script can also be run using the `PassiveTracerFlows` package.**
+There are instructions in the script as to how to do this.
 ## Using the module
 
 To run first clone the repository, e.g.,
