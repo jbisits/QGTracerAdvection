@@ -1,6 +1,6 @@
 #Example of a time dependent flow advection using the module TracerAdvDiff_QG
 
-include("TracerAdvDiff_QG.jl")
+#The TracerAdvDiff_QG.jl file must first be loaded into the local environment. See README for instructions.
 
 using .TracerAdvDiff_QG
 using Plots, FourierFlows, Distributions
