@@ -21,12 +21,20 @@ The output is then a series of plots showing the tracer advection.
 ### Tracer advection with a steady flow
 An example of how the module advects a passive tracer in a steady flow is given in the script `steadyflow_example.jl`.
 In this case only one `Problem` is initialised but the velocity fields `u` and `v` must be provided as functions of `x` and `y`.
+To run this example the `TracerAdvDiff_QG` module must be first loaded into the local environment using
+```julia
+julia> include("TracerAdvDiff_QG.jl")
+```
 **Note this script can also be run using the `PassiveTracerFlows` package.**
 There are instructions in the script as to how to do this.
 
 ### Tracer advection with a time dependent flow
 An example of how the module advects a passive tracer in a time dependent flow is given in the script `timedep_example.jl`.
 In this case only one `Problem` is initialised but the velocity fields `u` and `v` must be provided as functions of `x`, `y` and `t`.
+To run this example the `TracerAdvDiff_QG` module must be first loaded into the local environment using
+```julia
+julia> include("TracerAdvDiff_QG.jl")
+```
 **Note this script can also be run using the `PassiveTracerFlows` package.**
 There are instructions in the script as to how to do this.
 ## Using the module
