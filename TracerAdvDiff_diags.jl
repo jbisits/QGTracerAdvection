@@ -187,6 +187,6 @@ mp4(anim, "tracer_ad.mp4", fps = 18)
 
 #Plot of the second moment. This may not need to be computed at every step.
 t = range(0, (nsteps + 1)*Δt, step = Δt)
-second_moment_top = plot(t, second_moments[:, 1], title = "Top layer second moment", label = false)
-second_moment_bottom = plot(t, second_moments[:, 2], title = "Bottom layer second moment", label = false)
+second_moment_top = plot(t, second_moments[:, 1], xlabel = "t", title = "Top layer second moment", label = false)
+second_moment_bottom = plot(t, second_moments[:, 2], xlabel = "t", title = "Bottom layer second moment", label = false)
 plot(second_moment_top, second_moment_bottom, size=(800, 400))
