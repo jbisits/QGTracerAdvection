@@ -7,6 +7,7 @@ module MeasureMixing
 
 export
     second_moment!
+
 using Distributions
 #=
     Calculate the second moment of the tracer distribution and save to vector
