@@ -121,8 +121,8 @@ kwargs = (
 )
 
 #Define array to store values for the variance in the grid
-var_vals = Array{Float64}(undef, nsteps+1, nlayers)
-MeasureMixing.var_vector!(var_vals, AD_prob)
+second_moments = Array{Float64}(undef, nsteps + 2, nlayers)
+MeasureMixing.second_moment!(second_moments, AD_prob)
 
 #Step the tracer advection problem forward and plot at the desired time step.
 while cl_AD.step <= nsteps
@@ -160,7 +160,7 @@ while cl_AD.step <= nsteps
     end
     stepforward!(AD_prob, nsubs)
     TracerAdvDiff_QG.QGupdatevars!(AD_prob)
-    MeasureMixing.second_moment_grid!(second_mom_vals, AD_prob) 
+    MeasureMixing.second_moment!(second_moments, AD_prob)
     #Updates the velocity field in advection problem to the velocity field in the MultiLayerQG.Problem at each timestep.
     TracerAdvDiff_QG.vel_field_update!(AD_prob, QG_prob, nsubs)
 end
@@ -184,3 +184,9 @@ anim = @animate for i in 1:length(upper_layer_tracer_plots_AD)
 end
 mp4(anim, "tracer_ad.mp4", fps = 18)
 =#
+
+#Plot of the second moment. This may not need to be computed at every step.
+t = range(0, (nsteps + 1)*Δt, step = Δt)
+second_moment_top = plot(t, second_moments[:, 1], title = "Top layer second moment", label = false)
+second_moment_bottom = plot(t, second_moments[:, 2], title = "Bottom layer second moment", label = false)
+plot(second_moment_top, second_moment_bottom, size=(800, 400))

@@ -6,21 +6,22 @@
 module MeasureMixing
 
 export
-    var_vector!
-
+    second_moment!
 using Distributions
 #=
-    Calculate the variance of tracer distribution and save to vector
+    Calculate the second moment of the tracer distribution and save to vector
 =#
-function var_vector!(var_vals, prob) 
+function second_moment!(second_moment, prob) 
 
     nlayers = prob.params.nlayers
     step = prob.clock.step + 1
     temp = zeros(nlayers)
     for i in 1:nlayers
+        #Use variance or sum here? The variance looks much better numbers wise
+        #temp[i] = sum(prob.vars.c[:, :, i].^2)./prob.grid.nx
         temp[i] = var(prob.vars.c[:, :, i])
     end
-    @. var_vals[step, :] = temp
+    @. second_moment[step, :] = temp
 
 end
 
