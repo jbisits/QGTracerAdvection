@@ -94,13 +94,20 @@ end
 
 TracerAdvDiff_QG.QGset_c!(AD_prob, C₀') #For horizontal strip use C₀'
 
-#Plot of initial condition in the upper layer.
-heatmap(x, y, v_AD.c[:, :, 1]',
-        title = "Initial tracer concentration",
-        xlabel = "x",
-        ylabel = "y",
-        color = :balance,
-        aspecetratio = 1)
+#Plot of initial condition in the both layers.
+IC_upper = heatmap(x, y, v_AD.c[:, :, 1]',
+            title = "Initial tracer concentration - upper layer",
+            xlabel = "x",
+            ylabel = "y",
+            color = :balance,
+            aspecetratio = 1)
+IC_lower = heatmap(x, y, v_AD.c[:, :, 1]',
+            title = "Initial tracer concentration - lower layer",
+            xlabel = "x",
+            ylabel = "y",
+            color = :balance,
+            aspecetratio = 1)
+plot(IC_upper, IC_lower,  size=(900, 400))
 
 #Define blank arrays in which to store the plots of tracer diffusion in each layer.
 lower_layer_tracer_plots_AD = Plots.Plot{Plots.GRBackend}[]
