@@ -89,10 +89,11 @@ strip = Normal(μIC, σ²)
 strip_IC(x) = pdf(strip, x)
 C₀ = Array{Float64}(undef, g_AD.nx, g_AD.ny)
 for i in 1:g_AD.nx
-    C₀[:, i] = strip_IC(y_AD[i, :])
+    C₀[i, :] = strip_IC(y_AD[i, :])
 end
 
-TracerAdvDiff_QG.QGset_c!(AD_prob, C₀') #For horizontal strip use C₀'
+#If using strip_IC use C₀' for a vertical strip
+TracerAdvDiff_QG.QGset_c!(AD_prob, C₀)
 
 #Plot of initial condition in the both layers.
 IC_upper = heatmap(x, y, v_AD.c[:, :, 1]',
