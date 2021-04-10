@@ -18,10 +18,9 @@ function second_moment!(second_moment, prob)
     step = prob.clock.step + 1
     temp = zeros(nlayers)
     for i in 1:nlayers
-        #Use variance or sum here? 
-        #The variance looks much better numbers wise for the strip but the sum is better for the blob..
-        #temp[i] = sum(prob.vars.c[:, :, i].^2)./prob.grid.nx
-        temp[i] = var(prob.vars.c[:, :, i])
+        #Use variance or second moment here? Ask Jan and Geoff
+        temp[i] = sum(prob.vars.c[:, :, i].^2)
+        #temp[i] = var(prob.vars.c[:, :, i])
     end
     @. second_moment[step, :] = temp
 

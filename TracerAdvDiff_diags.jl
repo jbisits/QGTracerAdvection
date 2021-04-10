@@ -22,7 +22,7 @@ ny = nx
 stepper = "FilteredRK4";  # timestepper
 Δt = 0.01                 # timestep
 nsubs  = 1                # number of time-steps for plotting (nsteps must be multiple of nsubs)
-nsteps = 2000nsubs        # total number of time-steps
+nsteps = 3000nsubs        # total number of time-steps
 
 
 #Physical parameters for a two layer QG_problem
@@ -92,7 +92,7 @@ for i in 1:g_AD.nx
     C₀[:, i] = strip_IC(y_AD[i, :])
 end
 
-TracerAdvDiff_QG.QGset_c!(AD_prob, C₀) #For horizontal strip use C₀'
+TracerAdvDiff_QG.QGset_c!(AD_prob, C₀') #For horizontal strip use C₀'
 
 #Plot of initial condition in the upper layer.
 heatmap(x, y, v_AD.c[:, :, 1]',
