@@ -96,17 +96,23 @@ TracerAdvDiff_QG.QGset_c!(AD_prob, C₀') #For horizontal strip use C₀'
 
 #Plot of initial condition in the both layers.
 IC_upper = heatmap(x, y, v_AD.c[:, :, 1]',
-            title = "Initial tracer concentration - upper layer",
-            xlabel = "x",
-            ylabel = "y",
-            color = :balance,
-            aspecetratio = 1)
+                title = "Initial tracer concentration - upper layer",
+                xlabel = "x",
+                ylabel = "y",
+                color = :balance,
+                aspecetratio = 1,
+                colorbar = true,
+                xlim = (-g_AD.Lx/2, g_AD.Lx/2),
+                ylim = (-g_AD.Ly/2, g_AD.Ly/2))
 IC_lower = heatmap(x, y, v_AD.c[:, :, 2]',
-            title = "Initial tracer concentration - lower layer",
-            xlabel = "x",
-            ylabel = "y",
-            color = :balance,
-            aspecetratio = 1)
+                title = "Initial tracer concentration - lower layer",
+                xlabel = "x",
+                ylabel = "y",
+                color = :balance,
+                aspecetratio = 1,
+                colorbar = true,
+                xlim = (-g_AD.Lx/2, g_AD.Lx/2),
+                ylim = (-g_AD.Ly/2, g_AD.Ly/2))
 plot(IC_upper, IC_lower,  size=(900, 400))
 
 #Define blank arrays in which to store the plots of tracer diffusion in each layer.
@@ -135,33 +141,45 @@ MeasureMixing.second_moment!(second_moments, AD_prob)
 while cl_AD.step <= nsteps
     if cl_AD.step == 0
         tp_u = heatmap(x, y, v_AD.c[:, :, 1]',
-        aspectratio = 1,
-        c = :balance,
-        xlabel = "x",
-        ylabel = "y",
-        title = "C(x,y,t), t = "*string(round(cl_AD.t; digits = 2)));
+                    aspectratio = 1,
+                    c = :balance,
+                    xlabel = "x",
+                    ylabel = "y",
+                    colorbar = true,
+                    xlim = (-g_AD.Lx/2, g_AD.Lx/2),
+                    ylim = (-g_AD.Ly/2, g_AD.Ly/2),
+                    title = "C(x,y,t), t = "*string(round(cl_AD.t; digits = 2)));
         push!(upper_layer_tracer_plots_AD, tp_u)
         tp_l = heatmap(x, y, v_AD.c[:, :, 2]',
-            aspectratio = 1,
-            c = :balance,
-            xlabel = "x",
-            ylabel = "y",
-            title = "C(x,y,t), t = "*string(round(cl_AD.t; digits = 2)))
+                    aspectratio = 1,
+                    c = :balance,
+                    xlabel = "x",
+                    ylabel = "y",
+                    colorbar = true,
+                    xlim = (-g_AD.Lx/2, g_AD.Lx/2),
+                    ylim = (-g_AD.Ly/2, g_AD.Ly/2),
+                    title = "C(x,y,t), t = "*string(round(cl_AD.t; digits = 2)))
         push!(lower_layer_tracer_plots_AD, tp_l)
     elseif round(Int64, cl_AD.step) == round(Int64, plot_time_AD*nsteps)
         tp_u = heatmap(x, y, v_AD.c[:, :, 1]',
-        aspectratio = 1,
-        c = :balance,
-        xlabel = "x",
-        ylabel = "y",
-        title = "C(x,y,t), t = "*string(round(cl_AD.t; digits = 2)))
+                    aspectratio = 1,
+                    c = :balance,
+                    xlabel = "x",
+                    ylabel = "y",
+                    colorbar = true,
+                    xlim = (-g_AD.Lx/2, g_AD.Lx/2),
+                    ylim = (-g_AD.Ly/2, g_AD.Ly/2),
+                    title = "C(x,y,t), t = "*string(round(cl_AD.t; digits = 2)))
         push!(upper_layer_tracer_plots_AD, tp_u)
         tp_l = heatmap(x, y, v_AD.c[:, :, 2]',
-            aspectratio = 1,
-            c = :balance,
-            xlabel = "x",
-            ylabel = "y",
-            title = "C(x,y,t), t = "*string(round(cl_AD.t; digits = 2)))
+                    aspectratio = 1,
+                    c = :balance,
+                    xlabel = "x",
+                    ylabel = "y",
+                    colorbar = true,
+                    xlim = (-g_AD.Lx/2, g_AD.Lx/2),
+                    ylim = (-g_AD.Ly/2, g_AD.Ly/2),
+                    title = "C(x,y,t), t = "*string(round(cl_AD.t; digits = 2)))
         push!(lower_layer_tracer_plots_AD, tp_l)
         global plot_time_AD += plot_time_inc
     end
