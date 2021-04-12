@@ -6,23 +6,20 @@
 module MeasureMixing
 
 export
-    second_moment!
+    conc_var!
 
 using Distributions
-#=
-    Calculate the second moment of the tracer distribution and save to vector
-=#
-function second_moment!(second_moment, prob) 
+
+#Calculate the variance of the tracer concentration.
+function conc_var!(conc_var, prob) 
 
     nlayers = prob.params.nlayers
     step = prob.clock.step + 1
     temp = zeros(nlayers)
     for i in 1:nlayers
-        #Use variance or second moment here? Ask Jan and Geoff
-        temp[i] = sum(prob.vars.c[:, :, i].^2)
-        #temp[i] = var(prob.vars.c[:, :, i])
+        temp[i] = var(prob.vars.c[:, :, i])
     end
-    @. second_moment[step, :] = temp
+    @. conc_var[step, :] = temp
 
 end
 
