@@ -213,6 +213,6 @@ mp4(anim, "tracer_ad.mp4", fps = 18)
 
 #Plot of the variance of the concentration on the grid as computed at each time step.
 t = range(0, (nsteps + 1)*Δt, step = Δt)
-conc_var_top = plot(t, conc_var[:, 1], xlabel = "t", title = "Top layer second moment", label = false)
-conc_var_bottom = plot(t, conc_var[:, 2], xlabel = "t", title = "Bottom layer second moment", label = false)
+conc_var_top = plot(t, conc_var[:, 1], xlabel = "t", title = "Top layer variance of concentration", label = false)
+conc_var_bottom = plot(t, conc_var[:, 2], xlabel = "t", title = "Bottom layer variance of concentration", label = false)
 plot(conc_var_top, conc_var_bottom, size=(800, 400))
