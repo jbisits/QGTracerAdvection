@@ -1,7 +1,4 @@
-#Test TracerAdvDiff_copy.jl using a two layer QG flow (from the geophysical flows package).
-
-include("TracerAdvDiff_QG.jl")
-include("MeasureMixing.jl")
+#Test MeasureMixing.jl using a the QGflow_example.jl
 
 using .TracerAdvDiff_QG
 using .MeasureMixing
