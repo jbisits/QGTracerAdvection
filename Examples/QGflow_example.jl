@@ -1,6 +1,4 @@
-#Test TracerAdvDiff_copy.jl using a two layer QG flow (from the geophysical flows package).
-
-include("TracerAdvDiff_QG.jl")
+#Passive tracer advection using a two layer QG flow (from the geophysical flows package).
 
 using .TracerAdvDiff_QG
 
