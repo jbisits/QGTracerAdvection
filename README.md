@@ -8,6 +8,42 @@ An initial condition for tracer concentration is set in all layers then either a
 
 The tracer advection in either a steady flow or a time dependent flow remains unchanged from the original version of the module `TraverAdvDiff`.
 
+## Using the module
+
+To run first clone the repository, e.g.,
+
+```
+git clone https://github.com/jbisits/QG_tracer_advection.git
+```
+
+Then while in the repository's local directory open Julia, activate, and instantiate the project
+
+```julia
+julia>]
+(@v1.5) pkg> activate .
+(QG_tracer_advection) pkg> instantiate
+```
+
+Then a backspace will bring you back to normal Julia's REPL:
+```julia
+julia>
+```
+
+Before running the examples or using the modules they must first be loaded into the local environment using 
+```julia
+julia> include("Modules/TracerAdvDiff_QG.jl")
+```
+and
+```julia
+julia> include("Modules/MeasureMixing.jl")
+```
+
+Alternatively, after you've instantiated the project and loaded the modules in, you can run the `test_TrAdvDiff_QG.jl` script straight from the terminal via
+
+```
+$ julia --project Examples/test_TrAdvDiff_QG.jl
+```
+
 ## Examples
 
 ### Tracer advection with QG flow 
@@ -37,37 +73,7 @@ julia> include("TracerAdvDiff_QG.jl")
 ```
 **Note this script can also be run using the `PassiveTracerFlows` package.**
 There are instructions in the script as to how to do this.
-## Using the module
 
-To run first clone the repository, e.g.,
-
-```
-git clone https://github.com/jbisits/QG_tracer_advection.git
-```
-
-Then while in the repository's local directory open Julia, activate, and instantiate the project
-
-```julia
-julia>]
-(@v1.5) pkg> activate .
-(QG_tracer_advection) pkg> instantiate
-```
-
-Then a backspace will bring you back to normal Julia's REPL:
-```julia
-julia>
-```
-
-You can now run the `test_TrAdvDiff_QG.jl` via
-```julia
-julia> include("test_TrAdvDiff_QG.jl")
-```
-
-Alternatively, after you've instantiated the project, you can run the `test_TrAdvDiff_QG.jl` script straight from the terminal via
-
-```
-$ julia --project test_TrAdvDiff_QG.jl
-```
 # References
 [1] Gregory L. Wagner & Navid C. Constantinou. (2018). FourierFlows/FourierFlows.jl. Zenodo. https://doi.org/10.5281/zenodo.1161724
 
