@@ -1,7 +1,5 @@
 #Test TracerAdvDiff_copy.jl using a two layer QG flow (from the geophysical flows package).
 
-include("TracerAdvDiff_QG.jl")
-
 using .TracerAdvDiff_QG
 
 using FourierFlows, Plots, Distributions
