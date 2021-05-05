@@ -100,6 +100,13 @@ to run the example.
 **Note this script can also be run using the `PassiveTracerFlows` package.**
 There are instructions in the script as to how to do this.
 
+### Measure mixing 
+This example is the same as the tracer advection with QG flow above but includes some diagnostics to measure how the tracer is mixed over time.
+It can be run using 
+```julia
+julia> include("Examples/QGflow_diags.jl")
+```
+
 # References
 [1] Gregory L. Wagner & Navid C. Constantinou. (2018). FourierFlows/FourierFlows.jl. Zenodo. https://doi.org/10.5281/zenodo.1161724
 
