@@ -87,30 +87,6 @@ for i in 1:n
     TracerAdvDiff_QG.QGset_c!(AD_probs[i], C₀)
 end
 
-IC_plots = Array{Plots.Plot{Plots.GRBackend}}(undef, 2, n)
-for i in 1:n
-    IC_plots[:, i] = [heatmap(x, y, v_AD[i].c[:, :, 1]',
-                        title = "Upper layer initial tracer concentration",
-                        xlabel = "x",
-                        ylabel = "y",
-                        color = :balance,
-                        aspecetratio = 1,
-                        colorbar = true,
-                        xlim = (-g_AD.Lx/2, g_AD.Lx/2),
-                        ylim = (-g_AD.Ly/2, g_AD.Ly/2)),
-                        heatmap(x, y, v_AD[i].c[:, :, 2]',
-                        title = "Lower layer initial tracer concentration",
-                        xlabel = "x",
-                        ylabel = "y",
-                        color = :balance,
-                        aspecetratio = 1,
-                        colorbar = true,
-                        xlim = (-g_AD.Lx/2, g_AD.Lx/2),
-                        ylim = (-g_AD.Ly/2, g_AD.Ly/2))]
-end
-
-plot(IC_plots[2, 1] , size = (900, 400)) #Need to fix up this plotting.
-
 #Define blank arrays to save plots.
 lower_layer_tracer_plots_AD = Plots.Plot{Plots.GRBackend}[]
 upper_layer_tracer_plots_AD = Plots.Plot{Plots.GRBackend}[]
