@@ -35,12 +35,6 @@ U = zeros(nlayers) # the imposed mean zonal flow in each layer
 U[1] = 1.0
 U[2] = 0.0
 
-#Setup QG_problem and make easier to access the parts of the struct
-QG_prob = MultiLayerQG.Problem(nlayers, dev; nx=nx, Lx=Lx, f₀=f0, g=g, H=H, ρ=ρ, U=U, dt=Δt, stepper=stepper, μ=μ, β=β)
-
-sol_QG, cl_QG, pr_QG, vs_QG = QG_prob.sol, QG_prob.clock, QG_prob.params, QG_prob.vars
-x_QG, y_QG = QG_prob.grid.x, QG_prob.grid.y
-
 #Set initial conditions.
 ϵ = 0.3;
 x, y = gridpoints(QG_prob.grid)
@@ -55,25 +49,26 @@ q_i[:, :, 2] = q_2_i
 qh_i = QG_prob.timestepper.filter .* rfft(q_i, (1, 2))         # only apply rfft in dims=1, 2
 q_i  = irfft(qh_i, QG_prob.grid.nx, (1, 2))                    # only apply irfft in dims=1, 2
 
-MultiLayerQG.set_q!(QG_prob, q_i)
-
-#Now, instead of one `TracerAdvDiff_QG.Problem`, initialise an array of `TracerAdvDiff_QG.Problem`(s).
-
+#=
+    Now, instead of one `TracerAdvDiff_QG.Problem`, initialise an array of `TracerAdvDiff_QG.Problem`(s). At the moment each AD_prob has a corresponding
+    QG_prob (mainly as a result of how I wrote the delay time function). There may be way to only use one flow but for now this is how I set it up.
+=#
 #Set diffusivity
 κ = 0.01
 
 #Set number of tracer problems, delay time of placing tracer into the flow, and blank arrays for shortcuts and clock time for QG whe tracer is dropped in
-n = 2
+n = 10
 AD_probs = Array{FourierFlows.Problem}(undef, n)
-delay_times = [0, 10]
+QG_probs = Array{FourierFlows.Problem}(undef, n)
+delay_times = range(0, 10, step = 1)
 sol_AD, cl_AD, v_AD, p_AD = Array{Any}(undef, n), Array{Any}(undef, n), Array{Any}(undef, n), Array{Any}(undef, n)
-QG_clock_times = Vector{Float64}(undef, n)
 
 for i in 1:n
-    #Set the tracer advection probelms with different delay times
-    AD_probs[i] = TracerAdvDiff_QG.Problem(;prob = QG_prob, delay_time = delay_times[i], nsubs = nsubs, kap = κ)
+    #Set the tracer advection probelms with different delay times and the corresponding QG problems.
+    QG_probs[i] = MultiLayerQG.Problem(nlayers, dev; nx=nx, Lx=Lx, f₀=f0, g=g, H=H, ρ=ρ, U=U, dt=Δt, stepper=stepper, μ=μ, β=β)
+    MultiLayerQG.set_q!(QG_probs[i], q_i)
+    AD_probs[i] = TracerAdvDiff_QG.Problem(;prob = QG_probs[i], delay_time = delay_times[i], nsubs = nsubs, kap = κ)
     sol_AD[i], cl_AD[i], v_AD[i], p_AD[i] = AD_probs[i].sol, AD_probs[i].clock, AD_probs[i].vars, AD_probs[i].params
-    QG_clock_times[i] = cl_QG.t
 end
 
 #The grid is the same for all so just define one grid (can change this if need be).
@@ -120,10 +115,8 @@ plot(IC_plots[2, 1] , size = (900, 400)) #Need to fix up this plotting.
 lower_layer_tracer_plots_AD = Plots.Plot{Plots.GRBackend}[]
 upper_layer_tracer_plots_AD = Plots.Plot{Plots.GRBackend}[]
 
-#Step the tracer advection problem forward and plot at the desired time step.
+#Step the tracer advection problems forward and plot at the desired time step.
 for i in 1:n
-    #Set clock to correct time for each Advection problem.
-    cl_QG.t = QG_clock_times[i]
     #Define frequency at which to save a plot.
     #plot_time_AD is when to get the first plot, plot_time_inc is at what interval subsequent plots are created.
     #Setting them the same gives plots at equal time increments.
@@ -176,7 +169,7 @@ for i in 1:n
         stepforward!(AD_probs[i], nsubs)
         TracerAdvDiff_QG.QGupdatevars!(AD_probs[i])
         #Updates the velocity field in advection problem to the velocity field in the MultiLayerQG.Problem at each timestep.
-        TracerAdvDiff_QG.vel_field_update!(AD_probs[i], QG_prob, nsubs)
+        TracerAdvDiff_QG.vel_field_update!(AD_probs[i], QG_probs[i], nsubs)
     end
 end
 
