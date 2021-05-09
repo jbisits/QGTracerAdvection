@@ -62,16 +62,18 @@ MultiLayerQG.set_q!(QG_prob, q_i)
 #Set diffusivity
 κ = 0.01
 
-#Set number of tracer problems, delay time of placing tracer into the flow and blank arrays for shortcuts
+#Set number of tracer problems, delay time of placing tracer into the flow, and blank arrays for shortcuts and clock time for QG whe tracer is dropped in
 n = 2
 AD_probs = Array{FourierFlows.Problem}(undef, n)
 delay_times = [0, 10]
 sol_AD, cl_AD, v_AD, p_AD = Array{Any}(undef, n), Array{Any}(undef, n), Array{Any}(undef, n), Array{Any}(undef, n)
+QG_clock_times = Vector{Float64}(undef, n)
 
 for i in 1:n
     #Set the tracer advection probelms with different delay times
     AD_probs[i] = TracerAdvDiff_QG.Problem(;prob = QG_prob, delay_time = delay_times[i], nsubs = nsubs, kap = κ)
     sol_AD[i], cl_AD[i], v_AD[i], p_AD[i] = AD_probs[i].sol, AD_probs[i].clock, AD_probs[i].vars, AD_probs[i].params
+    QG_clock_times[i] = cl_QG.t
 end
 
 #The grid is the same for all so just define one grid (can change this if need be).
@@ -114,61 +116,88 @@ end
 
 plot(IC_plots[2, 1] , size = (900, 400)) #Need to fix up this plotting.
 
+#Define blank arrays to save plots.
 lower_layer_tracer_plots_AD = Plots.Plot{Plots.GRBackend}[]
 upper_layer_tracer_plots_AD = Plots.Plot{Plots.GRBackend}[]
-#Define frequency at which to save a plot.
-#plot_time_AD is when to get the first plot, plot_time_inc is at what interval subsequent plots are created.
-#Setting them the same gives plots at equal time increments. (Might be a better work around)
-plot_time_AD, plot_time_inc = 0.2, 0.2
 
 #Step the tracer advection problem forward and plot at the desired time step.
-while cl_AD.step <= nsteps
-    if cl_AD.step == 0
-        tp_u = heatmap(x, y, v_AD.c[:, :, 1]',
-                aspectratio = 1,
-                c = :balance,
-                xlabel = "x",
-                ylabel = "y",
-                colorbar = true,
-                xlim = (-g_AD.Lx/2, g_AD.Lx/2),
-                ylim = (-g_AD.Ly/2, g_AD.Ly/2),
-                title = "C(x,y,t), t = "*string(round(cl_AD.t; digits = 2)));
-        push!(upper_layer_tracer_plots_AD, tp_u)
-        tp_l = heatmap(x, y, v_AD.c[:, :, 2]',
-                aspectratio = 1,
-                c = :balance,
-                xlabel = "x",
-                ylabel = "y",
-                colorbar = true,
-                xlim = (-g_AD.Lx/2, g_AD.Lx/2),
-                ylim = (-g_AD.Ly/2, g_AD.Ly/2),
-                title = "C(x,y,t), t = "*string(round(cl_AD.t; digits = 2)))
-        push!(lower_layer_tracer_plots_AD, tp_l)
-    elseif round(Int64, cl_AD.step) == round(Int64, plot_time_AD*nsteps)
-        tp_u = heatmap(x, y, v_AD.c[:, :, 1]',
-                aspectratio = 1,
-                c = :balance,
-                xlabel = "x",
-                ylabel = "y",
-                colorbar = true,
-                xlim = (-g_AD.Lx/2, g_AD.Lx/2),
-                ylim = (-g_AD.Ly/2, g_AD.Ly/2),
-                title = "C(x,y,t), t = "*string(round(cl_AD.t; digits = 2)))
-        push!(upper_layer_tracer_plots_AD, tp_u)
-        tp_l = heatmap(x, y, v_AD.c[:, :, 2]',
-                aspectratio = 1,
-                c = :balance,
-                xlabel = "x",
-                ylabel = "y",
-                colorbar = true,
-                xlim = (-g_AD.Lx/2, g_AD.Lx/2),
-                ylim = (-g_AD.Ly/2, g_AD.Ly/2),
-                title = "C(x,y,t), t = "*string(round(cl_AD.t; digits = 2)))
-        push!(lower_layer_tracer_plots_AD, tp_l)
-        global plot_time_AD += plot_time_inc
+for i in 1:n
+    #Set clock to correct time for each Advection problem.
+    cl_QG.t = QG_clock_times[i]
+    #Define frequency at which to save a plot.
+    #plot_time_AD is when to get the first plot, plot_time_inc is at what interval subsequent plots are created.
+    #Setting them the same gives plots at equal time increments.
+    plot_time_AD, plot_time_inc = 0.2, 0.2
+    while cl_AD[i].step <= nsteps
+        if cl_AD[i].step == 0
+            tp_u = heatmap(x, y, v_AD[i].c[:, :, 1]',
+                    aspectratio = 1,
+                    c = :balance,
+                    xlabel = "x",
+                    ylabel = "y",
+                    colorbar = true,
+                    xlim = (-g_AD.Lx/2, g_AD.Lx/2),
+                    ylim = (-g_AD.Ly/2, g_AD.Ly/2),
+                    title = "C(x,y,t), t = "*string(round(cl_AD[i].t; digits = 2)));
+            push!(upper_layer_tracer_plots_AD, tp_u)
+            tp_l = heatmap(x, y, v_AD[i].c[:, :, 2]',
+                    aspectratio = 1,
+                    c = :balance,
+                    xlabel = "x",
+                    ylabel = "y",
+                    colorbar = true,
+                    xlim = (-g_AD.Lx/2, g_AD.Lx/2),
+                    ylim = (-g_AD.Ly/2, g_AD.Ly/2),
+                    title = "C(x,y,t), t = "*string(round(cl_AD[i].t; digits = 2)))
+            push!(lower_layer_tracer_plots_AD, tp_l)
+        elseif round(Int64, cl_AD[i].step) == round(Int64, plot_time_AD*nsteps)
+            tp_u = heatmap(x, y, v_AD[i].c[:, :, 1]',
+                    aspectratio = 1,
+                    c = :balance,
+                    xlabel = "x",
+                    ylabel = "y",
+                    colorbar = true,
+                    xlim = (-g_AD.Lx/2, g_AD.Lx/2),
+                    ylim = (-g_AD.Ly/2, g_AD.Ly/2),
+                    title = "C(x,y,t), t = "*string(round(cl_AD[i].t; digits = 2)))
+            push!(upper_layer_tracer_plots_AD, tp_u)
+            tp_l = heatmap(x, y, v_AD[i].c[:, :, 2]',
+                    aspectratio = 1,
+                    c = :balance,
+                    xlabel = "x",
+                    ylabel = "y",
+                    colorbar = true,
+                    xlim = (-g_AD.Lx/2, g_AD.Lx/2),
+                    ylim = (-g_AD.Ly/2, g_AD.Ly/2),
+                    title = "C(x,y,t), t = "*string(round(cl_AD[i].t; digits = 2)))
+            push!(lower_layer_tracer_plots_AD, tp_l)
+            plot_time_AD += plot_time_inc
+        end
+        stepforward!(AD_probs[i], nsubs)
+        TracerAdvDiff_QG.QGupdatevars!(AD_probs[i])
+        #Updates the velocity field in advection problem to the velocity field in the MultiLayerQG.Problem at each timestep.
+        TracerAdvDiff_QG.vel_field_update!(AD_probs[i], QG_prob, nsubs)
     end
-    stepforward!(AD_prob, nsubs)
-    TracerAdvDiff_QG.QGupdatevars!(AD_prob)
-    #Updates the velocity field in advection problem to the velocity field in the MultiLayerQG.Problem at each timestep.
-    TracerAdvDiff_QG.vel_field_update!(AD_prob, QG_prob, nsubs)
 end
+
+plot_top = plot(upper_layer_tracer_plots_AD[1], upper_layer_tracer_plots_AD[2], 
+                upper_layer_tracer_plots_AD[3], upper_layer_tracer_plots_AD[4],
+                upper_layer_tracer_plots_AD[5], upper_layer_tracer_plots_AD[6])
+     
+#Display the tracer advection in the lower layer.
+plot_bottom = plot(lower_layer_tracer_plots_AD[1], lower_layer_tracer_plots_AD[2], 
+                   lower_layer_tracer_plots_AD[3], lower_layer_tracer_plots_AD[4],
+                   lower_layer_tracer_plots_AD[5], lower_layer_tracer_plots_AD[6])
+
+plot(plot_top, plot_bottom, layout=(2, 1), size=(1200, 1200))
+
+plot_top = plot(upper_layer_tracer_plots_AD[7], upper_layer_tracer_plots_AD[8], 
+                upper_layer_tracer_plots_AD[9], upper_layer_tracer_plots_AD[10],
+                upper_layer_tracer_plots_AD[11], upper_layer_tracer_plots_AD[12])
+     
+#Display the tracer advection in the lower layer.
+plot_bottom = plot(lower_layer_tracer_plots_AD[7], lower_layer_tracer_plots_AD[8], 
+                   lower_layer_tracer_plots_AD[9], lower_layer_tracer_plots_AD[10],
+                   lower_layer_tracer_plots_AD[11], lower_layer_tracer_plots_AD[12])
+
+plot(plot_top, plot_bottom, layout=(2, 1), size=(1200, 1200))
