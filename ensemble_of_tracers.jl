@@ -194,3 +194,5 @@ plot_bottom = plot(lower_layer_tracer_plots_AD[7], lower_layer_tracer_plots_AD[8
                    lower_layer_tracer_plots_AD[11], lower_layer_tracer_plots_AD[12])
 
 plot(plot_top, plot_bottom, layout=(2, 1), size=(1200, 1200))
+
+#There are more plots though at the moment only the first two problems' plots are displayed
