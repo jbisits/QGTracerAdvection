@@ -62,34 +62,24 @@ MultiLayerQG.set_q!(QG_prob, q_i)
 #Set diffusivity
 κ = 0.01
 
-#Set number of tracer problems
+#Set number of tracer problems, delay time of placing tracer into the flow and blank arrays for shortcuts
 n = 2
 AD_probs = Array{FourierFlows.Problem}(undef, n)
-
-for i in 1:n
-    if i == n
-        delay_time = 10
-    else
-        delay_time = 0
-    end
-    #Set the tracer advection probelm with different delay times (for example)
-    AD_probs[i] = TracerAdvDiff_QG.Problem(;prob = QG_prob, delay_time = delay_time, nsubs = nsubs, kap = κ)
-end
-
-#Create some shortcuts (The grid is the same in each case so should be able to just use one shortcut for that)
+delay_times = [0, 10]
 sol_AD, cl_AD, v_AD, p_AD = Array{Any}(undef, n), Array{Any}(undef, n), Array{Any}(undef, n), Array{Any}(undef, n)
+
 for i in 1:n
-    sol_AD[i] = AD_probs[i].sol
-    cl_AD[i] = AD_probs[i].clock
-    v_AD[i] = AD_probs[i].vars
-    p_AD[i] = AD_probs[i].params
+    #Set the tracer advection probelms with different delay times
+    AD_probs[i] = TracerAdvDiff_QG.Problem(;prob = QG_prob, delay_time = delay_times[i], nsubs = nsubs, kap = κ)
+    sol_AD[i], cl_AD[i], v_AD[i], p_AD[i] = AD_probs[i].sol, AD_probs[i].clock, AD_probs[i].vars, AD_probs[i].params
 end
 
+#The grid is the same for all so just define one grid (can change this if need be).
 g_AD = AD_probs[1].grid
 x_AD, y_AD = gridpoints(g_AD)
 x, y = g_AD.x, g_AD.y
 
-#Set Gaussian blob initial condition
+#Set Gaussian blob initial condition in all problems
 μIC = [0, 0]
 Σ = [1 0; 0 1]
 blob = MvNormal(μIC, Σ)
@@ -124,4 +114,61 @@ end
 
 plot(IC_plots[2, 1] , size = (900, 400)) #Need to fix up this plotting.
 
-#Then would use a similar idea for stepping the problem forwad. Will get to this tomorrow.
+lower_layer_tracer_plots_AD = Plots.Plot{Plots.GRBackend}[]
+upper_layer_tracer_plots_AD = Plots.Plot{Plots.GRBackend}[]
+#Define frequency at which to save a plot.
+#plot_time_AD is when to get the first plot, plot_time_inc is at what interval subsequent plots are created.
+#Setting them the same gives plots at equal time increments. (Might be a better work around)
+plot_time_AD, plot_time_inc = 0.2, 0.2
+
+#Step the tracer advection problem forward and plot at the desired time step.
+while cl_AD.step <= nsteps
+    if cl_AD.step == 0
+        tp_u = heatmap(x, y, v_AD.c[:, :, 1]',
+                aspectratio = 1,
+                c = :balance,
+                xlabel = "x",
+                ylabel = "y",
+                colorbar = true,
+                xlim = (-g_AD.Lx/2, g_AD.Lx/2),
+                ylim = (-g_AD.Ly/2, g_AD.Ly/2),
+                title = "C(x,y,t), t = "*string(round(cl_AD.t; digits = 2)));
+        push!(upper_layer_tracer_plots_AD, tp_u)
+        tp_l = heatmap(x, y, v_AD.c[:, :, 2]',
+                aspectratio = 1,
+                c = :balance,
+                xlabel = "x",
+                ylabel = "y",
+                colorbar = true,
+                xlim = (-g_AD.Lx/2, g_AD.Lx/2),
+                ylim = (-g_AD.Ly/2, g_AD.Ly/2),
+                title = "C(x,y,t), t = "*string(round(cl_AD.t; digits = 2)))
+        push!(lower_layer_tracer_plots_AD, tp_l)
+    elseif round(Int64, cl_AD.step) == round(Int64, plot_time_AD*nsteps)
+        tp_u = heatmap(x, y, v_AD.c[:, :, 1]',
+                aspectratio = 1,
+                c = :balance,
+                xlabel = "x",
+                ylabel = "y",
+                colorbar = true,
+                xlim = (-g_AD.Lx/2, g_AD.Lx/2),
+                ylim = (-g_AD.Ly/2, g_AD.Ly/2),
+                title = "C(x,y,t), t = "*string(round(cl_AD.t; digits = 2)))
+        push!(upper_layer_tracer_plots_AD, tp_u)
+        tp_l = heatmap(x, y, v_AD.c[:, :, 2]',
+                aspectratio = 1,
+                c = :balance,
+                xlabel = "x",
+                ylabel = "y",
+                colorbar = true,
+                xlim = (-g_AD.Lx/2, g_AD.Lx/2),
+                ylim = (-g_AD.Ly/2, g_AD.Ly/2),
+                title = "C(x,y,t), t = "*string(round(cl_AD.t; digits = 2)))
+        push!(lower_layer_tracer_plots_AD, tp_l)
+        global plot_time_AD += plot_time_inc
+    end
+    stepforward!(AD_prob, nsubs)
+    TracerAdvDiff_QG.QGupdatevars!(AD_prob)
+    #Updates the velocity field in advection problem to the velocity field in the MultiLayerQG.Problem at each timestep.
+    TracerAdvDiff_QG.vel_field_update!(AD_prob, QG_prob, nsubs)
+end
