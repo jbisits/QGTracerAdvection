@@ -9,6 +9,7 @@ module MeasureMixing
 
 export
     conc_var!
+    area_tracer_patch
 
 using Distributions, GeophysicalFlows
 
