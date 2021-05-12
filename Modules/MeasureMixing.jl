@@ -42,7 +42,7 @@ function area_tracer_patch(AD_prob, QG_prob, Kₛ)
     MultiLayerQG.invtransform!(ux, uhx, params)
     MultiLayerQG.invtransform!(vy, vhy, params)
 
-    γ = sqrt(ux.^2 + vy.^2) #Presumably want this as a single number so take the mean?
+    γ = @. sqrt(ux^2 + vy^2) #Presumably want this as a single number so take the mean?
 
     Aₜ = @. π * (Kₛ / γ) * exp(α * γ * (t - 0.25 / γ))
 
