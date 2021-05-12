@@ -42,7 +42,7 @@ x, y = gridpoints(QG_prob.grid)
 q_1_i = @.  ϵ * cos(4π / Lx * x_QG) * exp(-(x^2 + y^2) / 8)
 q_2_i = @. -ϵ * cos(4π / Lx * x_QG) * exp(-(x^2 + y^2) / 8)
 
-q_i = zeros(nx,ny,2)
+q_i = zeros(nx, ny, 2)
 
 q_i[:, :, 1] = q_1_i
 q_i[:, :, 2] = q_2_i
