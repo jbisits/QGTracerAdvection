@@ -131,9 +131,9 @@ kwargs = (
            ylim = (-g_AD.Ly/2, g_AD.Ly/2)
 )
 
-#Define array to store values for the variance in the grid
-conc_var = Array{Float64}(undef, nsteps + 2, nlayers)
-MeasureMixing.conc_var!(conc_var, AD_prob)
+#Define array to store values for the variance of tracer concentration.
+concentration_variance = Array{Float64}(undef, nsteps + 2, nlayers)
+MeasureMixing.conc_var!(concentration_variance, AD_prob)
 
 #Step the tracer advection problem forward and plot at the desired time step.
 while cl_AD.step <= nsteps
@@ -183,7 +183,7 @@ while cl_AD.step <= nsteps
     end
     stepforward!(AD_prob, nsubs)
     TracerAdvDiff_QG.QGupdatevars!(AD_prob)
-    MeasureMixing.conc_var!(conc_var, AD_prob)
+    MeasureMixing.conc_var!(concentration_variance, AD_prob)
     #Updates the velocity field in advection problem to the velocity field in the MultiLayerQG.Problem at each timestep.
     TracerAdvDiff_QG.vel_field_update!(AD_prob, QG_prob, nsubs)
 end
@@ -210,6 +210,6 @@ mp4(anim, "tracer_ad.mp4", fps = 18)
 
 #Plot of the variance of the concentration on the grid as computed at each time step.
 t = range(0, (nsteps + 1)*Δt, step = Δt)
-conc_var_top = plot(t, conc_var[:, 1], xlabel = "t", title = "Top layer variance of concentration", label = false)
-conc_var_bottom = plot(t, conc_var[:, 2], xlabel = "t", title = "Bottom layer variance of concentration", label = false)
-plot(conc_var_top, conc_var_bottom, size=(900, 400))
+concentration_variance_top = plot(t, concentration_variance[:, 1], xlabel = "t", title = "Top layer variance of concentration", label = false)
+concentration_variance_bottom = plot(t, concentration_variance[:, 2], xlabel = "t", title = "Bottom layer variance of concentration", label = false)
+plot(concentration_variance_top, concentration_variance_bottom, size=(900, 400))

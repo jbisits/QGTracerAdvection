@@ -3,7 +3,6 @@
     These are:
      - variance of concentration over the grid
      - evolution of the second moment of the tracer patch.
-    
 =#
 module MeasureMixing
 
@@ -13,13 +12,16 @@ export
 
 using Distributions, GeophysicalFlows
 
-#Calculate the variance of the tracer concentration.
-function conc_var!(conc_var, prob) 
+"""
+    function conc_var!( , prob)
+Calculate the variance of the tracer concentration for advection-diffusion problem `prob`.
+"""
+function conc_var!(concentration_variance, prob) 
 
     nlayers = prob.params.nlayers
     step = prob.clock.step + 1
     for i in 1:nlayers
-        @. conc_var[step, i] = var(prob.vars.c[:, :, i])
+        @. concentration_variance[step, i] = var(prob.vars.c[:, :, i])
     end
 
 end
