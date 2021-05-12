@@ -25,7 +25,7 @@ import GeophysicalFlows.MultiLayerQG
 
 """
     Problem(; parameters...)
-Construct a constant diffusivity problem with steady or time-varying flow.
+Construct a constant diffusivity problem with steady, time-varying or quasi-geostrophic flow.
 """
 noflow(args...) = 0.0 # used as defaults for u, v functions in Problem()
 
@@ -40,8 +40,8 @@ function Problem(;
     ny = nx,
     Ly = Lx,
   grid = TwoDGrid(nx, Lx, ny, Ly),
-   kap = 0.1,
-   eta = kap,
+   κ = 0.1,
+   eta = κ,
      u = noflow,
      v = noflow,
     dt = 0.01,
@@ -59,15 +59,15 @@ function Problem(;
     Ly = Lx
     grid = prob.grid
     dt = prob.clock.dt
-    stepper = "FilteredRK4" #I had to hard code this
+    stepper = "FilteredRK4"
   end
 ###################################################################################################
 
-  if steadyflow;                   pr = ConstDiffSteadyFlowParams(eta, kap, u, v, grid)
+  if steadyflow;                   pr = ConstDiffSteadyFlowParams(eta, κ, u, v, grid)
   #################################################################################################
-  elseif isnothing(prob) == false; pr = set_QGFlowParams(eta, kap, prob, delay_time, nsubs)
+  elseif isnothing(prob) == false; pr = set_QGFlowParams(eta, κ, prob, delay_time, nsubs)
   #################################################################################################
-  else;                            pr = ConstDiffParams(eta, kap, u, v)
+  else;                            pr = ConstDiffParams(eta, κ, u, v)
   end
 
   vs = Vars(grid, nlayers)
@@ -89,58 +89,63 @@ abstract type AbstractQGFlowParams <: AbstractParams end
 #################################################################################################
 
 """
-    ConstDiffParams(eta, kap, kaph, nkaph, u, v)
-    ConstDiffParams(eta, kap, u, v)
+    ConstDiffParams(eta, κ, κh, nκh, u, v)
+    ConstDiffParams(eta, κ, u, v)
 Returns the params for constant diffusivity problem with time-varying flow.
 """
 struct ConstDiffParams{T} <: AbstractConstDiffParams
   eta::T                 # Constant isotropic horizontal diffusivity
-  kap::T                 # Constant isotropic vertical diffusivity
-  kaph::T                # Constant isotropic hyperdiffusivity
-  nkaph::Int             # Constant isotropic hyperdiffusivity order
+  κ::T                 # Constant isotropic vertical diffusivity
+  κh::T                # Constant isotropic hyperdiffusivity
+  nκh::Int             # Constant isotropic hyperdiffusivity order
   u::Function            # Advecting x-velocity
   v::Function            # Advecting y-velocity
 end
 
-ConstDiffParams(eta, kap, u, v) = ConstDiffParams(eta, kap, 0eta, 0, u, v)
+ConstDiffParams(eta, κ, u, v) = ConstDiffParams(eta, κ, 0eta, 0, u, v)
 
 """
-    ConstDiffSteadyFlowParams(eta, kap, kaph, nkaph, u, v, g)
-    ConstDiffSteadyFlowParams(eta, kap, u, v, g)
+    ConstDiffSteadyFlowParams(eta, κ, κh, nκh, u, v, g)
+    ConstDiffSteadyFlowParams(eta, κ, u, v, g)
 Returns the params for constant diffusivity problem with time-steady flow.
 """
 struct ConstDiffSteadyFlowParams{T,A} <: AbstractSteadyFlowParams
   eta::T       # Constant horizontal diffusivity
-  kap::T       # Constant vertical diffusivity
-  kaph::T      # Constant isotropic hyperdiffusivity
-  nkaph::Int   # Constant isotropic hyperdiffusivity order
+  κ::T       # Constant vertical diffusivity
+  κh::T      # Constant isotropic hyperdiffusivity
+  nκh::Int   # Constant isotropic hyperdiffusivity order
   u::A         # Advecting x-velocity
   v::A         # Advecting y-velocity
 end
 
-function ConstDiffSteadyFlowParams(eta, kap, kaph, nkaph, u::Function, v::Function, g)
+function ConstDiffSteadyFlowParams(eta, κ, κh, nκh, u::Function, v::Function, g)
   x, y = gridpoints(g)
   ugrid = u.(x, y)
   vgrid = v.(x, y)
   
-  return ConstDiffSteadyFlowParams(eta, kap, kaph, nkaph, ugrid, vgrid)
+  return ConstDiffSteadyFlowParams(eta, κ, κh, nκh, ugrid, vgrid)
 end
 
-ConstDiffSteadyFlowParams(eta, kap, u, v, g) = ConstDiffSteadyFlowParams(eta, kap, 0eta, 0, u, v, g)
+ConstDiffSteadyFlowParams(eta, κ, u, v, g) = ConstDiffSteadyFlowParams(eta, κ, 0eta, 0, u, v, g)
 
 #################################################################################################
-mutable struct QGFlowParams{T,A,Trfft} <: AbstractQGFlowParams
+"""
+    QGFlowParams(eta, κ, κh, nκh, u, v, g)
+    QGFlowParams(eta, κ, u, v, g)
+Returns the params for constant diffusivity problem with quasi-geostrophic flow.
+"""
+struct QGFlowParams{T,A,Trfft} <: AbstractQGFlowParams
   nlayers::Int64    # Number of layers in the QG_flow problem
   eta::T            # Constant horizontal diffusivity
-  kap::T            # Constant vertical diffusivity
-  kaph::T           # Constant isotropic hyperdiffusivity
-  nkaph::Int        # Constant isotropic hyperdiffusivity order
+  κ::T            # Constant vertical diffusivity
+  κh::T           # Constant isotropic hyperdiffusivity
+  nκh::Int        # Constant isotropic hyperdiffusivity order
   u::A              # Advecting x-velocity. These will be updated at each step of the problem.
   v::A              # Advecting y-velocity
   rfftplan :: Trfft # rfft plan for MultiLayerQG
 end
 
-function set_QGFlowParams(eta, kap, prob, delay_time, nsubs)
+function set_QGFlowParams(eta, κ, prob, delay_time, nsubs)
   if isequal(delay_time, 0) == false
     flow_till_delay_time!(prob, delay_time, nsubs)
   end
@@ -149,7 +154,7 @@ function set_QGFlowParams(eta, kap, prob, delay_time, nsubs)
   nlayers = prob.params.nlayers
   rfftplan = prob.params.rfftplan
   
-  return QGFlowParams(nlayers, eta, kap, 0eta, 0, uvel, vvel, rfftplan) 
+  return QGFlowParams(nlayers, eta, κ, 0eta, 0, uvel, vvel, rfftplan) 
 end
 #################################################################################################
 
@@ -161,29 +166,29 @@ end
     Equation(p, g)
 Returns the equation for constant diffusivity problem with params p and grid g.
 """
-function Equation(p::ConstDiffParams, g::AbstractGrid{T}) where T
-  L = zero(g.Krsq)
-  @. L = -p.eta * g.kr^2 - p.kap * g.l^2 - p.kaph * g.Krsq^p.nkaph
+function Equation(p::ConstDiffParams, grid)
+  L = zero(grid.Krsq)
+  @. L = -p.eta * grid.kr^2 - p.κ * grid.l^2 - p.κh * grid.Krsq^p.nκh
   
-  return FourierFlows.Equation(L, calcN!, g)
+  return FourierFlows.Equation(L, calcN!, grid)
 end
 
-function Equation(p::ConstDiffSteadyFlowParams, g::AbstractGrid{T}) where T
-  L = zero(g.Krsq)
-  @. L = -p.eta * g.kr^2 - p.kap * g.l^2 - p.kaph * g.Krsq^p.nkaph
+function Equation(p::ConstDiffSteadyFlowParams, grid)
+  L = zero(grid.Krsq)
+  @. L = -p.eta * grid.kr^2 - p.κ * grid.l^2 - p.κh * grid.Krsq^p.nκh
   
-  return FourierFlows.Equation(L, calcN_steadyflow!, g)
+  return FourierFlows.Equation(L, calcN_steadyflow!, grid)
 end
 #################################################################################################
-function Equation(p::QGFlowParams, g::AbstractGrid{T}) where T
+function Equation(p::QGFlowParams, grid)
   nlayers = p.nlayers
   
-  L = zeros(g.nkr, g.nl, nlayers)
+  L = zeros(grid.nkr, grid.nl, nlayers)
   for n in 1:nlayers
-    @. L[:, :, n] = -p.eta * g.kr^2 - p.kap * g.l^2 - p.kaph * g.Krsq^p.nkaph
+    @. L[:, :, n] = -p.eta * grid.kr^2 - p.κ * grid.l^2 - p.κh * grid.Krsq^p.nκh
   end
   
-  return FourierFlows.Equation(L, calcN_QGflow!, g)
+  return FourierFlows.Equation(L, calcN_QGflow!, grid)
 end
 #################################################################################################
 
@@ -341,6 +346,10 @@ function set_c!(prob, c::Function)
 end
 
 #################################################################################################
+"""
+  function QGset_c!(prob, c)
+Sets the initial condition in the QG tracer advection `prob` to be the array `c`
+"""
 function QGset_c!(prob, c)
   sol, v, g, nlayers = prob.sol, prob.vars, prob.grid, prob.params.nlayers
   
@@ -358,6 +367,10 @@ end
 #################################################################################################
 
 #################################################################################################
+"""
+  function vel_field_update!(AD_prob, QG_prob, nsubs)
+Updates the velocity field of the advection problem `AD_prob` with the velcoty field from the `QG_prob`.
+"""
 function vel_field_update!(AD_prob, QG_prob, nsubs)
   MultiLayerQG.stepforward!(QG_prob, nsubs)
   MultiLayerQG.updatevars!(QG_prob)
@@ -368,6 +381,11 @@ end
 #################################################################################################
 
 #################################################################################################
+"""
+  function
+Flows the QG problem (`QG_prob`) forward until `delay_time` so that the tracer can be dropped into 
+the QG flow at a time specified by the user.
+"""
 function flow_till_delay_time!(QG_prob, delay_time, nsubs)
 
   while QG_prob.clock.t < delay_time

@@ -2,9 +2,7 @@
 
 using .TracerAdvDiff_QG
 
-using FourierFlows, Plots, Distributions
-using FFTW: rfft, irfft
-import GeophysicalFlows.MultiLayerQG
+using GeophysicalFlows.MultiLayerQG, Plots, Distributions
 
 #Set up the MultiLayerQG.Problem to test with the modified module.
 
@@ -67,7 +65,7 @@ for i in 1:n
     #Set the tracer advection probelms with different delay times and the corresponding QG problems.
     QG_probs[i] = MultiLayerQG.Problem(nlayers, dev; nx=nx, Lx=Lx, f₀=f0, g=g, H=H, ρ=ρ, U=U, dt=Δt, stepper=stepper, μ=μ, β=β)
     MultiLayerQG.set_q!(QG_probs[i], q_i)
-    AD_probs[i] = TracerAdvDiff_QG.Problem(;prob = QG_probs[i], delay_time = delay_times[i], nsubs = nsubs, kap = κ)
+    AD_probs[i] = TracerAdvDiff_QG.Problem(;prob = QG_probs[i], delay_time = delay_times[i], nsubs = nsubs, κ = κ)
     sol_AD[i], cl_AD[i], v_AD[i], p_AD[i] = AD_probs[i].sol, AD_probs[i].clock, AD_probs[i].vars, AD_probs[i].params
 end
 

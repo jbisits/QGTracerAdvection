@@ -26,7 +26,7 @@ nx = 64
 uvel(x, y) = -sin(x)*cos(y) + 0.5*cos(x)*sin(y)
 vvel(x, y) =  cos(x)*sin(y) - 0.5*sin(y)*cos(x)
 
-prob = TracerAdvDiff_QG.Problem(; steadyflow=true, nx=nx, Lx=Lx, kap=κ, u=uvel, v=vvel, dt=Δt, stepper=stepper)
+prob = TracerAdvDiff_QG.Problem(; steadyflow=true, nx=nx, Lx=Lx, κ=κ, u=uvel, v=vvel, dt=Δt, stepper=stepper)
 sol, cl, v, p, g = prob.sol, prob.clock, prob.vars, prob.params, prob.grid
 x_grid, y_grid = gridpoints(g)
 x, y = g.x, g.y
@@ -41,7 +41,7 @@ TracerAdvDiff_QG.set_c!(prob, C₀)
 
 #=
 If using PassiveTracerFlows use the following problem set up.
-prob = TracerAdvectionDiffusion.Problem(; steadyflow=true, nx=nx, Lx=Lx, kap=κ, u=uvel, v=vvel, dt=Δt, stepper=stepper);
+prob = TracerAdvectionDiffusion.Problem(; steadyflow=true, nx=nx, Lx=Lx, κ=κ, u=uvel, v=vvel, dt=Δt, stepper=stepper);
 sol, cl, v, p, g = prob.sol, prob.clock, prob.vars, prob.params, prob.grid;
 TracerAdvectionDiffusion.set_c!(prob,C₀)
 =#
@@ -56,16 +56,22 @@ while cl.step <= nsteps
             c = :balance,
             xlabel = "x",
             ylabel = "y",
+            colorbar = true,
+            xlim = (-g_AD.Lx/2, g_AD.Lx/2),
+            ylim = (-g_AD.Ly/2, g_AD.Ly/2),
             title = "C(x,y,t), t = "*string(round(cl.t; digits = 2)))
-        push!(tracer_plots,tp);
+        push!(tracer_plots, tp);
     elseif round(Int64, cl.step) == round(Int64, plot_time*nsteps)
         tp = heatmap(x, y, v.c',
             aspectratio = 1,
             c = :balance,
             xlabel = "x",
             ylabel = "y",
+            colorbar = true,
+            xlim = (-g_AD.Lx/2, g_AD.Lx/2),
+            ylim = (-g_AD.Ly/2, g_AD.Ly/2),
             title = "C(x,y,t), t = "*string(round(cl.t; digits = 2)))
-        push!(tracer_plots,tp)
+        push!(tracer_plots, tp)
         global plot_time = 0.2 + plot_time
     end
     stepforward!(prob, nsubs);
@@ -73,4 +79,5 @@ while cl.step <= nsteps
     #If using PassiveTracerFlows comment out above line and use line below
     #TracerAdvectionDiffusion.updatevars!(prob)
 end
-plot(tracer_plots[1],tracer_plots[2],tracer_plots[3],tracer_plots[4],tracer_plots[5],tracer_plots[6])
+plot(tracer_plots[1], tracer_plots[2], tracer_plots[3], 
+    tracer_plots[4], tracer_plots[5], tracer_plots[6], size=(1200, 1200))
