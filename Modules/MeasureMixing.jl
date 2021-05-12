@@ -18,11 +18,9 @@ function conc_var!(conc_var, prob)
 
     nlayers = prob.params.nlayers
     step = prob.clock.step + 1
-    temp = zeros(nlayers)
     for i in 1:nlayers
-        temp[i] = var(prob.vars.c[:, :, i])
+        @. conc_var[step, i] = var(prob.vars.c[:, :, i])
     end
-    @. conc_var[step, :] = temp
 
 end
 
