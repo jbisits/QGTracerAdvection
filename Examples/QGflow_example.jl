@@ -67,16 +67,16 @@ x, y = g_AD.x, g_AD.y
 #Set the (same) initial condition in both layers.
 
 #A Gaussian blob centred at μIC 
-
+#=
 μIC = [0, 0]
 Σ = [1 0; 0 1]
 blob = MvNormal(μIC, Σ)
 blob_IC(x, y) = pdf(blob, [x, y])
 C₀ = @. blob_IC(x_AD, y_AD)
-
+=#
 
 #A Gaussian strip around centred at μIC.
-#=
+
 μIC = 0
 σ² = 0.5
 strip = Normal(μIC, σ²)
@@ -85,7 +85,7 @@ C₀ = Array{Float64}(undef, g_AD.nx, g_AD.ny)
 for i in 1:g_AD.nx
     C₀[i, :] = strip_IC(y_AD[i, :])
 end
-=#
+
 #If using strip_IC use C₀' for a vertical strip
 TracerAdvDiff_QG.QGset_c!(AD_prob, C₀)
 
