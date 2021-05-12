@@ -37,12 +37,12 @@ function area_tracer_patch(AD_prob, QG_prob, Kₛ)
 
     # ux = ∂u/∂x and vy = ∂v/∂y; they are computed here in Fourier space and then transformed back to physical space
     uh, vh = QG_prob.vars.uh, QG_prob.vars.vh
-    uhx = im * QG_prob.grid.kr * uh
-    vhy = im * QG_prob.grid.l * vh
+    uxh = @. im * QG_prob.grid.kr * uh
+    vyh = @. im * QG_prob.grid.l * vh
 
     ux, vy = QG_prob.vars.u, QG_prob.vars.v #Use these as dummy variables
-    MultiLayerQG.invtransform!(ux, uhx, params)
-    MultiLayerQG.invtransform!(vy, vhy, params)
+    MultiLayerQG.invtransform!(ux, uxh, params)
+    MultiLayerQG.invtransform!(vy, vyh, params)
 
     γ = sqrt(ux.^2 + vy.^2) #Presumably want this as a single number so take the mean?
 
