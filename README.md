@@ -63,7 +63,7 @@ julia> include("Modules/MeasureMixing.jl")
 ### Tracer advection with QG flow 
 An example of how the module advects a passive tracer in a QG flow is given in the script `QGflow_example.jl`. 
 Here the `MultiLayerQG.Problem` from the [documentation](https://fourierflows.github.io/GeophysicalFlowsDocumentation/stable/generated/multilayerqg_2layer/) is used as the flow to advect the tracer.
-There are two different initial conditions in the script: a Gaussian "blob" or a Guassian "strip".
+There are two different initial conditions in the script: a Gaussian "blob" or a Gaussian "strip".
 Both can be moved to different locations on the grid by altering the mean and the concentration about the mean is changed by altering the variance.
 The same initial condition is set in both layers then the problem is stepped forward and the tracer is advected.
 The output is then a series of plots showing the tracer advection.
