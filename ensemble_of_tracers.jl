@@ -36,7 +36,7 @@ U[1] = 1.0
 U[2] = 0.0
 
 #Set initial conditions.
-ϵ = 0.3;
+ϵ = 0.3
 x, y = gridpoints(QG_prob.grid)
 
 q_1_i = @.  ϵ * cos(4π / Lx * x_QG) * exp(-(x^2 + y^2) / 8)
