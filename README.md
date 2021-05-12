@@ -8,36 +8,13 @@ An initial condition for tracer concentration is set in all layers then either a
 
 The tracer advection in either a steady flow or a time dependent flow remains unchanged from the original version of the module `TraverAdvDiff`.
 
-## Examples
+The module `MeasureMixing.jl` has two diagnostics to look at how the tracer is being mixed by the flow.
+These are:
+* variance in concentration over the grid
+* evolution of the second moment of the tracer patch (work in progress).
 
-### Tracer advection with QG flow 
-An example of how the module advects a passive tracer in a QG flow is given in the script `test_TracerAdvDiff.jl`. 
-Here the `MultiLayerQG.Problem` from the [documentation](https://fourierflows.github.io/GeophysicalFlowsDocumentation/stable/generated/multilayerqg_2layer/) is used as the flow to advect the tracer.
-There are two different initial conditions in the script: a Gaussian "blob" or a Guassian "strip".
-Both can be moved to different locations on the grid by altering the mean and the concentration about the mean is changed by altering the variance.
-The same initial condition is set in both layers then the problem is stepped forward and the tracer is advected.
-The output is then a series of plots showing the tracer advection.
 
-### Tracer advection with a steady flow
-An example of how the module advects a passive tracer in a steady flow is given in the script `steadyflow_example.jl`.
-In this case only one `Problem` is initialised but the velocity fields `u` and `v` must be provided as functions of `x` and `y`.
-To run this example the `TracerAdvDiff_QG` module must be first loaded into the local environment using
-```julia
-julia> include("TracerAdvDiff_QG.jl")
-```
-**Note this script can also be run using the `PassiveTracerFlows` package.**
-There are instructions in the script as to how to do this.
-
-### Tracer advection with a time dependent flow
-An example of how the module advects a passive tracer in a time dependent flow is given in the script `timedep_example.jl`.
-In this case only one `Problem` is initialised but the velocity fields `u` and `v` must be provided as functions of `x`, `y` and `t`.
-To run this example the `TracerAdvDiff_QG` module must be first loaded into the local environment using
-```julia
-julia> include("TracerAdvDiff_QG.jl")
-```
-**Note this script can also be run using the `PassiveTracerFlows` package.**
-There are instructions in the script as to how to do this.
-## Using the module
+## Using the modules
 
 To run first clone the repository, e.g.,
 
@@ -58,16 +35,78 @@ Then a backspace will bring you back to normal Julia's REPL:
 julia>
 ```
 
-You can now run the `test_TrAdvDiff_QG.jl` via
+Before running the examples or using the modules they must first be loaded into the local environment using 
 ```julia
-julia> include("test_TrAdvDiff_QG.jl")
+julia> include("Modules/TracerAdvDiff_QG.jl")
+```
+and
+```julia
+julia> include("Modules/MeasureMixing.jl")
 ```
 
-Alternatively, after you've instantiated the project, you can run the `test_TrAdvDiff_QG.jl` script straight from the terminal via
+Alternatively, after you've instantiated the project and loaded the modules in, you can run the `QGflow_example.jl` script straight from the terminal via
 
 ```
-$ julia --project test_TrAdvDiff_QG.jl
+$ julia --project Examples/QGflow_example.jl
 ```
+
+## Examples
+
+To run the examples the modules must first be loaded into the local envirnoment using the commands above
+```julia
+julia> include("Modules/TracerAdvDiff_QG.jl")
+```
+and
+```julia
+julia> include("Modules/MeasureMixing.jl")
+```
+### Tracer advection with QG flow 
+An example of how the module advects a passive tracer in a QG flow is given in the script `QGflow_example.jl`. 
+Here the `MultiLayerQG.Problem` from the [documentation](https://fourierflows.github.io/GeophysicalFlowsDocumentation/stable/generated/multilayerqg_2layer/) is used as the flow to advect the tracer.
+There are two different initial conditions in the script: a Gaussian "blob" or a Guassian "strip".
+Both can be moved to different locations on the grid by altering the mean and the concentration about the mean is changed by altering the variance.
+The same initial condition is set in both layers then the problem is stepped forward and the tracer is advected.
+The output is then a series of plots showing the tracer advection.
+
+After the modules have been loaded into the local environment use the command
+```julia
+julia> include("Examples/QGflow_example.jl")
+```
+to run the example.
+
+### Tracer advection with a steady flow
+An example of how the module advects a passive tracer in a steady flow is given in the script `steadyflow_example.jl`.
+In this case only one `Problem` is initialised but the velocity fields `u` and `v` must be provided as functions of `x` and `y`.
+
+After the modules have been loaded into the local environment use the command
+```julia
+julia> include("Examples/steadyflow_example.jl")
+```
+to run the example.
+
+**Note this script can also be run using the `PassiveTracerFlows` package.**
+There are instructions in the script as to how to do this.
+
+### Tracer advection with a time dependent flow
+An example of how the module advects a passive tracer in a time dependent flow is given in the script `timedep_example.jl`.
+In this case only one `Problem` is initialised but the velocity fields `u` and `v` must be provided as functions of `x`, `y` and `t`.
+
+After the modules have been loaded into the local environment use the command
+```julia
+julia> include("Examples/timedep_example.jl")
+```
+to run the example.
+
+**Note this script can also be run using the `PassiveTracerFlows` package.**
+There are instructions in the script as to how to do this.
+
+### Measure mixing 
+This example is the same as the tracer advection with QG flow above but includes some diagnostics to measure how the tracer is mixed over time.
+It can be run using 
+```julia
+julia> include("Examples/QGflow_diags.jl")
+```
+
 # References
 [1] Gregory L. Wagner & Navid C. Constantinou. (2018). FourierFlows/FourierFlows.jl. Zenodo. https://doi.org/10.5281/zenodo.1161724
 

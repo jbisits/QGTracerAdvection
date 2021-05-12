@@ -1,6 +1,7 @@
-#Passive tracer advection using a two layer QG flow (from the geophysical flows package).
+#Test MeasureMixing.jl using a the QGflow_example.jl
 
 using .TracerAdvDiff_QG
+using .MeasureMixing
 
 using GeophysicalFlows.MultiLayerQG, Plots, Distributions
 
@@ -16,7 +17,7 @@ ny = nx
 stepper = "FilteredRK4";  # timestepper
 Δt = 0.01                 # timestep
 nsubs  = 1                # number of time-steps for plotting (nsteps must be multiple of nsubs)
-nsteps = 2000nsubs        # total number of time-steps
+nsteps = 3000nsubs        # total number of time-steps
 
 
 #Physical parameters for a two layer QG_problem
@@ -89,26 +90,26 @@ end
 #If using strip_IC use C₀' for a vertical strip
 TracerAdvDiff_QG.QGset_c!(AD_prob, C₀)
 
-#Plot of initial condition in the upper layer.
+#Plot of initial condition in the both layers.
 IC_upper = heatmap(x, y, v_AD.c[:, :, 1]',
-            title = "Upper layer initial tracer concentration",
-            xlabel = "x",
-            ylabel = "y",
-            color = :balance,
-            aspecetratio = 1,
-            colorbar = true,
-            xlim = (-g_AD.Lx/2, g_AD.Lx/2),
-            ylim = (-g_AD.Ly/2, g_AD.Ly/2))
+                title = "Initial tracer concentration - upper layer",
+                xlabel = "x",
+                ylabel = "y",
+                color = :balance,
+                aspecetratio = 1,
+                colorbar = true,
+                xlim = (-g_AD.Lx/2, g_AD.Lx/2),
+                ylim = (-g_AD.Ly/2, g_AD.Ly/2))
 IC_lower = heatmap(x, y, v_AD.c[:, :, 2]',
-            title = "Lower layer initial tracer concentration",
-            xlabel = "x",
-            ylabel = "y",
-            color = :balance,
-            aspecetratio = 1,
-            colorbar = true,
-            xlim = (-g_AD.Lx/2, g_AD.Lx/2),
-            ylim = (-g_AD.Ly/2, g_AD.Ly/2))
-plot(IC_upper, IC_lower, size = (900, 400))
+                title = "Initial tracer concentration - lower layer",
+                xlabel = "x",
+                ylabel = "y",
+                color = :balance,
+                aspecetratio = 1,
+                colorbar = true,
+                xlim = (-g_AD.Lx/2, g_AD.Lx/2),
+                ylim = (-g_AD.Ly/2, g_AD.Ly/2))
+plot(IC_upper, IC_lower,  size=(900, 400))
 
 #Define blank arrays in which to store the plots of tracer diffusion in each layer.
 lower_layer_tracer_plots_AD = Plots.Plot{Plots.GRBackend}[]
@@ -128,54 +129,59 @@ kwargs = (
            ylim = (-g_AD.Ly/2, g_AD.Ly/2)
 )
 
+#Define array to store values for the variance of tracer concentration.
+concentration_variance = Array{Float64}(undef, nsteps + 2, nlayers)
+MeasureMixing.conc_var!(concentration_variance, AD_prob)
+
 #Step the tracer advection problem forward and plot at the desired time step.
 while cl_AD.step <= nsteps
     if cl_AD.step == 0
         tp_u = heatmap(x, y, v_AD.c[:, :, 1]',
-                aspectratio = 1,
-                c = :balance,
-                xlabel = "x",
-                ylabel = "y",
-                colorbar = true,
-                xlim = (-g_AD.Lx/2, g_AD.Lx/2),
-                ylim = (-g_AD.Ly/2, g_AD.Ly/2),
-                title = "C(x,y,t), t = "*string(round(cl_AD.t; digits = 2)));
+                    aspectratio = 1,
+                    c = :balance,
+                    xlabel = "x",
+                    ylabel = "y",
+                    colorbar = true,
+                    xlim = (-g_AD.Lx/2, g_AD.Lx/2),
+                    ylim = (-g_AD.Ly/2, g_AD.Ly/2),
+                    title = "C(x,y,t), t = "*string(round(cl_AD.t; digits = 2)));
         push!(upper_layer_tracer_plots_AD, tp_u)
         tp_l = heatmap(x, y, v_AD.c[:, :, 2]',
-                aspectratio = 1,
-                c = :balance,
-                xlabel = "x",
-                ylabel = "y",
-                colorbar = true,
-                xlim = (-g_AD.Lx/2, g_AD.Lx/2),
-                ylim = (-g_AD.Ly/2, g_AD.Ly/2),
-                title = "C(x,y,t), t = "*string(round(cl_AD.t; digits = 2)))
+                    aspectratio = 1,
+                    c = :balance,
+                    xlabel = "x",
+                    ylabel = "y",
+                    colorbar = true,
+                    xlim = (-g_AD.Lx/2, g_AD.Lx/2),
+                    ylim = (-g_AD.Ly/2, g_AD.Ly/2),
+                    title = "C(x,y,t), t = "*string(round(cl_AD.t; digits = 2)))
         push!(lower_layer_tracer_plots_AD, tp_l)
     elseif round(Int64, cl_AD.step) == round(Int64, plot_time_AD*nsteps)
         tp_u = heatmap(x, y, v_AD.c[:, :, 1]',
-                aspectratio = 1,
-                c = :balance,
-                xlabel = "x",
-                ylabel = "y",
-                colorbar = true,
-                xlim = (-g_AD.Lx/2, g_AD.Lx/2),
-                ylim = (-g_AD.Ly/2, g_AD.Ly/2),
-                title = "C(x,y,t), t = "*string(round(cl_AD.t; digits = 2)))
+                    aspectratio = 1,
+                    c = :balance,
+                    xlabel = "x",
+                    ylabel = "y",
+                    colorbar = true,
+                    xlim = (-g_AD.Lx/2, g_AD.Lx/2),
+                    ylim = (-g_AD.Ly/2, g_AD.Ly/2),
+                    title = "C(x,y,t), t = "*string(round(cl_AD.t; digits = 2)))
         push!(upper_layer_tracer_plots_AD, tp_u)
         tp_l = heatmap(x, y, v_AD.c[:, :, 2]',
-                aspectratio = 1,
-                c = :balance,
-                xlabel = "x",
-                ylabel = "y",
-                colorbar = true,
-                xlim = (-g_AD.Lx/2, g_AD.Lx/2),
-                ylim = (-g_AD.Ly/2, g_AD.Ly/2),
-                title = "C(x,y,t), t = "*string(round(cl_AD.t; digits = 2)))
+                    aspectratio = 1,
+                    c = :balance,
+                    xlabel = "x",
+                    ylabel = "y",
+                    colorbar = true,
+                    xlim = (-g_AD.Lx/2, g_AD.Lx/2),
+                    ylim = (-g_AD.Ly/2, g_AD.Ly/2),
+                    title = "C(x,y,t), t = "*string(round(cl_AD.t; digits = 2)))
         push!(lower_layer_tracer_plots_AD, tp_l)
         global plot_time_AD += plot_time_inc
     end
     stepforward!(AD_prob, nsubs)
     TracerAdvDiff_QG.QGupdatevars!(AD_prob)
+    MeasureMixing.conc_var!(concentration_variance, AD_prob)
     #Updates the velocity field in advection problem to the velocity field in the MultiLayerQG.Problem at each timestep.
     TracerAdvDiff_QG.vel_field_update!(AD_prob, QG_prob, nsubs)
 end
@@ -199,3 +205,9 @@ anim = @animate for i in 1:length(upper_layer_tracer_plots_AD)
 end
 mp4(anim, "tracer_ad.mp4", fps = 18)
 =#
+
+#Plot of the variance of the concentration on the grid as computed at each time step.
+t = range(0, (nsteps + 1)*Δt, step = Δt)
+concentration_variance_top = plot(t, concentration_variance[:, 1], xlabel = "t", title = "Top layer variance of concentration", label = false)
+concentration_variance_bottom = plot(t, concentration_variance[:, 2], xlabel = "t", title = "Bottom layer variance of concentration", label = false)
+plot(concentration_variance_top, concentration_variance_bottom, size=(900, 400))
