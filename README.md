@@ -52,7 +52,7 @@ $ julia --project Examples/QGflow_example.jl
 
 ## Examples
 
-To run the examples the modules must first be loaded into the local envirnoment using the commands above
+To run the examples the modules must first be loaded into the local envirnoment using the commands
 ```julia
 julia> include("Modules/TracerAdvDiff_QG.jl")
 ```
