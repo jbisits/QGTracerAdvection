@@ -31,7 +31,6 @@ function area_tracer_patch(AD_prob, QG_prob, Kₛ)
     α = 0.5
     params = QG_prob.params
     t = AD_prob.clock.t
-    #Q = total amount of tracer thought not sure how to define this.
 
     # ux = ∂u/∂x and vy = ∂v/∂y; they are computed here in Fourier space and then transformed back to physical space
     uh, vh = QG_prob.vars.uh, QG_prob.vars.vh
