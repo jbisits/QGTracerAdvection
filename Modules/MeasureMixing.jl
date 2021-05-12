@@ -13,7 +13,7 @@ export
 using Distributions, GeophysicalFlows
 
 """
-    function conc_var!( , prob)
+    function conc_var!(concentration_variance, prob)
 Calculate the variance of the tracer concentration for advection-diffusion problem `prob`.
 """
 function conc_var!(concentration_variance, prob) 
@@ -26,8 +26,10 @@ function conc_var!(concentration_variance, prob)
 
 end
 
-#Second moment evolution of tracer patch
-
+"""
+    function area_tracer_patch(AD_prob, QG_prob, Kₛ)
+Calculate the evolution of the area of the tracer patch that is advected by `AD_prob`.
+"""
 function area_tracer_patch(AD_prob, QG_prob, Kₛ)
 
     α = 0.5
@@ -43,7 +45,7 @@ function area_tracer_patch(AD_prob, QG_prob, Kₛ)
     MultiLayerQG.invtransform!(ux, uxh, params)
     MultiLayerQG.invtransform!(vy, vyh, params)
 
-    γ = @. sqrt(ux^2 + vy^2) #Presumably want this as a single number so take the mean?
+    γ = mean(@. sqrt(ux^2 + vy^2))
 
     Aₜ = @. π * (Kₛ / γ) * exp(α * γ * (t - 0.25 / γ))
 
