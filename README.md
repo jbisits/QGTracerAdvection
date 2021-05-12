@@ -104,7 +104,7 @@ There are instructions in the script as to how to do this.
 This example is the same as the tracer advection with QG flow above but includes some diagnostics to measure how the tracer is mixed over time.
 It can be run using 
 ```julia
-julia> include("Examples/QGflow_diags.jl")
+julia> include("Examples/QGflow_measuremixing.jl")
 ```
 
 # References
