@@ -36,7 +36,7 @@ U[1] = 1.0
 U[2] = 0.0
 
 #Set initial conditions.
-ϵ = 0.3;
+ϵ = 0.3
 x, y = gridpoints(QG_prob.grid)
 
 q_1_i = @.  ϵ * cos(4π / Lx * x_QG) * exp(-(x^2 + y^2) / 8)
@@ -56,7 +56,7 @@ q_i  = irfft(qh_i, QG_prob.grid.nx, (1, 2))                    # only apply irff
 #Set diffusivity
 κ = 0.01
 
-#Set number of tracer problems, delay time of placing tracer into the flow, and blank arrays for shortcuts.
+#Set number of tracer problems, `n`, the delay time of placing tracer into the flow, and the empy arrays for shortcuts.
 n = 10
 AD_probs = Array{FourierFlows.Problem}(undef, n)
 QG_probs = Array{FourierFlows.Problem}(undef, n)
