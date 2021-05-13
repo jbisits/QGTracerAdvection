@@ -308,7 +308,7 @@ end
 
 #################################################################################################
 function QGupdatevars!(prob)
-  v, g, sol = prob.vars, prob.grid, prob.sol
+  v, sol = prob.vars, prob.sol
   v.ch .= sol
   ch1 = deepcopy(v.ch)
   MultiLayerQG.invtransform!(v.c, ch1, prob.params)
@@ -324,7 +324,7 @@ Set the solution sol as the transform of c and update variables v
 on the grid g.
 """
 function set_c!(prob, c)
-  sol, v, g = prob.sol, prob.vars, prob.grid
+  sol, g = prob.sol, prob.grid
 
   mul!(sol, g.rfftplan, c)
   updatevars!(prob)
@@ -333,7 +333,7 @@ function set_c!(prob, c)
 end
 
 function set_c!(prob, c::Function)
-  sol, v, g = prob.sol, prob.vars, prob.grid
+  sol, g = prob.sol, prob.grid
 
   x, y = gridpoints(g)
   
@@ -351,7 +351,7 @@ end
 Sets the initial condition in the QG tracer advection `prob` to be the array `c`
 """
 function QGset_c!(prob, c)
-  sol, v, g, nlayers = prob.sol, prob.vars, prob.grid, prob.params.nlayers
+  sol, g, nlayers = prob.sol, prob.grid, prob.params.nlayers
   
   C = zeros(g.nx, g.ny, nlayers)
   
