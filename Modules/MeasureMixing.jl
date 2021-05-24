@@ -61,8 +61,8 @@ function area_tracer_patch!(area_vals, AD_prob, QG_prob, Kₛ)
 
     Aₜ = @. π * (Kₛ / γ) * exp(α * γ * (t - 0.25 / γ))
 
-    var_patches = @. Q^2 * (2 * Aₜ)^(-1)
-    @. area_vals[step_num, :] = var_patches
+    areas = @. Q^2 * (2 * Aₜ)^(-1)
+    @. area_vals[step_num, :] = areas
 end
 
 end #module
