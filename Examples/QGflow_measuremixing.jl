@@ -90,45 +90,6 @@ end
 #If using strip_IC use C₀' for a vertical strip
 TracerAdvDiff_QG.QGset_c!(AD_prob, C₀)
 
-#Plot of initial condition in the both layers.
-IC_upper = heatmap(x, y, v_AD.c[:, :, 1]',
-                title = "Initial tracer concentration - upper layer",
-                xlabel = "x",
-                ylabel = "y",
-                color = :balance,
-                aspecetratio = 1,
-                colorbar = true,
-                xlim = (-g_AD.Lx/2, g_AD.Lx/2),
-                ylim = (-g_AD.Ly/2, g_AD.Ly/2))
-IC_lower = heatmap(x, y, v_AD.c[:, :, 2]',
-                title = "Initial tracer concentration - lower layer",
-                xlabel = "x",
-                ylabel = "y",
-                color = :balance,
-                aspecetratio = 1,
-                colorbar = true,
-                xlim = (-g_AD.Lx/2, g_AD.Lx/2),
-                ylim = (-g_AD.Ly/2, g_AD.Ly/2))
-plot(IC_upper, IC_lower,  size=(900, 400))
-
-#Define blank arrays in which to store the plots of tracer diffusion in each layer.
-lower_layer_tracer_plots_AD = Plots.Plot{Plots.GRBackend}[]
-upper_layer_tracer_plots_AD = Plots.Plot{Plots.GRBackend}[]
-#Define frequency at which to save a plot.
-#plot_time_AD is when to get the first plot, plot_time_inc is at what interval subsequent plots are created.
-#Setting them the same gives plots at equal time increments. (Might be a better work around)
-plot_time_AD, plot_time_inc = 0.2, 0.2
-#Define arguments for plots.
-kwargs = (
-         xlabel = "x",
-         ylabel = "y",
-    aspectratio = 1,
-          color = :balance,
-       colorbar = true,
-           xlim = (-g_AD.Lx/2, g_AD.Lx/2),
-           ylim = (-g_AD.Ly/2, g_AD.Ly/2)
-)
-
 #Variance of concentration over the grid
 #Define array to store values for the variance of tracer concentration.
 #=
@@ -138,8 +99,15 @@ MeasureMixing.conc_var!(concentration_variance, AD_prob)
 
 #Area of tracer patch
 tracer_area_vals = Array{Float64}(undef, nsteps + 2, nlayers)
-area_tracer_patch!(tracer_area_vals, AD_prob, QG_prob, κ)
+MeasureMixing.area_tracer_patch!(tracer_area_vals, AD_prob, QG_prob, κ)
 
+#Define blank arrays in which to store the plots of tracer diffusion in each layer.
+lower_layer_tracer_plots_AD = Plots.Plot{Plots.GRBackend}[]
+upper_layer_tracer_plots_AD = Plots.Plot{Plots.GRBackend}[]
+#Define frequency at which to save a plot.
+#plot_time_AD is when to get the first plot, plot_time_inc is at what interval subsequent plots are created.
+#Setting them the same gives plots at equal time increments.
+plot_time_AD, plot_time_inc = 0.2, 0.2
 #Step the tracer advection problem forward and plot at the desired time step.
 while cl_AD.step <= nsteps
     if cl_AD.step == 0
@@ -189,6 +157,7 @@ while cl_AD.step <= nsteps
     stepforward!(AD_prob, nsubs)
     TracerAdvDiff_QG.QGupdatevars!(AD_prob)
     #MeasureMixing.conc_var!(concentration_variance, AD_prob)
+    MeasureMixing.area_tracer_patch!(tracer_area_vals, AD_prob, QG_prob, κ)
     #Updates the velocity field in advection problem to the velocity field in the MultiLayerQG.Problem at each timestep.
     TracerAdvDiff_QG.vel_field_update!(AD_prob, QG_prob, nsubs)
 end
@@ -215,6 +184,11 @@ mp4(anim, "tracer_ad.mp4", fps = 18)
 
 #Plot of the variance of the concentration on the grid as computed at each time step.
 t = range(0, (nsteps + 1)*Δt, step = Δt)
+#=
 concentration_variance_top = plot(t, concentration_variance[:, 1], xlabel = "t", title = "Top layer variance of concentration", label = false)
 concentration_variance_bottom = plot(t, concentration_variance[:, 2], xlabel = "t", title = "Bottom layer variance of concentration", label = false)
 plot(concentration_variance_top, concentration_variance_bottom, size=(900, 400))
+=#
+tracer_area_vals_top = plot(t, tracer_area_vals[:, 1], xlabel = "t", title = "Area of tracer patch as function of time", label = false)
+tracer_area_vals_bottom = plot(t, tracer_area_vals[:, 1], xlabel = "t", title = "Area of tracer patch as function of time", label = false)
+plot(tracer_area_vals_top, tracer_area_vals_bottom, size=(900, 400))

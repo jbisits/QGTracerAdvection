@@ -7,7 +7,7 @@
 module MeasureMixing
 
 export
-    conc_var!
+    conc_var!,
     area_tracer_patch!
 
 using Distributions, GeophysicalFlows
@@ -35,8 +35,7 @@ result at each timestep in the array area_vals.
 function area_tracer_patch!(area_vals, AD_prob, QG_prob, Kₛ)
 
     α = 0.5
-    params = QG_prob.params
-    nlayers = params.nlayers
+    nlayers = QG_prob.params.nlayers
     step_num = AD_prob.clock.step + 1
     t = AD_prob.clock.t
 
@@ -51,18 +50,19 @@ function area_tracer_patch!(area_vals, AD_prob, QG_prob, Kₛ)
     vyh = @. im * QG_prob.grid.l * vh
 
     ux, vy = QG_prob.vars.u, QG_prob.vars.v #Use these as dummy variables
-    MultiLayerQG.invtransform!(ux, uxh, params)
-    MultiLayerQG.invtransform!(vy, vyh, params)
+    MultiLayerQG.invtransform!(ux, uxh, QG_prob.params)
+    MultiLayerQG.invtransform!(vy, vyh, QG_prob.params)
 
     γ = Array{Float64}(undef, nlayers)
     for i in 1:nlayers
-        γ = mean(sqrt(ux[:, :, i]^2 + vy[:, :, i]^2))
+        γ[i] = mean(mean(sqrt(ux[:, :, i].^2 + vy[:, :, i].^2)))
     end
 
     Aₜ = @. π * (Kₛ / γ) * exp(α * γ * (t - 0.25 / γ))
 
     areas = @. Q^2 * (2 * Aₜ)^(-1)
     @. area_vals[step_num, :] = areas
+
 end
 
 end #module
