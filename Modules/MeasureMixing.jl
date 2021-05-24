@@ -14,7 +14,8 @@ using Distributions, GeophysicalFlows
 
 """
     function conc_var!(concentration_variance, prob)
-Calculate the variance of the tracer concentration for advection-diffusion problem `prob`.
+Calculate the variance of the tracer concentration in each layer for advection-diffusion problem `prob` and store the
+result at each timestep in the array concentration_variance. 
 """
 function conc_var!(concentration_variance, prob) 
 
@@ -28,7 +29,8 @@ end
 
 """
     function area_tracer_patch!(area_vals, AD_prob, QG_prob, Kₛ)
-Calculate the evolution of the area of the tracer patch that is advected by `AD_prob`.
+Calculate the evolution of the area of the tracer patch in each layer that is advected by `AD_prob` and store the
+result at each timestep in the array area_vals. 
 """
 function area_tracer_patch!(area_vals, AD_prob, QG_prob, Kₛ)
 
