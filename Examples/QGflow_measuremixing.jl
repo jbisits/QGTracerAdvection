@@ -68,16 +68,16 @@ x, y = g_AD.x, g_AD.y
 #Set the (same) initial condition in both layers.
 
 #A Gaussian blob centred at μIC 
-#=
+
 μIC = [0, 0]
 Σ = [1 0; 0 1]
 blob = MvNormal(μIC, Σ)
 blob_IC(x, y) = pdf(blob, [x, y])
 C₀ = @. blob_IC(x_AD, y_AD)
-=#
+
 
 #A Gaussian strip around centred at μIC.
-
+#=
 μIC = 0
 σ² = 0.5
 strip = Normal(μIC, σ²)
@@ -86,7 +86,7 @@ C₀ = Array{Float64}(undef, g_AD.nx, g_AD.ny)
 for i in 1:g_AD.nx
     C₀[i, :] = strip_IC(y_AD[i, :])
 end
-
+=#
 #If using strip_IC use C₀' for a vertical strip
 TracerAdvDiff_QG.QGset_c!(AD_prob, C₀)
 
@@ -129,9 +129,16 @@ kwargs = (
            ylim = (-g_AD.Ly/2, g_AD.Ly/2)
 )
 
+#Variance of concentration over the grid
 #Define array to store values for the variance of tracer concentration.
+#=
 concentration_variance = Array{Float64}(undef, nsteps + 2, nlayers)
 MeasureMixing.conc_var!(concentration_variance, AD_prob)
+=#
+
+#Area of tracer patch
+tracer_area_vals = Array{Float64}(undef, nsteps + 2, nlayers)
+area_tracer_patch!(tracer_area_vals, AD_prob, QG_prob, κ)
 
 #Step the tracer advection problem forward and plot at the desired time step.
 while cl_AD.step <= nsteps
@@ -181,7 +188,7 @@ while cl_AD.step <= nsteps
     end
     stepforward!(AD_prob, nsubs)
     TracerAdvDiff_QG.QGupdatevars!(AD_prob)
-    MeasureMixing.conc_var!(concentration_variance, AD_prob)
+    #MeasureMixing.conc_var!(concentration_variance, AD_prob)
     #Updates the velocity field in advection problem to the velocity field in the MultiLayerQG.Problem at each timestep.
     TracerAdvDiff_QG.vel_field_update!(AD_prob, QG_prob, nsubs)
 end
