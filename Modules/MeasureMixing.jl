@@ -55,7 +55,7 @@ function area_tracer_patch!(area_vals, AD_prob, QG_prob, Kₛ)
 
     γ = Array{Float64}(undef, nlayers)
     for i in 1:nlayers
-        rms =  @. sqrt(ux[:, :, i]^2 + vy[:, :, i]^2)
+        rms =  @. sqrt(ux[:, :, i]^2 + vy[:, :, i]^2) #Maybe calculating this at each step is not the way to go. Could instead calculate mean for the whole flow then do the calcualtions?
         γ[i] = mean(rms)
     end
     
