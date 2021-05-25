@@ -36,7 +36,7 @@ function area_tracer_patch!(area_vals, AD_prob, QG_prob, Kₛ)
 
     α = 0.5
     nlayers = QG_prob.params.nlayers
-    step_num = AD_prob.clock.step + 1
+    step = AD_prob.clock.step + 1
     t = AD_prob.clock.t
 
     Q = Array{Float64}(undef, nlayers)
@@ -55,14 +55,15 @@ function area_tracer_patch!(area_vals, AD_prob, QG_prob, Kₛ)
 
     γ = Array{Float64}(undef, nlayers)
     for i in 1:nlayers
-        γ[i] = mean(mean(sqrt(ux[:, :, i].^2 + vy[:, :, i].^2)))
+        rms =  @. sqrt(ux[:, :, i]^2 + vy[:, :, i]^2)
+        γ[i] = mean(rms)
     end
-
+    
     Aₜ = @. π * (Kₛ / γ) * exp(α * γ * (t - 0.25 / γ))
 
     areas = @. Q^2 * (2 * Aₜ)^(-1)
-    @. area_vals[step_num, :] = areas
-
+    @. area_vals[step, :] = areas
+    
 end
 
 end #module

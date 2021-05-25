@@ -98,8 +98,8 @@ MeasureMixing.conc_var!(concentration_variance, AD_prob)
 =#
 
 #Area of tracer patch
-tracer_area_vals = Array{Float64}(undef, nsteps + 2, nlayers)
-MeasureMixing.area_tracer_patch!(tracer_area_vals, AD_prob, QG_prob, κ)
+area_vals = Array{Float64}(undef, nsteps + 2, nlayers)
+MeasureMixing.area_tracer_patch!(area_vals, AD_prob, QG_prob, κ)
 
 #Define blank arrays in which to store the plots of tracer diffusion in each layer.
 lower_layer_tracer_plots_AD = Plots.Plot{Plots.GRBackend}[]
@@ -157,9 +157,9 @@ while cl_AD.step <= nsteps
     stepforward!(AD_prob, nsubs)
     TracerAdvDiff_QG.QGupdatevars!(AD_prob)
     #MeasureMixing.conc_var!(concentration_variance, AD_prob)
-    MeasureMixing.area_tracer_patch!(tracer_area_vals, AD_prob, QG_prob, κ)
     #Updates the velocity field in advection problem to the velocity field in the MultiLayerQG.Problem at each timestep.
     TracerAdvDiff_QG.vel_field_update!(AD_prob, QG_prob, nsubs)
+    MeasureMixing.area_tracer_patch!(area_vals, AD_prob, QG_prob, κ)
 end
 #Need to set this up so this does not need to be hardcoded.
 #Display the tracer advection in the upper layer.
@@ -189,6 +189,6 @@ concentration_variance_top = plot(t, concentration_variance[:, 1], xlabel = "t",
 concentration_variance_bottom = plot(t, concentration_variance[:, 2], xlabel = "t", title = "Bottom layer variance of concentration", label = false)
 plot(concentration_variance_top, concentration_variance_bottom, size=(900, 400))
 =#
-tracer_area_vals_top = plot(t, tracer_area_vals[:, 1], xlabel = "t", title = "Area of tracer patch as function of time", label = false)
-tracer_area_vals_bottom = plot(t, tracer_area_vals[:, 1], xlabel = "t", title = "Area of tracer patch as function of time", label = false)
-plot(tracer_area_vals_top, tracer_area_vals_bottom, size=(900, 400))
+area_vals_top = plot(t, area_vals[:, 1], xlabel = "t", title = "Area of tracer patch as function of time", label = false)
+area_vals_bottom = plot(t, area_vals[:, 2], xlabel = "t", title = "Area of tracer patch as function of time", label = false)
+plot(area_vals_top, area_vals_bottom, size=(900, 400))
