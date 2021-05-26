@@ -97,9 +97,9 @@ concentration_variance = Array{Float64}(undef, nsteps + 2, nlayers)
 MeasureMixing.conc_var!(concentration_variance, AD_prob)
 =#
 
-#Area of tracer patch
-area_vals = Array{Float64}(undef, nsteps + 2, nlayers)
-MeasureMixing.area_tracer_patch!(area_vals, AD_prob, QG_prob, κ)
+#Second moment of area of tracer patch
+second_moment_con = Array{Float64}(undef, nsteps + 2, nlayers)
+MeasureMixing.area_tracer_patch!(second_moment_con, AD_prob, QG_prob, κ)
 
 #Define blank arrays in which to store the plots of tracer diffusion in each layer.
 lower_layer_tracer_plots_AD = Plots.Plot{Plots.GRBackend}[]
@@ -159,7 +159,7 @@ while cl_AD.step <= nsteps
     #MeasureMixing.conc_var!(concentration_variance, AD_prob)
     #Updates the velocity field in advection problem to the velocity field in the MultiLayerQG.Problem at each timestep.
     TracerAdvDiff_QG.vel_field_update!(AD_prob, QG_prob, nsubs)
-    MeasureMixing.area_tracer_patch!(area_vals, AD_prob, QG_prob, κ)
+    MeasureMixing.area_tracer_patch!(second_moment_con, AD_prob, QG_prob, κ)
 end
 #Need to set this up so this does not need to be hardcoded.
 #Display the tracer advection in the upper layer.
@@ -189,6 +189,6 @@ concentration_variance_top = plot(t, concentration_variance[:, 1], xlabel = "t",
 concentration_variance_bottom = plot(t, concentration_variance[:, 2], xlabel = "t", title = "Bottom layer variance of concentration", label = false)
 plot(concentration_variance_top, concentration_variance_bottom, size=(900, 400))
 =#
-area_vals_top = plot(t, area_vals[:, 1], xlabel = "t", title = "Area of tracer patch as function of time", label = false)
-area_vals_bottom = plot(t, area_vals[:, 2], xlabel = "t", title = "Area of tracer patch as function of time", label = false)
-plot(area_vals_top, area_vals_bottom, size=(900, 400))
+second_moment_con_top = plot(t, second_moment_con[:, 1], xlabel = "t", title = "Area of tracer patch as function of time", label = false)
+second_moment_con_bottom = plot(t, second_moment_con[:, 2], xlabel = "t", title = "Area of tracer patch as function of time", label = false)
+plot(second_moment_con_top, second_moment_con_bottom, size=(900, 400))

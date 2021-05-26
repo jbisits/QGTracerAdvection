@@ -32,7 +32,7 @@ end
 Calculate the evolution of the area of the tracer patch in each layer that is advected by `AD_prob` and store the
 result at each timestep in the array area_vals. 
 """
-function area_tracer_patch!(area_vals, AD_prob, QG_prob, Kₛ)
+function area_tracer_patch!(second_moment_conc, AD_prob, QG_prob, Kₛ)
 
     α = 0.5
     nlayers = QG_prob.params.nlayers
@@ -61,8 +61,8 @@ function area_tracer_patch!(area_vals, AD_prob, QG_prob, Kₛ)
     
     Aₜ = @. π * (Kₛ / γ) * exp(α * γ * (t - 0.25 / γ))
 
-    areas = @. Q^2 * (2 * Aₜ)^(-1)
-    @. area_vals[step, :] = areas
+    #second_moment_conc = @. Q^2 * (2 * Aₜ)^(-1)
+    @. second_moment_conc[step, :] = Q^2 * (2 * Aₜ)^(-1)
     
 end
 
