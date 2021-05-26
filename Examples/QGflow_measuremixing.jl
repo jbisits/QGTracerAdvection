@@ -189,6 +189,6 @@ concentration_variance_top = plot(t, concentration_variance[:, 1], xlabel = "t",
 concentration_variance_bottom = plot(t, concentration_variance[:, 2], xlabel = "t", title = "Bottom layer variance of concentration", label = false)
 plot(concentration_variance_top, concentration_variance_bottom, size=(900, 400))
 =#
-second_moment_con_top = plot(t, second_moment_con[:, 1], xlabel = "t", title = "Area of tracer patch as function of time", label = false)
-second_moment_con_bottom = plot(t, second_moment_con[:, 2], xlabel = "t", title = "Area of tracer patch as function of time", label = false)
+second_moment_con_top = plot(t, second_moment_con[:, 1], xlabel = "t", title = "Second moment of tracer concentration", label = false)
+second_moment_con_bottom = plot(t, second_moment_con[:, 2], xlabel = "t", title = "Second moment of tracer concentration", label = false)
 plot(second_moment_con_top, second_moment_con_bottom, size=(900, 400))

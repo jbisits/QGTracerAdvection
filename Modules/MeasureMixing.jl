@@ -55,13 +55,12 @@ function area_tracer_patch!(second_moment_conc, AD_prob, QG_prob, Kₛ)
 
     γ = Array{Float64}(undef, nlayers)
     for i in 1:nlayers
-        rms =  @. sqrt(ux[:, :, i]^2 + vy[:, :, i]^2) #Maybe calculating this at each step is not the way to go. Could instead calculate mean for the whole flow then do the calcualtions?
-        γ[i] = mean(rms)
+        ms =  mean(ux[:, :, i].^2 .+ vy[:, :, i].^2) #Maybe calculating this at each step is not the way to go. Could instead calculate mean for the whole flow then do the calcualtions?
+        γ[i] = sqrt(ms)
     end
     
-    Aₜ = @. π * (Kₛ / γ) * exp(α * γ * (t - 0.25 / γ))
+    Aₜ = @. π * (Kₛ / γ) * exp(α * γ * (t - 0.25 * γ^(-1)))
 
-    #second_moment_conc = @. Q^2 * (2 * Aₜ)^(-1)
     @. second_moment_conc[step, :] = Q^2 * (2 * Aₜ)^(-1)
     
 end
