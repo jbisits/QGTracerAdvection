@@ -107,7 +107,7 @@ It can be run using
 julia> include("Examples/QGflow_measuremixing.jl")
 ```
 ## Honours thesis
-This folder contains the code that I will be using for my honours thesis that I am currently undertaking at UNSW.
+This folder contains the code that I will be using for my honours thesis that I (@jbisits) am currently undertaking at UNSW.
 # References
 [1] Gregory L. Wagner & Navid C. Constantinou. (2018). FourierFlows/FourierFlows.jl. Zenodo. https://doi.org/10.5281/zenodo.1161724
 
