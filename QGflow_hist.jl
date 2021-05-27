@@ -149,7 +149,8 @@ while cl_AD.step <= nsteps
                 ylim = (-g_AD.Ly/2, g_AD.Ly/2),
                 title = "C(x,y,t), t = "*string(round(cl_AD.t; digits = 2)));
         push!(upper_layer_tracer_plots_AD, tp_u)
-        hist_upper = histogram(reshape(AD_prob.vars.c[:, :, 1], :, 1), label = false, normalize = :probability)
+        hist_upper = histogram(reshape(AD_prob.vars.c[:, :, 1], :, 1), label = false, normalize = :probability, 
+                               title = "Normalised histogram of \ntracer concentration, t = "*string(round(cl_AD.t; digits = 2)))
         push!(upper_concentration_hist, hist_upper)
         tp_l = heatmap(x, y, v_AD.c[:, :, 2]',
                 aspectratio = 1,
@@ -161,7 +162,8 @@ while cl_AD.step <= nsteps
                 ylim = (-g_AD.Ly/2, g_AD.Ly/2),
                 title = "C(x,y,t), t = "*string(round(cl_AD.t; digits = 2)))
         push!(lower_layer_tracer_plots_AD, tp_l)
-        hist_lower = histogram(reshape(AD_prob.vars.c[:, :, 2], :, 1), label = false, normalize = :probability)
+        hist_lower = histogram(reshape(AD_prob.vars.c[:, :, 2], :, 1), label = false, normalize = :probability, 
+                               title = "Normalised histogram of \ntracer concentration, t = "*string(round(cl_AD.t; digits = 2)))
         push!(lower_concentration_hist, hist_lower)
     elseif round(Int64, cl_AD.step) == round(Int64, plot_time_AD*nsteps)
         tp_u = heatmap(x, y, v_AD.c[:, :, 1]',
@@ -174,7 +176,8 @@ while cl_AD.step <= nsteps
                 ylim = (-g_AD.Ly/2, g_AD.Ly/2),
                 title = "C(x,y,t), t = "*string(round(cl_AD.t; digits = 2)))
         push!(upper_layer_tracer_plots_AD, tp_u)
-        hist_upper = histogram(reshape(AD_prob.vars.c[:, :, 1], :, 1), label = false, normalize = :probability)
+        hist_upper = histogram(reshape(AD_prob.vars.c[:, :, 1], :, 1), label = false, normalize = :probability, 
+                               title = "Normalised histogram of \ntracer concentration, t = "*string(round(cl_AD.t; digits = 2)))
         push!(upper_concentration_hist, hist_upper)
         tp_l = heatmap(x, y, v_AD.c[:, :, 2]',
                 aspectratio = 1,
@@ -186,7 +189,8 @@ while cl_AD.step <= nsteps
                 ylim = (-g_AD.Ly/2, g_AD.Ly/2),
                 title = "C(x,y,t), t = "*string(round(cl_AD.t; digits = 2)))
         push!(lower_layer_tracer_plots_AD, tp_l)
-        hist_lower = histogram(reshape(AD_prob.vars.c[:, :, 2], :, 1), label = false, normalize = :probability)
+        hist_lower = histogram(reshape(AD_prob.vars.c[:, :, 2], :, 1), label = false, normalize = :probability, 
+                                       title = "Normalised histogram of \ntracer concentration, t = "*string(round(cl_AD.t; digits = 2)))
         push!(lower_concentration_hist, hist_lower)
         global plot_time_AD += plot_time_inc
     end
