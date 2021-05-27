@@ -8,21 +8,39 @@ module MeasureMixing
 
 export
     conc_var!,
-    area_tracer_patch!
+    area_tracer_patch!,
+    fit_normal!
 
 using Distributions, GeophysicalFlows
 
 """
-    function conc_var!(concentration_variance, prob)
+    function conc_var!(concentration_variance, AD_prob)
 Calculate the variance of the tracer concentration in each layer for advection-diffusion problem `prob` and store the
 result at each timestep in the array concentration_variance. 
 """
-function conc_var!(concentration_variance, prob) 
+function conc_var!(concentration_variance, AD_prob) 
 
-    nlayers = prob.params.nlayers
-    step = prob.clock.step + 1
+    nlayers = AD_prob.params.nlayers
+    step = AD_prob.clock.step + 1
     for i in 1:nlayers
-        concentration_variance[step, i] = var(prob.vars.c[:, :, i])
+        concentration_variance[step, i] = var(AD_prob.vars.c[:, :, i])
+    end
+
+end
+
+"""
+    function fit_normal!(σ², AD_prob)
+Fit a normal distribution to the concentration of tracer at each time step to look at how σ² grows.
+"""
+function fit_normal!(σ², AD_prob)
+
+    nlayers = AD_prob.params.nlayers
+    step = AD_prob.clock.step + 1
+    for i in 1:nlayers
+        conc_data = reshape(AD_prob.vars.c[:, :, i], :, 1) 
+        fit_norm = fit_mle(Normal, conc_data)
+        σ = params(fit_norm)[2]
+        σ²[step, i] = σ^2
     end
 
 end

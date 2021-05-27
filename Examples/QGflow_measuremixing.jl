@@ -98,8 +98,14 @@ MeasureMixing.conc_var!(concentration_variance, AD_prob)
 =#
 
 #Second moment of area of tracer patch
+#=
 second_moment_con = Array{Float64}(undef, nsteps + 2, nlayers)
 MeasureMixing.area_tracer_patch!(second_moment_con, AD_prob, QG_prob, κ)
+=#
+
+#Variance from a normal distribution fit at each time step
+σ² = Array{Float64}(undef, nsteps + 2, nlayers)
+MeasureMixing.fit_normal!(σ², AD_prob)
 
 #Define blank arrays in which to store the plots of tracer diffusion in each layer.
 lower_layer_tracer_plots_AD = Plots.Plot{Plots.GRBackend}[]
@@ -157,7 +163,8 @@ while cl_AD.step <= nsteps
     stepforward!(AD_prob, nsubs)
     TracerAdvDiff_QG.QGupdatevars!(AD_prob)
     #MeasureMixing.conc_var!(concentration_variance, AD_prob)
-    MeasureMixing.area_tracer_patch!(second_moment_con, AD_prob, QG_prob, κ)
+    #MeasureMixing.area_tracer_patch!(second_moment_con, AD_prob, QG_prob, κ)
+    MeasureMixing.fit_normal!(σ², AD_prob)
     #Updates the velocity field in advection problem to the velocity field in the MultiLayerQG.Problem at each timestep.
     TracerAdvDiff_QG.vel_field_update!(AD_prob, QG_prob, nsubs)
 end
@@ -189,7 +196,12 @@ concentration_variance_top = plot(t, concentration_variance[:, 1], xlabel = "t",
 concentration_variance_bottom = plot(t, concentration_variance[:, 2], xlabel = "t", title = "Bottom layer variance of concentration", label = false)
 plot(concentration_variance_top, concentration_variance_bottom, size=(900, 400))
 =#
+#=
 
 second_moment_con_top = plot(t, second_moment_con[:, 1], xlabel = "t", title = "Second moment of tracer concentration", label = false)
 second_moment_con_bottom = plot(t, second_moment_con[:, 2], xlabel = "t", title = "Second moment of tracer concentration", label = false)
 plot(second_moment_con_top, second_moment_con_bottom, size=(900, 400))
+=#
+σ²_top = plot(t, σ²[:, 1], xlabel = "t", title = "σ² from mle fit each time step in top layer", label = false)
+σ²_bottom = plot(t, σ²[:, 2], xlabel = "t", title = "σ² from mle fit each time step in bottom layer", label = false)
+plot(σ²_top, σ²_bottom, size=(900, 400))
