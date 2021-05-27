@@ -30,7 +30,7 @@ end
 
 """
     function fit_normal!(σ², AD_prob)
-Fit a normal distribution to the concentration of tracer at each time step to look at how σ² grows.
+Fit a normal distribution to the concentration of tracer at each time step to look at how σ² changes.
 """
 function fit_normal!(σ², AD_prob)
 
