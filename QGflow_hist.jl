@@ -1,7 +1,8 @@
-#Test MeasureMixing.jl using a the QGflow_example.jl
+#QGflow and create a histogram of the concnetration at each time step that the plot is created at
+
+#Passive tracer advection using a two layer QG flow (from the geophysical flows package).
 
 using .TracerAdvDiff_QG
-using .MeasureMixing
 
 using GeophysicalFlows.MultiLayerQG, Plots, Distributions
 
@@ -87,90 +88,110 @@ for i in 1:g_AD.nx
     C₀[i, :] = strip_IC(y_AD[i, :])
 end
 =#
+
 #If using strip_IC use C₀' for a vertical strip
 TracerAdvDiff_QG.QGset_c!(AD_prob, C₀)
 
-## Choose which diagnostic to use
-
-#Variance of concentration over the grid
-#Define array to store values for the variance of tracer concentration.
-#=
-concentration_variance = Array{Float64}(undef, nsteps + 2, nlayers)
-MeasureMixing.conc_var!(concentration_variance, AD_prob)
-=#
-
-#Second moment of area of tracer patch
-#=
-second_moment_con = Array{Float64}(undef, nsteps + 2, nlayers)
-MeasureMixing.area_tracer_patch!(second_moment_con, AD_prob, QG_prob, κ)
-=#
-
-#Variance from a normal distribution fit at each time step
-#=
-σ² = Array{Float64}(undef, nsteps + 2, nlayers)
-MeasureMixing.fit_normal!(σ², AD_prob)
-=#
+#Plot of initial condition in the upper layer.
+IC_upper = heatmap(x, y, v_AD.c[:, :, 1]',
+            title = "Upper layer initial tracer concentration",
+            xlabel = "x",
+            ylabel = "y",
+            color = :balance,
+            aspecetratio = 1,
+            colorbar = true,
+            xlim = (-g_AD.Lx/2, g_AD.Lx/2),
+            ylim = (-g_AD.Ly/2, g_AD.Ly/2))
+IC_lower = heatmap(x, y, v_AD.c[:, :, 2]',
+            title = "Lower layer initial tracer concentration",
+            xlabel = "x",
+            ylabel = "y",
+            color = :balance,
+            aspecetratio = 1,
+            colorbar = true,
+            xlim = (-g_AD.Lx/2, g_AD.Lx/2),
+            ylim = (-g_AD.Ly/2, g_AD.Ly/2))
+plot(IC_upper, IC_lower, size = (900, 400))
 
 #Define blank arrays in which to store the plots of tracer diffusion in each layer.
 lower_layer_tracer_plots_AD = Plots.Plot{Plots.GRBackend}[]
 upper_layer_tracer_plots_AD = Plots.Plot{Plots.GRBackend}[]
+
+#Define blank arrays to save a histogram at each time step a plot is saved.
+upper_concentration_hist = Plots.Plot{Plots.GRBackend}[]
+lower_concentration_hist = Plots.Plot{Plots.GRBackend}[]
+
 #Define frequency at which to save a plot.
 #plot_time_AD is when to get the first plot, plot_time_inc is at what interval subsequent plots are created.
-#Setting them the same gives plots at equal time increments.
+#Setting them the same gives plots at equal time increments. (Might be a better work around)
 plot_time_AD, plot_time_inc = 0.2, 0.2
+#Define arguments for plots.
+kwargs = (
+         xlabel = "x",
+         ylabel = "y",
+    aspectratio = 1,
+          color = :balance,
+       colorbar = true,
+           xlim = (-g_AD.Lx/2, g_AD.Lx/2),
+           ylim = (-g_AD.Ly/2, g_AD.Ly/2)
+)
+
 #Step the tracer advection problem forward and plot at the desired time step.
 while cl_AD.step <= nsteps
     if cl_AD.step == 0
         tp_u = heatmap(x, y, v_AD.c[:, :, 1]',
-                    aspectratio = 1,
-                    c = :balance,
-                    xlabel = "x",
-                    ylabel = "y",
-                    colorbar = true,
-                    xlim = (-g_AD.Lx/2, g_AD.Lx/2),
-                    ylim = (-g_AD.Ly/2, g_AD.Ly/2),
-                    title = "C(x,y,t), t = "*string(round(cl_AD.t; digits = 2)));
+                aspectratio = 1,
+                c = :balance,
+                xlabel = "x",
+                ylabel = "y",
+                colorbar = true,
+                xlim = (-g_AD.Lx/2, g_AD.Lx/2),
+                ylim = (-g_AD.Ly/2, g_AD.Ly/2),
+                title = "C(x,y,t), t = "*string(round(cl_AD.t; digits = 2)));
         push!(upper_layer_tracer_plots_AD, tp_u)
+        hist_upper = histogram(reshape(AD_prob.vars.c[:, :, 1], :, 1), label = false, normalize = :probability)
+        push!(upper_concentration_hist, hist_upper)
         tp_l = heatmap(x, y, v_AD.c[:, :, 2]',
-                    aspectratio = 1,
-                    c = :balance,
-                    xlabel = "x",
-                    ylabel = "y",
-                    colorbar = true,
-                    xlim = (-g_AD.Lx/2, g_AD.Lx/2),
-                    ylim = (-g_AD.Ly/2, g_AD.Ly/2),
-                    title = "C(x,y,t), t = "*string(round(cl_AD.t; digits = 2)))
+                aspectratio = 1,
+                c = :balance,
+                xlabel = "x",
+                ylabel = "y",
+                colorbar = true,
+                xlim = (-g_AD.Lx/2, g_AD.Lx/2),
+                ylim = (-g_AD.Ly/2, g_AD.Ly/2),
+                title = "C(x,y,t), t = "*string(round(cl_AD.t; digits = 2)))
         push!(lower_layer_tracer_plots_AD, tp_l)
+        hist_lower = histogram(reshape(AD_prob.vars.c[:, :, 2], :, 1), label = false, normalize = :probability)
+        push!(lower_concentration_hist, hist_lower)
     elseif round(Int64, cl_AD.step) == round(Int64, plot_time_AD*nsteps)
         tp_u = heatmap(x, y, v_AD.c[:, :, 1]',
-                    aspectratio = 1,
-                    c = :balance,
-                    xlabel = "x",
-                    ylabel = "y",
-                    colorbar = true,
-                    xlim = (-g_AD.Lx/2, g_AD.Lx/2),
-                    ylim = (-g_AD.Ly/2, g_AD.Ly/2),
-                    title = "C(x,y,t), t = "*string(round(cl_AD.t; digits = 2)))
+                aspectratio = 1,
+                c = :balance,
+                xlabel = "x",
+                ylabel = "y",
+                colorbar = true,
+                xlim = (-g_AD.Lx/2, g_AD.Lx/2),
+                ylim = (-g_AD.Ly/2, g_AD.Ly/2),
+                title = "C(x,y,t), t = "*string(round(cl_AD.t; digits = 2)))
         push!(upper_layer_tracer_plots_AD, tp_u)
+        hist_upper = histogram(reshape(AD_prob.vars.c[:, :, 1], :, 1), label = false, normalize = :probability)
+        push!(upper_concentration_hist, hist_upper)
         tp_l = heatmap(x, y, v_AD.c[:, :, 2]',
-                    aspectratio = 1,
-                    c = :balance,
-                    xlabel = "x",
-                    ylabel = "y",
-                    colorbar = true,
-                    xlim = (-g_AD.Lx/2, g_AD.Lx/2),
-                    ylim = (-g_AD.Ly/2, g_AD.Ly/2),
-                    title = "C(x,y,t), t = "*string(round(cl_AD.t; digits = 2)))
+                aspectratio = 1,
+                c = :balance,
+                xlabel = "x",
+                ylabel = "y",
+                colorbar = true,
+                xlim = (-g_AD.Lx/2, g_AD.Lx/2),
+                ylim = (-g_AD.Ly/2, g_AD.Ly/2),
+                title = "C(x,y,t), t = "*string(round(cl_AD.t; digits = 2)))
         push!(lower_layer_tracer_plots_AD, tp_l)
+        hist_lower = histogram(reshape(AD_prob.vars.c[:, :, 2], :, 1), label = false, normalize = :probability)
+        push!(lower_concentration_hist, hist_lower)
         global plot_time_AD += plot_time_inc
     end
     stepforward!(AD_prob, nsubs)
     TracerAdvDiff_QG.QGupdatevars!(AD_prob)
-    ##  Update the chosen diagnostic at each step
-    #MeasureMixing.conc_var!(concentration_variance, AD_prob)
-    #MeasureMixing.area_tracer_patch!(second_moment_con, AD_prob, QG_prob, κ)
-    #MeasureMixing.fit_normal!(σ², AD_prob)
-
     #Updates the velocity field in advection problem to the velocity field in the MultiLayerQG.Problem at each timestep.
     TracerAdvDiff_QG.vel_field_update!(AD_prob, QG_prob, nsubs)
 end
@@ -185,33 +206,15 @@ plot_bottom = plot(lower_layer_tracer_plots_AD[1], lower_layer_tracer_plots_AD[2
                    lower_layer_tracer_plots_AD[3], lower_layer_tracer_plots_AD[4],
                    lower_layer_tracer_plots_AD[5], lower_layer_tracer_plots_AD[6])
 
-plot(plot_top, plot_bottom, layout=(2, 1), size=(1200, 1200))
+#Histograms in upper layer
+hist_top = plot(upper_concentration_hist[1], upper_concentration_hist[2],
+                upper_concentration_hist[3], upper_concentration_hist[4],
+                upper_concentration_hist[5], upper_concentration_hist[6])
 
-#Code to create a video from the array of plots in the top (or bottom) layer. Make plot_time_inc = Δt = plot_time_AD
-#=
-anim = @animate for i in 1:length(upper_layer_tracer_plots_AD)
-    plot(upper_layer_tracer_plots_AD[i])
-end
-mp4(anim, "tracer_ad.mp4", fps = 18)
-=#
+#Histograms in lower layer
+hist_bottom = plot(lower_concentration_hist[1], lower_concentration_hist[2],
+                   lower_concentration_hist[3], lower_concentration_hist[4],
+                   lower_concentration_hist[5], lower_concentration_hist[6])
 
-#Time vector to plot diagnostics
-t = range(0, (nsteps + 1)*Δt, step = Δt)
-
-#=
-concentration_variance_top = plot(t, concentration_variance[:, 1], xlabel = "t", title = "Top layer variance of concentration", label = false)
-concentration_variance_bottom = plot(t, concentration_variance[:, 2], xlabel = "t", title = "Bottom layer variance of concentration", label = false)
-plot(concentration_variance_top, concentration_variance_bottom, size=(900, 400))
-=#
-
-#=
-second_moment_con_top = plot(t, second_moment_con[:, 1], xlabel = "t", title = "Second moment of tracer concentration", label = false)
-second_moment_con_bottom = plot(t, second_moment_con[:, 2], xlabel = "t", title = "Second moment of tracer concentration", label = false)
-plot(second_moment_con_top, second_moment_con_bottom, size=(900, 400))
-=#
-
-#=
-σ²_top = plot(t, σ²[:, 1], xlabel = "t", title = "σ² from mle fit each time step in top layer", label = false)
-σ²_bottom = plot(t, σ²[:, 2], xlabel = "t", title = "σ² from mle fit each time step in bottom layer", label = false)
-plot(σ²_top, σ²_bottom, size=(900, 400))
-=#
+plot(plot_top, hist_top, layout=(2, 1), size=(1200, 1200))
+plot(plot_bottom, hist_bottom, layout=(2, 1), size=(1200, 1200))
