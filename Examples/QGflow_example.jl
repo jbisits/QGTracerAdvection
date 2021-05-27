@@ -40,7 +40,7 @@ sol_QG, cl_QG, pr_QG, vs_QG = QG_prob.sol, QG_prob.clock, QG_prob.params, QG_pro
 x_QG, y_QG = QG_prob.grid.x, QG_prob.grid.y
 
 #Set initial conditions.
-ϵ = 0.3;
+ϵ = 0.3
 x, y = gridpoints(QG_prob.grid)
 
 q_1_i = @.  ϵ * cos(4π / Lx * x_QG) * exp(-(x^2 + y^2) / 8)

@@ -22,7 +22,7 @@ function conc_var!(concentration_variance, prob)
     nlayers = prob.params.nlayers
     step = prob.clock.step + 1
     for i in 1:nlayers
-        @. concentration_variance[step, i] = var(prob.vars.c[:, :, i])
+        concentration_variance[step, i] = var(prob.vars.c[:, :, i])
     end
 
 end

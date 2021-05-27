@@ -41,7 +41,7 @@ sol_QG, cl_QG, pr_QG, vs_QG = QG_prob.sol, QG_prob.clock, QG_prob.params, QG_pro
 x_QG, y_QG = QG_prob.grid.x, QG_prob.grid.y
 
 #Set initial conditions.
-ϵ = 0.3;
+ϵ = 0.3
 x, y = gridpoints(QG_prob.grid)
 
 q_1_i = @.  ϵ * cos(4π / Lx * x_QG) * exp(-(x^2 + y^2) / 8)
@@ -157,9 +157,9 @@ while cl_AD.step <= nsteps
     stepforward!(AD_prob, nsubs)
     TracerAdvDiff_QG.QGupdatevars!(AD_prob)
     #MeasureMixing.conc_var!(concentration_variance, AD_prob)
+    MeasureMixing.area_tracer_patch!(second_moment_con, AD_prob, QG_prob, κ)
     #Updates the velocity field in advection problem to the velocity field in the MultiLayerQG.Problem at each timestep.
     TracerAdvDiff_QG.vel_field_update!(AD_prob, QG_prob, nsubs)
-    MeasureMixing.area_tracer_patch!(second_moment_con, AD_prob, QG_prob, κ)
 end
 #Need to set this up so this does not need to be hardcoded.
 #Display the tracer advection in the upper layer.
@@ -189,6 +189,7 @@ concentration_variance_top = plot(t, concentration_variance[:, 1], xlabel = "t",
 concentration_variance_bottom = plot(t, concentration_variance[:, 2], xlabel = "t", title = "Bottom layer variance of concentration", label = false)
 plot(concentration_variance_top, concentration_variance_bottom, size=(900, 400))
 =#
+
 second_moment_con_top = plot(t, second_moment_con[:, 1], xlabel = "t", title = "Second moment of tracer concentration", label = false)
 second_moment_con_bottom = plot(t, second_moment_con[:, 2], xlabel = "t", title = "Second moment of tracer concentration", label = false)
 plot(second_moment_con_top, second_moment_con_bottom, size=(900, 400))
