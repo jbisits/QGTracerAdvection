@@ -41,7 +41,7 @@ sol_QG, cl_QG, pr_QG, vs_QG = QG_prob.sol, QG_prob.clock, QG_prob.params, QG_pro
 x_QG, y_QG = QG_prob.grid.x, QG_prob.grid.y
 
 #Set initial conditions.
-ϵ = 0.3;
+ϵ = 0.3
 x, y = gridpoints(QG_prob.grid)
 
 q_1_i = @.  ϵ * cos(4π / Lx * x_QG) * exp(-(x^2 + y^2) / 8)
@@ -68,16 +68,16 @@ x, y = g_AD.x, g_AD.y
 #Set the (same) initial condition in both layers.
 
 #A Gaussian blob centred at μIC 
-#=
+
 μIC = [0, 0]
 Σ = [1 0; 0 1]
 blob = MvNormal(μIC, Σ)
 blob_IC(x, y) = pdf(blob, [x, y])
 C₀ = @. blob_IC(x_AD, y_AD)
-=#
+
 
 #A Gaussian strip around centred at μIC.
-
+#=
 μIC = 0
 σ² = 0.5
 strip = Normal(μIC, σ²)
@@ -86,53 +86,38 @@ C₀ = Array{Float64}(undef, g_AD.nx, g_AD.ny)
 for i in 1:g_AD.nx
     C₀[i, :] = strip_IC(y_AD[i, :])
 end
-
+=#
 #If using strip_IC use C₀' for a vertical strip
 TracerAdvDiff_QG.QGset_c!(AD_prob, C₀)
 
-#Plot of initial condition in the both layers.
-IC_upper = heatmap(x, y, v_AD.c[:, :, 1]',
-                title = "Initial tracer concentration - upper layer",
-                xlabel = "x",
-                ylabel = "y",
-                color = :balance,
-                aspecetratio = 1,
-                colorbar = true,
-                xlim = (-g_AD.Lx/2, g_AD.Lx/2),
-                ylim = (-g_AD.Ly/2, g_AD.Ly/2))
-IC_lower = heatmap(x, y, v_AD.c[:, :, 2]',
-                title = "Initial tracer concentration - lower layer",
-                xlabel = "x",
-                ylabel = "y",
-                color = :balance,
-                aspecetratio = 1,
-                colorbar = true,
-                xlim = (-g_AD.Lx/2, g_AD.Lx/2),
-                ylim = (-g_AD.Ly/2, g_AD.Ly/2))
-plot(IC_upper, IC_lower,  size=(900, 400))
+## Choose which diagnostic to use
+
+#Variance of concentration over the grid
+#Define array to store values for the variance of tracer concentration.
+#=
+concentration_variance = Array{Float64}(undef, nsteps + 2, nlayers)
+MeasureMixing.conc_var!(concentration_variance, AD_prob)
+=#
+
+#Second moment of area of tracer patch
+#=
+second_moment_con = Array{Float64}(undef, nsteps + 2, nlayers)
+MeasureMixing.area_tracer_patch!(second_moment_con, AD_prob, QG_prob, κ)
+=#
+
+#Variance from a normal distribution fit at each time step
+#=
+σ² = Array{Float64}(undef, nsteps + 2, nlayers)
+MeasureMixing.fit_normal!(σ², AD_prob)
+=#
 
 #Define blank arrays in which to store the plots of tracer diffusion in each layer.
 lower_layer_tracer_plots_AD = Plots.Plot{Plots.GRBackend}[]
 upper_layer_tracer_plots_AD = Plots.Plot{Plots.GRBackend}[]
 #Define frequency at which to save a plot.
 #plot_time_AD is when to get the first plot, plot_time_inc is at what interval subsequent plots are created.
-#Setting them the same gives plots at equal time increments. (Might be a better work around)
+#Setting them the same gives plots at equal time increments.
 plot_time_AD, plot_time_inc = 0.2, 0.2
-#Define arguments for plots.
-kwargs = (
-         xlabel = "x",
-         ylabel = "y",
-    aspectratio = 1,
-          color = :balance,
-       colorbar = true,
-           xlim = (-g_AD.Lx/2, g_AD.Lx/2),
-           ylim = (-g_AD.Ly/2, g_AD.Ly/2)
-)
-
-#Define array to store values for the variance of tracer concentration.
-concentration_variance = Array{Float64}(undef, nsteps + 2, nlayers)
-MeasureMixing.conc_var!(concentration_variance, AD_prob)
-
 #Step the tracer advection problem forward and plot at the desired time step.
 while cl_AD.step <= nsteps
     if cl_AD.step == 0
@@ -181,7 +166,11 @@ while cl_AD.step <= nsteps
     end
     stepforward!(AD_prob, nsubs)
     TracerAdvDiff_QG.QGupdatevars!(AD_prob)
-    MeasureMixing.conc_var!(concentration_variance, AD_prob)
+    ##  Update the chosen diagnostic at each step
+    #MeasureMixing.conc_var!(concentration_variance, AD_prob)
+    #MeasureMixing.area_tracer_patch!(second_moment_con, AD_prob, QG_prob, κ)
+    #MeasureMixing.fit_normal!(σ², AD_prob)
+
     #Updates the velocity field in advection problem to the velocity field in the MultiLayerQG.Problem at each timestep.
     TracerAdvDiff_QG.vel_field_update!(AD_prob, QG_prob, nsubs)
 end
@@ -206,8 +195,23 @@ end
 mp4(anim, "tracer_ad.mp4", fps = 18)
 =#
 
-#Plot of the variance of the concentration on the grid as computed at each time step.
+#Time vector to plot diagnostics
 t = range(0, (nsteps + 1)*Δt, step = Δt)
+
+#=
 concentration_variance_top = plot(t, concentration_variance[:, 1], xlabel = "t", title = "Top layer variance of concentration", label = false)
 concentration_variance_bottom = plot(t, concentration_variance[:, 2], xlabel = "t", title = "Bottom layer variance of concentration", label = false)
 plot(concentration_variance_top, concentration_variance_bottom, size=(900, 400))
+=#
+
+#=
+second_moment_con_top = plot(t, second_moment_con[:, 1], xlabel = "t", title = "Second moment of tracer concentration", label = false)
+second_moment_con_bottom = plot(t, second_moment_con[:, 2], xlabel = "t", title = "Second moment of tracer concentration", label = false)
+plot(second_moment_con_top, second_moment_con_bottom, size=(900, 400))
+=#
+
+#=
+σ²_top = plot(t, σ²[:, 1], xlabel = "t", title = "σ² from mle fit each time step in top layer", label = false)
+σ²_bottom = plot(t, σ²[:, 2], xlabel = "t", title = "σ² from mle fit each time step in bottom layer", label = false)
+plot(σ²_top, σ²_bottom, size=(900, 400))
+=#

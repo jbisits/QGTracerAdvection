@@ -1,3 +1,5 @@
+#QGflow and create a histogram of the concnetration at each time step that the plot is created at
+
 #Passive tracer advection using a two layer QG flow (from the geophysical flows package).
 
 using .TracerAdvDiff_QG
@@ -16,7 +18,7 @@ ny = nx
 stepper = "FilteredRK4";  # timestepper
 Δt = 0.01                 # timestep
 nsubs  = 1                # number of time-steps for plotting (nsteps must be multiple of nsubs)
-nsteps = 2000nsubs        # total number of time-steps
+nsteps = 3000nsubs        # total number of time-steps
 
 
 #Physical parameters for a two layer QG_problem
@@ -67,16 +69,16 @@ x, y = g_AD.x, g_AD.y
 #Set the (same) initial condition in both layers.
 
 #A Gaussian blob centred at μIC 
-#=
+
 μIC = [0, 0]
 Σ = [1 0; 0 1]
 blob = MvNormal(μIC, Σ)
 blob_IC(x, y) = pdf(blob, [x, y])
 C₀ = @. blob_IC(x_AD, y_AD)
-=#
+
 
 #A Gaussian strip around centred at μIC.
-
+#=
 μIC = 0
 σ² = 0.5
 strip = Normal(μIC, σ²)
@@ -85,6 +87,7 @@ C₀ = Array{Float64}(undef, g_AD.nx, g_AD.ny)
 for i in 1:g_AD.nx
     C₀[i, :] = strip_IC(y_AD[i, :])
 end
+=#
 
 #If using strip_IC use C₀' for a vertical strip
 TracerAdvDiff_QG.QGset_c!(AD_prob, C₀)
@@ -113,6 +116,11 @@ plot(IC_upper, IC_lower, size = (900, 400))
 #Define blank arrays in which to store the plots of tracer diffusion in each layer.
 lower_layer_tracer_plots_AD = Plots.Plot{Plots.GRBackend}[]
 upper_layer_tracer_plots_AD = Plots.Plot{Plots.GRBackend}[]
+
+#Define blank arrays to save a histogram at each time step a plot is saved.
+upper_concentration_hist = Plots.Plot{Plots.GRBackend}[]
+lower_concentration_hist = Plots.Plot{Plots.GRBackend}[]
+
 #Define frequency at which to save a plot.
 #plot_time_AD is when to get the first plot, plot_time_inc is at what interval subsequent plots are created.
 #Setting them the same gives plots at equal time increments. (Might be a better work around)
@@ -141,6 +149,9 @@ while cl_AD.step <= nsteps
                 ylim = (-g_AD.Ly/2, g_AD.Ly/2),
                 title = "C(x,y,t), t = "*string(round(cl_AD.t; digits = 2)));
         push!(upper_layer_tracer_plots_AD, tp_u)
+        hist_upper = histogram(reshape(AD_prob.vars.c[:, :, 1], :, 1), label = false, normalize = :probability, 
+                               title = "Normalised histogram of \ntracer concentration, t = "*string(round(cl_AD.t; digits = 2)))
+        push!(upper_concentration_hist, hist_upper)
         tp_l = heatmap(x, y, v_AD.c[:, :, 2]',
                 aspectratio = 1,
                 c = :balance,
@@ -151,6 +162,9 @@ while cl_AD.step <= nsteps
                 ylim = (-g_AD.Ly/2, g_AD.Ly/2),
                 title = "C(x,y,t), t = "*string(round(cl_AD.t; digits = 2)))
         push!(lower_layer_tracer_plots_AD, tp_l)
+        hist_lower = histogram(reshape(AD_prob.vars.c[:, :, 2], :, 1), label = false, normalize = :probability, 
+                               title = "Normalised histogram of \ntracer concentration, t = "*string(round(cl_AD.t; digits = 2)))
+        push!(lower_concentration_hist, hist_lower)
     elseif round(Int64, cl_AD.step) == round(Int64, plot_time_AD*nsteps)
         tp_u = heatmap(x, y, v_AD.c[:, :, 1]',
                 aspectratio = 1,
@@ -162,6 +176,9 @@ while cl_AD.step <= nsteps
                 ylim = (-g_AD.Ly/2, g_AD.Ly/2),
                 title = "C(x,y,t), t = "*string(round(cl_AD.t; digits = 2)))
         push!(upper_layer_tracer_plots_AD, tp_u)
+        hist_upper = histogram(reshape(AD_prob.vars.c[:, :, 1], :, 1), label = false, normalize = :probability, 
+                               title = "Normalised histogram of \ntracer concentration, t = "*string(round(cl_AD.t; digits = 2)))
+        push!(upper_concentration_hist, hist_upper)
         tp_l = heatmap(x, y, v_AD.c[:, :, 2]',
                 aspectratio = 1,
                 c = :balance,
@@ -172,6 +189,9 @@ while cl_AD.step <= nsteps
                 ylim = (-g_AD.Ly/2, g_AD.Ly/2),
                 title = "C(x,y,t), t = "*string(round(cl_AD.t; digits = 2)))
         push!(lower_layer_tracer_plots_AD, tp_l)
+        hist_lower = histogram(reshape(AD_prob.vars.c[:, :, 2], :, 1), label = false, normalize = :probability, 
+                                       title = "Normalised histogram of \ntracer concentration, t = "*string(round(cl_AD.t; digits = 2)))
+        push!(lower_concentration_hist, hist_lower)
         global plot_time_AD += plot_time_inc
     end
     stepforward!(AD_prob, nsubs)
@@ -190,12 +210,15 @@ plot_bottom = plot(lower_layer_tracer_plots_AD[1], lower_layer_tracer_plots_AD[2
                    lower_layer_tracer_plots_AD[3], lower_layer_tracer_plots_AD[4],
                    lower_layer_tracer_plots_AD[5], lower_layer_tracer_plots_AD[6])
 
-plot(plot_top, plot_bottom, layout=(2, 1), size=(1200, 1200))
+#Histograms in upper layer
+hist_top = plot(upper_concentration_hist[1], upper_concentration_hist[2],
+                upper_concentration_hist[3], upper_concentration_hist[4],
+                upper_concentration_hist[5], upper_concentration_hist[6])
 
-#Code to create a video from the array of plots in the top (or bottom) layer. Make plot_time_inc = Δt = plot_time_AD
-#=
-anim = @animate for i in 1:length(upper_layer_tracer_plots_AD)
-    plot(upper_layer_tracer_plots_AD[i])
-end
-mp4(anim, "tracer_ad.mp4", fps = 18)
-=#
+#Histograms in lower layer
+hist_bottom = plot(lower_concentration_hist[1], lower_concentration_hist[2],
+                   lower_concentration_hist[3], lower_concentration_hist[4],
+                   lower_concentration_hist[5], lower_concentration_hist[6])
+
+plot(plot_top, hist_top, layout=(2, 1), size=(1200, 1200))
+plot(plot_bottom, hist_bottom, layout=(2, 1), size=(1200, 1200))
