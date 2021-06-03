@@ -4,7 +4,7 @@
 
 using .TracerAdvDiff_QG
 
-using GeophysicalFlows.MultiLayerQG, Plots, Distributions
+using GeophysicalFlows.MultiLayerQG, Plots, Distributions, StatsBase, LinearAlgebra
 
 #Set up the MultiLayerQG.Problem to test with the modified module.
 
@@ -92,6 +92,8 @@ end
 #If using strip_IC use C₀' for a vertical strip
 TracerAdvDiff_QG.QGset_c!(AD_prob, C₀)
 
+initial_data = reshape(AD_prob.vars.c[:, :, 1], :) #Get this here to play with down below
+
 #Plot of initial condition in the upper layer.
 IC_upper = heatmap(x, y, v_AD.c[:, :, 1]',
             title = "Upper layer initial tracer concentration",
@@ -149,7 +151,7 @@ while cl_AD.step <= nsteps
                 ylim = (-g_AD.Ly/2, g_AD.Ly/2),
                 title = "C(x,y,t), t = "*string(round(cl_AD.t; digits = 2)));
         push!(upper_layer_tracer_plots_AD, tp_u)
-        hist_upper = histogram(reshape(AD_prob.vars.c[:, :, 1], :), label = false, normalize = :probability, xlims = (0, 0.16),
+        hist_upper = histogram(reshape(AD_prob.vars.c[:, :, 1], :), label = false, normalize = :probability,
                                title = "Normalised histogram of \ntracer concentration, t = "*string(round(cl_AD.t; digits = 2)))
         push!(upper_concentration_hist, hist_upper)
         tp_l = heatmap(x, y, v_AD.c[:, :, 2]',
@@ -162,7 +164,7 @@ while cl_AD.step <= nsteps
                 ylim = (-g_AD.Ly/2, g_AD.Ly/2),
                 title = "C(x,y,t), t = "*string(round(cl_AD.t; digits = 2)))
         push!(lower_layer_tracer_plots_AD, tp_l)
-        hist_lower = histogram(reshape(AD_prob.vars.c[:, :, 2], :), label = false, normalize = :probability, xlims = (0, 0.16),
+        hist_lower = histogram(reshape(AD_prob.vars.c[:, :, 2], :), label = false, normalize = :probability,
                                title = "Normalised histogram of \ntracer concentration, t = "*string(round(cl_AD.t; digits = 2)))
         push!(lower_concentration_hist, hist_lower)
     elseif round(Int64, cl_AD.step) == round(Int64, plot_time_AD*nsteps)
@@ -176,7 +178,7 @@ while cl_AD.step <= nsteps
                 ylim = (-g_AD.Ly/2, g_AD.Ly/2),
                 title = "C(x,y,t), t = "*string(round(cl_AD.t; digits = 2)))
         push!(upper_layer_tracer_plots_AD, tp_u)
-        hist_upper = histogram(reshape(AD_prob.vars.c[:, :, 1], :), label = false, normalize = :probability, xlims = (0, 0.16),
+        hist_upper = histogram(reshape(AD_prob.vars.c[:, :, 1], :), label = false, normalize = :probability,
                                title = "Normalised histogram of \ntracer concentration, t = "*string(round(cl_AD.t; digits = 2)))
         push!(upper_concentration_hist, hist_upper)
         tp_l = heatmap(x, y, v_AD.c[:, :, 2]',
@@ -189,7 +191,7 @@ while cl_AD.step <= nsteps
                 ylim = (-g_AD.Ly/2, g_AD.Ly/2),
                 title = "C(x,y,t), t = "*string(round(cl_AD.t; digits = 2)))
         push!(lower_layer_tracer_plots_AD, tp_l)
-        hist_lower = histogram(reshape(AD_prob.vars.c[:, :, 2], :), label = false, normalize = :probability, xlims = (0, 0.16),
+        hist_lower = histogram(reshape(AD_prob.vars.c[:, :, 2], :), label = false, normalize = :probability,
                                        title = "Normalised histogram of \ntracer concentration, t = "*string(round(cl_AD.t; digits = 2)))
         push!(lower_concentration_hist, hist_lower)
         global plot_time_AD += plot_time_inc
@@ -222,3 +224,19 @@ hist_bottom = plot(lower_concentration_hist[1], lower_concentration_hist[2],
 
 plot(plot_top, hist_top, layout=(2, 1), size=(1200, 1200))
 plot(plot_bottom, hist_bottom, layout=(2, 1), size=(1200, 1200))
+
+#Want to integrate (cumumlative sum) over the historgram to get the area of the tracer patch
+#To do this need to fit the histogram as an object rather than just using the histogram from Plots
+
+histi = fit(Histogram, initial_data, nbins = 17)
+probhisti = normalize(histi, mode = :probability)
+
+plot(probhisti, label = false)
+upper_concentration_hist[1]
+
+final_data = reshape(AD_prob.vars.c[:, :, 1], :)
+histf = fit(Histogram, final_data , nbins = 17)
+probhistf = normalize(histf, mode = :probability)
+
+plot(probhistf, label = false)
+upper_concentration_hist[6]
