@@ -33,6 +33,7 @@ function Problem(;
   #################################################################################################
   prob = nothing,
   delay_time = 0,
+  inc_background_flow = true,
   nsubs = 1,
   #################################################################################################
     nx = 128,
@@ -65,7 +66,7 @@ function Problem(;
 
   if steadyflow;                   pr = ConstDiffSteadyFlowParams(eta, κ, u, v, grid)
   #################################################################################################
-  elseif isnothing(prob) == false; pr = set_QGFlowParams(eta, κ, prob, delay_time, nsubs)
+  elseif isnothing(prob) == false; pr = set_QGFlowParams(eta, κ, prob, delay_time, nsubs, inc_background_flow)
   #################################################################################################
   else;                            pr = ConstDiffParams(eta, κ, u, v)
   end
@@ -137,15 +138,16 @@ Returns the params for constant diffusivity problem with quasi-geostrophic flow.
 struct QGFlowParams{T,A,Trfft} <: AbstractQGFlowParams
   nlayers::Int64    # Number of layers in the QG_flow problem
   eta::T            # Constant horizontal diffusivity
-  κ::T            # Constant vertical diffusivity
-  κh::T           # Constant isotropic hyperdiffusivity
-  nκh::Int        # Constant isotropic hyperdiffusivity order
+  κ::T              # Constant vertical diffusivity
+  κh::T             # Constant isotropic hyperdiffusivity
+  nκh::Int          # Constant isotropic hyperdiffusivity order
   u::A              # Advecting x-velocity. These will be updated at each step of the problem.
   v::A              # Advecting y-velocity
   rfftplan :: Trfft # rfft plan for MultiLayerQG
+  background_flow :: Bool #whether or not the background flow is included in the flow
 end
 
-function set_QGFlowParams(eta, κ, prob, delay_time, nsubs)
+function set_QGFlowParams(eta, κ, prob, delay_time, nsubs, inc_background_flow)
   if isequal(delay_time, 0) == false
     flow_till_delay_time!(prob, delay_time, nsubs)
   end
@@ -153,8 +155,9 @@ function set_QGFlowParams(eta, κ, prob, delay_time, nsubs)
   vvel = prob.vars.v
   nlayers = prob.params.nlayers
   rfftplan = prob.params.rfftplan
+  background_flow = inc_background_flow
   
-  return QGFlowParams(nlayers, eta, κ, 0eta, 0, uvel, vvel, rfftplan) 
+  return QGFlowParams(nlayers, eta, κ, 0eta, 0, uvel, vvel, rfftplan, background_flow) 
 end
 #################################################################################################
 
@@ -372,10 +375,16 @@ end
 Updates the velocity field of the advection problem `AD_prob` with the velcoty field from the `QG_prob`.
 """
 function vel_field_update!(AD_prob, QG_prob, nsubs)
+
   MultiLayerQG.stepforward!(QG_prob, nsubs)
   MultiLayerQG.updatevars!(QG_prob)
-  @. AD_prob.params.u = QG_prob.vars.u + QG_prob.params.U
-  @. AD_prob.params.v = QG_prob.vars.v
+  if AD_prob.params.background_flow == false
+    @. AD_prob.params.u = QG_prob.vars.u
+    @. AD_prob.params.v = QG_prob.vars.v
+  else
+    @. AD_prob.params.u = QG_prob.vars.u + QG_prob.params.U
+    @. AD_prob.params.v = QG_prob.vars.v
+  end
   return nothing
 end
 #################################################################################################
