@@ -60,23 +60,23 @@ MultiLayerQG.set_q!(QG_prob, q_i)
 #Set delay time (that is flow for t seconds, then drop tracer in)
 delay_time = 0
 #Set the tracer advection probelm by passing in the QG problem 
-AD_prob = TracerAdvDiff_QG.Problem(;prob = QG_prob, delay_time = delay_time, nsubs = nsubs, κ = κ)
+AD_prob = TracerAdvDiff_QG.Problem(;prob = QG_prob, delay_time = delay_time, inc_background_flow = true, nsubs = nsubs, κ = κ)
 sol_AD, cl_AD, v_AD, p_AD, g_AD = AD_prob.sol, AD_prob.clock, AD_prob.vars, AD_prob.params, AD_prob.grid
 x_AD, y_AD = gridpoints(g_AD)
 x, y = g_AD.x, g_AD.y
 #Set the (same) initial condition in both layers.
 
 #A Gaussian blob centred at μIC 
-#=
+
 μIC = [0, 0]
 Σ = [1 0; 0 1]
 blob = MvNormal(μIC, Σ)
 blob_IC(x, y) = pdf(blob, [x, y])
 C₀ = @. blob_IC(x_AD, y_AD)
-=#
+
 
 #A Gaussian strip around centred at μIC.
-
+#=
 μIC = 0
 σ² = 0.5
 strip = Normal(μIC, σ²)
@@ -85,7 +85,7 @@ C₀ = Array{Float64}(undef, g_AD.nx, g_AD.ny)
 for i in 1:g_AD.nx
     C₀[i, :] = strip_IC(y_AD[i, :])
 end
-
+=#
 #If using strip_IC use C₀' for a vertical strip
 TracerAdvDiff_QG.QGset_c!(AD_prob, C₀)
 
