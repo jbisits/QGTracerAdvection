@@ -113,7 +113,7 @@ upper_layer_tracer_plots_AD = Plots.Plot{Plots.GRBackend}[]
 #Define frequency at which to save a plot.
 #plot_time_AD is when to get the first plot, plot_time_inc is at what interval subsequent plots are created.
 #Setting them the same gives plots at equal time increments. (Might be a better work around)
-plot_time_AD, plot_time_inc = 0.2, 0.2
+plot_time_AD, plot_time_inc = 0.1, 0.1
 #Define arguments for plots.
 kwargs = (
          xlabel = "x",
