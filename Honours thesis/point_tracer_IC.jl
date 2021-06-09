@@ -71,16 +71,21 @@ x, y = g_AD.x, g_AD.y
 #Set the (same) initial condition in both layers.
 
 #Point tracer initial condition
+#=
 seed!(1234)
 xconcpt = rand(1:g_AD.nx)
 yconcpt = rand(1:g_AD.ny)
+=#
+#Easier to just set this concentration pt at the centre grid Point
+xconcpt = 32
+yconcpt = 36
 C₀ = Array{Float64}(undef, g_AD.nx, g_AD.ny)
 for i in 1:g_AD.nx
     for j in 1:g_AD.ny
         if [i, j] != [xconcpt, yconcpt]
             C₀[i, j] = 0
         else
-            C₀[i, j] = 1000
+            C₀[i, j] = 1
         end
     end
 end
@@ -113,7 +118,7 @@ upper_layer_tracer_plots_AD = Plots.Plot{Plots.GRBackend}[]
 #Define frequency at which to save a plot.
 #plot_time_AD is when to get the first plot, plot_time_inc is at what interval subsequent plots are created.
 #Setting them the same gives plots at equal time increments. (Might be a better work around)
-plot_time_AD, plot_time_inc = 0.1, 0.1
+plot_time_AD, plot_time_inc = 0.2, 0.2
 #Define arguments for plots.
 kwargs = (
          xlabel = "x",
@@ -188,3 +193,19 @@ plot_bottom = plot(lower_layer_tracer_plots_AD[1], lower_layer_tracer_plots_AD[2
                    lower_layer_tracer_plots_AD[5], lower_layer_tracer_plots_AD[6])
 
 plot(plot_top, plot_bottom, layout=(2, 1), size=(1200, 1200))
+
+#Add areas Ad, At and Ap from Garrett to these plots (if possible)
+#=
+function Ad(r, centre)
+    θ = range(0, 2π, length = 200)
+    x = r.*cos.(θ) .+ centre[1]
+    y = r.*sin.(θ) .+ centre[2]
+    return [x y]
+end
+Adres = Ad(1, [0, 0])
+p1_areas = plot!(lower_layer_tracer_plots_AD[2], Adres[:, 1], Adres[:, 2], linestyle = :dash, color = :black, label = "Ad")
+Adres = Ad(π, [0, 0])
+Apres = Ad(2.5, [0, 0])
+p2_areas = plot!(lower_layer_tracer_plots_AD[8], Adres[:, 1], Adres[:, 2], linestyle = :dash, color = :black, label = "Ad")
+plot!(p2_areas, Apres[:, 1], Apres[:, 2], linestyle = :dot, color = :red, label = "Ap")
+=#
