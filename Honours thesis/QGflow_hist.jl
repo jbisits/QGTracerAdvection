@@ -230,6 +230,11 @@ plot(plot_bottom, hist_bottom, layout=(2, 1), size=(1200, 1200))
 
 histi = fit(Histogram, initial_data, nbins = 17)
 probhisti = normalize(histi, mode = :probability)
+#Now cumlulative sum to each bin and will get data that you can plot.
+hist_data = cumsum(probhisti.weights) #This might need to be summed from the other direction.
+hist_data = vcat(0, hist_data)
+plot(0:0.01:0.16, reverse(hist_data), label = false, xlabel = "Concentration", ylabel = "normalised area")
+plot(reverse(hist_data), 0:0.01:0.16, label = false, xlabel = "Concentration", ylabel = "normalised area")
 
 plot(probhisti, label = false)
 upper_concentration_hist[1]
@@ -237,6 +242,11 @@ upper_concentration_hist[1]
 final_data = reshape(AD_prob.vars.c[:, :, 1], :)
 histf = fit(Histogram, final_data , nbins = 17)
 probhistf = normalize(histf, mode = :probability)
+hist_dataf = cumsum(probhistf.weights)
+hist_dataf = vcat(0, hist_dataf)
+plot(0:0.01:0.17, reverse(hist_dataf), label = false, xlabel = "Concentration", ylabel = "normalised area")
+
+plot(reverse(hist_dataf), 0:0.01:0.17, label = false, xlabel = "Normalised area", ylabel = "Concentration")
 
 plot(probhistf, label = false)
 upper_concentration_hist[6]
