@@ -194,7 +194,7 @@ plot_bottom = plot(lower_layer_tracer_plots_AD[1], lower_layer_tracer_plots_AD[2
 
 plot(plot_top, plot_bottom, layout=(2, 1), size=(1200, 1200))
 
-#Add areas Ad, At and Ap from Garrett to these plots (if possible)
+#Add areas Ad, At and Ap from Garrett to these plots 
 #=
 function Ad(r, centre)
     θ = range(0, 2π, length = 200)
