@@ -2,7 +2,7 @@
     Diagnostics to measure mixing.
     These are:
      - variance of concentration over the grid
-     - evolution of the second moment of the tracer patch.
+     - evolution of the isopycnal second moment
 =#
 module MeasureMixing
 
@@ -11,7 +11,7 @@ export
     area_tracer_patch!,
     fit_normal!
 
-using Distributions, GeophysicalFlows
+using Distributions, GeophysicalFlows, StatsBase, LinearAlgebra
 
 """
     function conc_var!(concentration_variance, AD_prob)
@@ -41,6 +41,25 @@ function fit_normal!(σ², AD_prob)
         fit_norm = fit_mle(Normal, conc_data)
         σ = params(fit_norm)[2]
         σ²[step, i] = σ^2
+    end
+
+end
+"""
+    function isopycnal_second_moment(AD_prob)
+Fit a histogram to the concentration data, then use cumulative sum to numerically integrate so that a picture
+of normalised area ~ concentration. The axis are then swapped to concentration ~ normalised area.
+A plot of this is then saved to a .jld2 file (and maybe also the fitted histogram?).
+"""
+function isopycnal_second_moment(AD_prob)
+
+    nlayers, C = AD_prob.params.nlayers, AD_prob.vars.c
+    hist_layer = Array{Histogram}(undef, nlayers)
+
+    for i in 1:nlayers
+        conc_data = reshape(C[:, :, i], :)
+        temp_fit = fit(Histogram, conc_data)
+        hist_layer[i] = normalize(temp_fit, mode = :probability)
+        
     end
 
 end
