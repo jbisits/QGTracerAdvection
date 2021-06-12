@@ -71,12 +71,7 @@ x, y = g_AD.x, g_AD.y
 #Set the (same) initial condition in both layers.
 
 #Point tracer initial condition
-#=
-seed!(1234)
-xconcpt = rand(1:g_AD.nx)
-yconcpt = rand(1:g_AD.ny)
-=#
-#Easier to just set this concentration pt at the centre grid Point
+#Set this concentration pt at the centre grid Point
 xconcpt = 32
 yconcpt = 36
 C₀ = Array{Float64}(undef, g_AD.nx, g_AD.ny)
