@@ -199,22 +199,34 @@ hist_bottom = plot(hist_bottom[1], hist_bottom[2], hist_bottom[3], hist_bottom[4
 plot(plot_top, hist_top, layout=(2, 1), size=(1200, 1200))
 plot(plot_bottom, hist_bottom, layout=(2, 1), size=(1200, 1200))
 
-#Concentration ~ area
+#Concentration ~ area example plot
 plot(data["ConcentrationData/step400"][1], data["Histograms/step400"][1].edges,
          label = false,
         xlabel = "Normalised area",
         ylabel = "Concentration",
         ylims = (0, max_conc[1] + 0.01)
         )
-#This animation is just in the top layer at the moment
+
+#Animation of #Concentration ~ area 
+#This animation is already saved so is commented out
 #=
 ConcVsArea = @animate for i in 1:10:nsteps
-    plot(data["ConcentrationData/step"*string(i)][1], data["Histograms/step"*string(i)][1].edges,
-         label = false,
-        xlabel = "Normalised area",
-        ylabel = "Concentration",
-         ylims = (0, max_conc[1] + 0.01)
-        )
+    p1 = plot(data["ConcentrationData/step"*string(i)][1], data["Histograms/step"*string(i)][1].edges,
+                 label = false,
+                xlabel = "Normalised area",
+                ylabel = "Concentration",
+                 ylims = (0, max_conc[1] + 0.01),
+                 title = "Top layer"
+                )
+    p2 = plot(data["ConcentrationData/step"*string(i)][2], data["Histograms/step"*string(i)][2].edges,
+                 label = false,
+                xlabel = "Normalised area",
+                ylabel = "Concentration",
+                 ylims = (0, max_conc[2] + 0.01),
+                 title = "Bottom layer"
+                )
+    plot(p1, p2)
 end
 
-mp4(ConcVsArea, "Movies/ConcVsArea.mp4", fps=18)=#
+mp4(ConcVsArea, "Movies/ConcVsArea.mp4", fps=18)
+=#
