@@ -1,17 +1,17 @@
 #Set up a flow with parameters that have mid-latitude values on a domain of 1500km * 1500km
 
 #Mid-latitude values (all in metres and seconds)
-Ω = 7.29e-5
-ϕ = π/3
-a = 6378e3
-g = 9.81
-H = 1500
-ρ₁ = 1034
-ρ₂ = 1035
+Ω = 7.29e-5     # Earth"s rotation
+ϕ = π/3         # Latitude
+a = 6378e3      # Earth's radius
+g = 9.81        # Gravity
+H = 1000        # Total depth (in metres)
+ρ₁ = 1034       # Density of top layer
+ρ₂ = 1035       # Density of bottom layer
 
-β = (2*Ω*cos(ϕ))/a
-f₀ = 2*Ω*sin(ϕ)
-gprime = g*((ρ₂ - ρ₁)/ρ₂)
+β = (2*Ω*cos(ϕ))/a          # β value computed from above values
+f₀ = 2*Ω*sin(ϕ)             # Coriolis force
+gprime = g*((ρ₂ - ρ₁)/ρ₂)   # Reduced gravity
 
 Ld = sqrt(gprime*H)/(f₀) #Rossby deformation radius (horizontal domain to be 50-100 times larger)
 
@@ -19,7 +19,7 @@ using Random: seed!
 
 dev = CPU() 
 
-n = 128                     # 2D resolution = n²
+      n = 128               # 2D resolution = n²
 stepper = "FilteredRK4"     # timestepper
      dt = 3600              # timestep (one day in seconds)
  nsteps = 365*15            # total number of time-steps (some number of years)

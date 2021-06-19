@@ -4,9 +4,9 @@ using .TracerAdvDiff_QG
 using GeophysicalFlows.MultiLayerQG, Plots, Distributions, StatsBase, LinearAlgebra, JLD2
 
 #Import the flow that has already been set up.
-include("flow_setup.jl")
+include("flow_setup_res128.jl")
 
-κ = 0.01
+κ = 0.1
 #Set delay time (that is flow for some number of days, then drop tracer in)
 delay_time = 0
 #Set the tracer advection probelm by passing in the QG problem 
@@ -51,6 +51,8 @@ while ADClock.step <= nsteps
                 colorbar = true,
                 xlims = (-ADGrid.Lx/2, ADGrid.Lx/2),
                 ylims = (-ADGrid.Ly/2, ADGrid.Ly/2),
+                xticks = (-ADGrid.Lx/2:Int(250e3):ADGrid.Lx/2, string.(-750:250:750)),
+                yticks = (-ADGrid.Ly/2:Int(250e3):ADGrid.Ly/2, string.(-750:250:750)),
                 title = "C(x,y,t), day = "*string(ADClock.t/3600));
         push!(upper_layer_tracer_plots_AD, tp_u)
         tp_l = heatmap(x, y, ADVars.c[:, :, 2]',
@@ -61,6 +63,8 @@ while ADClock.step <= nsteps
                 colorbar = true,
                 xlims = (-ADGrid.Lx/2, ADGrid.Lx/2),
                 ylims = (-ADGrid.Ly/2, ADGrid.Ly/2),
+                xticks = (-ADGrid.Lx/2:Int(250e3):ADGrid.Lx/2, string.(-750:250:750)),
+                yticks = (-ADGrid.Ly/2:Int(250e3):ADGrid.Ly/2, string.(-750:250:750)),
                 title = "C(x,y,t), day = "*string(ADClock.t/3600))
         push!(lower_layer_tracer_plots_AD, tp_l)
         push!(step_nums, ADClock.step)
@@ -73,7 +77,9 @@ while ADClock.step <= nsteps
                 colorbar = true,
                 xlims = (-ADGrid.Lx/2, ADGrid.Lx/2),
                 ylims = (-ADGrid.Ly/2, ADGrid.Ly/2),
-                title = "C(x,y,t), day = "*string(ADClock.t/3600))
+                xticks = (-ADGrid.Lx/2:Int(250e3):ADGrid.Lx/2, string.(-750:250:750)),
+                yticks = (-ADGrid.Ly/2:Int(250e3):ADGrid.Ly/2, string.(-750:250:750)),
+                title = "C(x,y,t), day = "*string(Int(ADClock.t/3600)))
         push!(upper_layer_tracer_plots_AD, tp_u)
         tp_l = heatmap(x, y, ADVars.c[:, :, 2]',
                 aspectratio = 1,
@@ -83,7 +89,9 @@ while ADClock.step <= nsteps
                 colorbar = true,
                 xlims = (-ADGrid.Lx/2, ADGrid.Lx/2),
                 ylims = (-ADGrid.Ly/2, ADGrid.Ly/2),
-                title = "C(x,y,t), day = "*string(ADClock.t/3600))
+                xticks = (-ADGrid.Lx/2:Int(250e3):ADGrid.Lx/2, string.(-750:250:750)),
+                yticks = (-ADGrid.Ly/2:Int(250e3):ADGrid.Ly/2, string.(-750:250:750)),
+                title = "C(x,y,t), day = "*string(Int(ADClock.t/3600)))
         push!(lower_layer_tracer_plots_AD, tp_l)
         push!(step_nums, ADClock.step)
         global plot_time_AD += plot_time_inc
