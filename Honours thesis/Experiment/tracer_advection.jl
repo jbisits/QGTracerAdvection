@@ -4,7 +4,8 @@ using .TracerAdvDiff_QG
 using GeophysicalFlows.MultiLayerQG, Plots, Distributions, StatsBase, LinearAlgebra, JLD2
 
 #Import the flow that has already been set up.
-include("flow_setup_res128.jl")
+#include("flow_setup_res128.jl")
+include("flow_setup_res256.jl")
 
 κ = 0.1
 #Set delay time (that is flow for some number of days, then drop tracer in)
@@ -15,16 +16,19 @@ ADSol, ADClock, ADVars, ADParams, ADGrid = ADProb.sol, ADProb.clock, ADProb.vars
 ADx, ADy = gridpoints(ADGrid)
 x, y = ADGrid.x, ADGrid.y
 
-#Set the Gaussian blob initial condition
-μIC = [0, 0]
-Σ = [1 0; 0 1]
-blob = MvNormal(μIC, Σ)
-blob_IC(x, y) = pdf(blob, [x, y])
-C₀ = @. blob_IC(ADx, ADy)
+#Set the Gaussian strip initial condition
+μIC = 0
+σ² = 0.5
+strip = Normal(μIC, σ²)
+strip_IC(x) = pdf(strip, x)
+C₀ = Array{Float64}(undef, ADGrid.nx, ADGrid.ny)
+for i in 1:ADGrid.nx
+    C₀[i, :] = strip_IC(ADy[i, :])
+end
 
 TracerAdvDiff_QG.QGset_c!(ADProb, C₀)
 
-max_conc = [findmax(ADVars.c[:, :, 1])[1], findmax(ADVars.c[:, :, 1])[1]]
+max_conc = [findmax(ADVars.c[:, :, 1])[1], findmax(ADVars.c[:, :, 2])[1]]
 
 #Define blank arrays in which to store the plots of tracer diffusion in each layer.
 lower_layer_tracer_plots_AD = Plots.Plot{Plots.GRBackend}[]
@@ -53,7 +57,7 @@ while ADClock.step <= nsteps
                 ylims = (-ADGrid.Ly/2, ADGrid.Ly/2),
                 xticks = (-ADGrid.Lx/2:Int(250e3):ADGrid.Lx/2, string.(-750:250:750)),
                 yticks = (-ADGrid.Ly/2:Int(250e3):ADGrid.Ly/2, string.(-750:250:750)),
-                title = "C(x,y,t), day = "*string(ADClock.t/3600));
+                title = "C(x,y,t), day = "*string(round(Int, ADClock.t/3600)))
         push!(upper_layer_tracer_plots_AD, tp_u)
         tp_l = heatmap(x, y, ADVars.c[:, :, 2]',
                 aspectratio = 1,
@@ -65,7 +69,7 @@ while ADClock.step <= nsteps
                 ylims = (-ADGrid.Ly/2, ADGrid.Ly/2),
                 xticks = (-ADGrid.Lx/2:Int(250e3):ADGrid.Lx/2, string.(-750:250:750)),
                 yticks = (-ADGrid.Ly/2:Int(250e3):ADGrid.Ly/2, string.(-750:250:750)),
-                title = "C(x,y,t), day = "*string(ADClock.t/3600))
+                title = "C(x,y,t), day = "*string(round(Int, ADClock.t/3600)))
         push!(lower_layer_tracer_plots_AD, tp_l)
         push!(step_nums, ADClock.step)
     elseif round(Int64, ADClock.step) == round(Int64, plot_time_AD*nsteps)
@@ -79,7 +83,7 @@ while ADClock.step <= nsteps
                 ylims = (-ADGrid.Ly/2, ADGrid.Ly/2),
                 xticks = (-ADGrid.Lx/2:Int(250e3):ADGrid.Lx/2, string.(-750:250:750)),
                 yticks = (-ADGrid.Ly/2:Int(250e3):ADGrid.Ly/2, string.(-750:250:750)),
-                title = "C(x,y,t), day = "*string(Int(ADClock.t/3600)))
+                title = "C(x,y,t), day = "*string(round(Int, ADClock.t/3600)))
         push!(upper_layer_tracer_plots_AD, tp_u)
         tp_l = heatmap(x, y, ADVars.c[:, :, 2]',
                 aspectratio = 1,
@@ -91,7 +95,7 @@ while ADClock.step <= nsteps
                 ylims = (-ADGrid.Ly/2, ADGrid.Ly/2),
                 xticks = (-ADGrid.Lx/2:Int(250e3):ADGrid.Lx/2, string.(-750:250:750)),
                 yticks = (-ADGrid.Ly/2:Int(250e3):ADGrid.Ly/2, string.(-750:250:750)),
-                title = "C(x,y,t), day = "*string(Int(ADClock.t/3600)))
+                title = "C(x,y,t), day = "*string(round(Int, ADClock.t/3600)))
         push!(lower_layer_tracer_plots_AD, tp_l)
         push!(step_nums, ADClock.step)
         global plot_time_AD += plot_time_inc

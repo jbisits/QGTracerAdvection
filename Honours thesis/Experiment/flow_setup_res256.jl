@@ -1,4 +1,4 @@
-#Set up a flow with parameters that have mid-latitude values on a domain of 1500km * 1500km, resolution 128
+#Set up a flow with parameters that have mid-latitude values on a domain of 1500km * 1500km, resolution 256
 
 #Mid-latitude values (all in metres and seconds)
 Ω = 7.29e-5     # Earth"s rotation
@@ -19,9 +19,9 @@ using Random: seed!
 
 dev = CPU() 
 
-      n = 128               # 2D resolution = n²
+      n = 256               # 2D resolution = n²
 stepper = "FilteredRK4"     # timestepper
-     dt = 3600              # timestep (one day in seconds)
+     dt = 3600/2            # timestep (half a day in seconds)
  nsteps = 365*15            # total number of time-steps (some number of years)
  nsubs  = 1                 # number of time-steps for plotting (nsteps must be multiple of nsubs)
 
