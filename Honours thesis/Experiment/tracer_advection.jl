@@ -16,15 +16,12 @@ ADSol, ADClock, ADVars, ADParams, ADGrid = ADProb.sol, ADProb.clock, ADProb.vars
 ADx, ADy = gridpoints(ADGrid)
 x, y = ADGrid.x, ADGrid.y
 
-#Set the Gaussian strip initial condition
-μIC = 0
-σ² = 0.5
-strip = Normal(μIC, σ²)
-strip_IC(x) = pdf(strip, x)
-C₀ = Array{Float64}(undef, ADGrid.nx, ADGrid.ny)
-for i in 1:ADGrid.nx
-    C₀[i, :] = strip_IC(ADy[i, :])
-end
+#Set the Gaussian blob initial condition
+μIC = [0, 0]
+Σ = [1 0; 0 1]
+blob = MvNormal(μIC, Σ)
+blob_IC(x, y) = pdf(blob, [x, y])
+C₀ = @. blob_IC(x_AD, y_AD)
 
 TracerAdvDiff_QG.QGset_c!(ADProb, C₀)
 
