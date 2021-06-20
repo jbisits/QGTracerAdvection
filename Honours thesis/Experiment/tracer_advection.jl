@@ -38,6 +38,8 @@ step_nums = []
 #Create a file to save data to
 filename = CreateFile(ADProb)
 
+#Set arguments for the plots from the ADProb
+plotargs = Set_plotargs(ADProb)
 #Step the tracer advection problem forward and plot at the desired time step.
 while ADClock.step <= nsteps
     if ADClock.step == 0
@@ -72,6 +74,19 @@ LowerTracerPlots = plot(LowerLayerTracerPlots[1], LowerLayerTracerPlots[2],
 #Now can load the output of the .jld2 file created to create histograms and plots of Concentration ~ normalised area.
 
 data = load(filename)
+
+histargs1 = (
+    label = false, 
+    xlabel = "Concentration", 
+    ylabel = "Normalised area",
+    xlims = (0, max_conc[1] + 0.01)
+)
+histargs2 = (
+    label = false, 
+    xlabel = "Concentration", 
+    ylabel = "Normalised area",
+    xlims = (0, max_conc[2] + 0.01)
+)
 
 for i ∈ step_nums
     push!(UpperConcentrationHistograma, plot(data["Histograms/step"*string(i)][1]; histargs1))

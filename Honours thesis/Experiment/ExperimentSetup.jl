@@ -52,32 +52,23 @@ UpperLayerTracerPlots = Plots.Plot{Plots.GRBackend}[]
 LowerLayerTracerPlots = Plots.Plot{Plots.GRBackend}[]
 
 #Key arguments for plots
-plotargs = (
-            aspectratio = 1,
-            c = :deep,
-            xlabel = "x",
-            ylabel = "y",
-            colorbar = true,
-            xlims = (-ADGrid.Lx/2, ADGrid.Lx/2),
-            ylims = (-ADGrid.Ly/2, ADGrid.Ly/2),
-            xticks = (-ADGrid.Lx/2:round(Int, ADGrid.Lx/6):ADGrid.Lx/2, string.(-Int(ADGrid.Lx/2e3):round(Int, ADGrid.Lx/6e3):Int(ADGrid.Lx/2e3))),
-            yticks = (-ADGrid.Lx/2:round(Int, ADGrid.Lx/6):ADGrid.Lx/2, string.(-Int(ADGrid.Lx/2e3):round(Int, ADGrid.Lx/6e3):Int(ADGrid.Lx/2e3))),
-            title = "C(x,y,t), day = "*string(round(Int, ADClock.t/3600))
-)
+function Set_plotargs(ADProb)
+    ADGrid, ADClock = ADProb.grid, ADProb.clock
+    plotargs = (
+                aspectratio = 1,
+                c = :deep,
+                xlabel = "x",
+                ylabel = "y",
+                colorbar = true,
+                xlims = (-ADGrid.Lx/2, ADGrid.Lx/2),
+                ylims = (-ADGrid.Ly/2, ADGrid.Ly/2),
+                xticks = (-ADGrid.Lx/2:round(Int, ADGrid.Lx/6):ADGrid.Lx/2, string.(-Int(ADGrid.Lx/2e3):round(Int, ADGrid.Lx/6e3):Int(ADGrid.Lx/2e3))),
+                yticks = (-ADGrid.Lx/2:round(Int, ADGrid.Lx/6):ADGrid.Lx/2, string.(-Int(ADGrid.Lx/2e3):round(Int, ADGrid.Lx/6e3):Int(ADGrid.Lx/2e3))),
+                title = "C(x,y,t), day = "*string(round(Int, ADClock.t/3600))
+    )
+    return plotargs
+end
 
 #Histograms for concentration ~ normalised area
 UpperConcentrationHistograms = Plots.Plot{Plots.GRBackend}[]
 LowerConcentrationHistograms = Plots.Plot{Plots.GRBackend}[]
-
-histargs1 = (
-    label = false, 
-    xlabel = "Concentration", 
-    ylabel = "Normalised area",
-    xlims = (0, max_conc[1] + 0.01)
-)
-histargs2 = (
-    label = false, 
-    xlabel = "Concentration", 
-    ylabel = "Normalised area",
-    xlims = (0, max_conc[2] + 0.01)
-)
