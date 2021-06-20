@@ -2,8 +2,8 @@
 
 include(joinpath("/Users/Joey/Desktop/ThesisCode/QG_tracer_advection/Modules/TracerAdvDiff_QG.jl"))
 include(joinpath("/Users/Joey/Desktop/ThesisCode/QG_tracer_advection/Modules/MeasureMixing.jl"))
-using .TracerAdvDiff_QG, .MeasureMixing
-using GeophysicalFlows.MultiLayerQG, Plots, Distributions, StatsBase, LinearAlgebra, JLD2
+using .TracerAdvDiff_QG, .MeasureMixing #local modules
+using GeophysicalFlows.MultiLayerQG, Plots, Distributions, StatsBase, LinearAlgebra, JLD2 #packages
 
 #Initial conditions
 abstract type InitialCondition end
@@ -39,11 +39,17 @@ function GaussianStripIC(μ, σ², grid)
     return GaussianStrip(μ, σ², C₀)
 end
 
-#Create file name for a given run that will be appended with flow characteristics and .jld2
+#Create directory and file for a given run that will be appended with flow characteristics and .jld2. If already exists uses directory and removes the file.
 function CreateFile(ADProb)
     Lx, nx = ADProb.grid.Lx, ADProb.grid.nx
-    filepath = pwd()
-    filename = joinpath(filepath, "Honours thesis/Experiment/Output/SavedData: domain = "*string(round(Int, Lx/1e3))*", res = "*string(nx)*".jld2")
+    filepath = joinpath(pwd(), "Honours thesis/Experiment/Output/Simulation: Domain = "*string(round(Int, Lx/1e3))*", Res = "*string(nx))
+    if !isdir(filepath)
+        mkdir(filepath)
+    end
+    filename = joinpath(filepath, "SimulationData.jld2")
+    if isfile(filename)
+        rm(filename)
+    end
     return filename
 end
 
@@ -68,7 +74,3 @@ function Set_plotargs(ADProb)
     )
     return plotargs
 end
-
-#Histograms for concentration ~ normalised area
-UpperConcentrationHistograms = Plots.Plot{Plots.GRBackend}[]
-LowerConcentrationHistograms = Plots.Plot{Plots.GRBackend}[]

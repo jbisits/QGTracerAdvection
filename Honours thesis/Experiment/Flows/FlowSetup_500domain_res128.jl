@@ -22,7 +22,7 @@ dev = CPU()
       n = 128               # 2D resolution = n²
 stepper = "FilteredRK4"     # timestepper
      dt = 3600/3            # timestep (some fraction of one day in seconds)
- nsteps = 365*20            # total number of time-steps (some number of years)
+ nsteps = 365*15            # total number of time-steps (some number of years)
  nsubs  = 1                 # number of time-steps for plotting (nsteps must be multiple of nsubs)
 
 

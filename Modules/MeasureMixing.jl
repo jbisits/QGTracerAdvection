@@ -1,8 +1,10 @@
 #=
-    Diagnostics to measure mixing.
-    These are:
+    Diagnostics to measure mixing and functions for data extraction from a .jld2 file created by a tracer 
+    advection diffusion simulation.
+    The diagnostics are:
      - variance of concentration over the grid
      - evolution of the isopycnal second moment
+    From the .jld2 file can create plots and extract relevant information.
 =#
 module MeasureMixing
 
@@ -10,7 +12,10 @@ export
     conc_var!,
     area_tracer_patch!,
     fit_normal!, 
-    fit_hist!
+    fit_hist!,
+    hist_plot,
+    concarea_plot,
+    concarea_animate
 
 using Distributions, GeophysicalFlows, StatsBase, LinearAlgebra, JLD2, Plots
 
@@ -71,6 +76,82 @@ function fit_hist!(filename, AD_prob; number_of_bins = 0)
         file["ConcentrationData/step"*string(AD_prob.clock.step)] = conc_data
     end
 
+end
+"""
+    function hist_plot(data)
+Create plots of histograms at the same timesteps as the tracer plots from the saved data
+in the output file. The input `data` is the loaded .jld2 file.
+"""
+function hist_plot(data)
+    step_nums = data["SaveStepsforTracerPlots"]
+    max_conc = data["MaxConcentration"]
+    UpperConcentrationHistograms = Plots.Plot{Plots.GRBackend}[]
+    LowerConcentrationHistograms = Plots.Plot{Plots.GRBackend}[]
+    for i ∈ step_nums
+        push!(UpperConcentrationHistograms, plot(data["Histograms/step"*string(i)][1],
+                                                    label = false, 
+                                                    xlabel = "Concentration", 
+                                                    ylabel = "Normalised area",
+                                                    xlims = (0, max_conc[1] + 0.01)))
+        push!(LowerConcentrationHistograms, plot(data["Histograms/step"*string(i)][2],
+                                                    label = false, 
+                                                    xlabel = "Concentration", 
+                                                    ylabel = "Normalised area",
+                                                    xlims = (0, max_conc[2] + 0.01)))
+    end
+    return [UpperConcentrationHistograms, LowerConcentrationHistograms]
+end
+"""
+    function concarea_plot(data)
+Create plots of Concetration ~ normalised area at the same time steps as the tracer plots from the 
+saved data in the output file. The input `data` is the loaded .jld2 file.
+"""
+function concarea_plot(data)
+    step_nums = data["SaveStepsforTracerPlots"]
+    max_conc = data["MaxConcentration"]
+    UpperConcentrationArea = Plots.Plot{Plots.GRBackend}[]
+    LowerConcentrationArea = Plots.Plot{Plots.GRBackend}[]
+    for i ∈ step_nums
+        push!(UpperConcentrationArea, plot(data["ConcentrationData/step"*string(i)][1], data["Histograms/step"*string(i)][1].edges,
+                label = false,
+                xlabel = "Normalised area",
+                ylabel = "Concentration",
+                xlims = (0, max_conc[1] + 0.01)
+                ))
+        push!(LowerConcentrationArea, plot(data["ConcentrationData/step"*string(i)][2], data["Histograms/step"*string(i)][2].edges,
+                label = false,
+                xlabel = "Normalised area",
+                ylabel = "Concentration",
+                xlims = (0, max_conc[2] + 0.01)
+                ))
+    end
+    return [UpperConcentrationArea, LowerConcentrationArea]
+end
+"""
+    function concarea_animate(data, nsteps)
+Create an animation of Concetration ~ normalised area from the saved data in the output file.
+"""
+function concarea_animate(data, nsteps)
+
+    max_conc = data["MaxConcentration"]
+    ConcVsArea = @animate for i in 1:10:nsteps
+    p1 = plot(data["ConcentrationData/step"*string(i)][1], data["Histograms/step"*string(i)][1].edges,
+                 label = false,
+                xlabel = "Normalised area",
+                ylabel = "Concentration",
+                 ylims = (0, max_conc[1] + 0.01),
+                 title = "Top layer"
+                )
+    p2 = plot(data["ConcentrationData/step"*string(i)][2], data["Histograms/step"*string(i)][2].edges,
+                 label = false,
+                xlabel = "Normalised area",
+                ylabel = "Concentration",
+                 ylims = (0, max_conc[2] + 0.01),
+                 title = "Bottom layer"
+                )
+    plot(p1, p2)
+    end
+    return ConcVsArea
 end
 
 end #module
