@@ -20,6 +20,12 @@ struct GaussianStrip{T, U} <: InitialCondition
     C₀ :: U
 end
 
+struct PointSource{T, U} <: InitialCondition
+    x  :: T
+    y  :: T
+    C₀ :: U
+end
+
 function GaussianBlobIC(μ, Σ, grid)
     x, y = gridpoints(grid)
     blob = MvNormal(μ, Σ)
@@ -37,6 +43,22 @@ function GaussianStripIC(μ, σ², grid)
         C₀[i, :] = strip_IC(y[i, :])
     end
     return GaussianStrip(μ, σ², C₀)
+end
+
+function PointSourceIC(ConcentrationPoint, grid)
+    xconcpt = ConcentrationPoint[1]
+    yconcpt = ConcentrationPoint[2]
+    C₀ = Array{Float64}(undef, grid.nx, grid.ny)
+    for i in 1:grid.nx
+        for j in 1:grid.ny
+            if [i, j] != [xconcpt, yconcpt]
+                C₀[i, j] = 0
+            else
+                C₀[i, j] = 1
+            end
+        end
+    end
+    return PointSource(xconcpt, yconcpt, C₀)
 end
 
 #Create directory and file for a given run that will be appended with flow characteristics and .jld2. If already exists uses directory and removes the file.
