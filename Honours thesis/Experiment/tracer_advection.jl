@@ -3,11 +3,14 @@ using .TracerAdvDiff_QG
 
 using GeophysicalFlows.MultiLayerQG, Plots, Distributions, StatsBase, LinearAlgebra, JLD2
 
-#Import the flow that has already been set up.
-#include("flow_setup_res128.jl")
-include("flow_setup_res256.jl")
+#Import a flow that has already been set up.
+include("Flows/FlowSetup_500domain_res128.jl")
+#include("Flows/FlowSetup_1000domain_res128.jl")
+#include("Flows/FlowSetup_1000domain_res256.jl")
+#include("Flows/FlowSetup_1500domain_res128.jl")
+#include("Flows/FlowSetup_1500domain_res256.jl")
 
-κ = 0.1
+κ = 0.01
 #Set delay time (that is flow for some number of days, then drop tracer in)
 delay_time = 0
 #Set the tracer advection probelm by passing in the QG problem 
@@ -21,7 +24,7 @@ x, y = ADGrid.x, ADGrid.y
 Σ = [1 0; 0 1]
 blob = MvNormal(μIC, Σ)
 blob_IC(x, y) = pdf(blob, [x, y])
-C₀ = @. blob_IC(x_AD, y_AD)
+C₀ = @. blob_IC(ADx, ADy)
 
 TracerAdvDiff_QG.QGset_c!(ADProb, C₀)
 
@@ -52,8 +55,8 @@ while ADClock.step <= nsteps
                 colorbar = true,
                 xlims = (-ADGrid.Lx/2, ADGrid.Lx/2),
                 ylims = (-ADGrid.Ly/2, ADGrid.Ly/2),
-                xticks = (-ADGrid.Lx/2:Int(250e3):ADGrid.Lx/2, string.(-750:250:750)),
-                yticks = (-ADGrid.Ly/2:Int(250e3):ADGrid.Ly/2, string.(-750:250:750)),
+                xticks = (-ADGrid.Lx/2:Int(ADGrid.Lx/8):ADGrid.Lx/2, string.(-Int(ADGrid.Lx/2e3):round(Int, ADGrid.Lx/6e3):Int(ADGrid.Lx/2e3))),
+                yticks = (-ADGrid.Lx/2:Int(ADGrid.Lx/8):ADGrid.Lx/2, string.(-Int(ADGrid.Lx/2e3):round(Int, ADGrid.Lx/6e3):Int(ADGrid.Lx/2e3))),
                 title = "C(x,y,t), day = "*string(round(Int, ADClock.t/3600)))
         push!(upper_layer_tracer_plots_AD, tp_u)
         tp_l = heatmap(x, y, ADVars.c[:, :, 2]',
@@ -64,8 +67,8 @@ while ADClock.step <= nsteps
                 colorbar = true,
                 xlims = (-ADGrid.Lx/2, ADGrid.Lx/2),
                 ylims = (-ADGrid.Ly/2, ADGrid.Ly/2),
-                xticks = (-ADGrid.Lx/2:Int(250e3):ADGrid.Lx/2, string.(-750:250:750)),
-                yticks = (-ADGrid.Ly/2:Int(250e3):ADGrid.Ly/2, string.(-750:250:750)),
+                xticks = (-ADGrid.Lx/2:Int(ADGrid.Lx/8):ADGrid.Lx/2, string.(-Int(ADGrid.Lx/2e3):round(Int, ADGrid.Lx/6e3):Int(ADGrid.Lx/2e3))),
+                yticks = (-ADGrid.Lx/2:Int(ADGrid.Lx/8):ADGrid.Lx/2, string.(-Int(ADGrid.Lx/2e3):round(Int, ADGrid.Lx/6e3):Int(ADGrid.Lx/2e3))),
                 title = "C(x,y,t), day = "*string(round(Int, ADClock.t/3600)))
         push!(lower_layer_tracer_plots_AD, tp_l)
         push!(step_nums, ADClock.step)
@@ -78,8 +81,8 @@ while ADClock.step <= nsteps
                 colorbar = true,
                 xlims = (-ADGrid.Lx/2, ADGrid.Lx/2),
                 ylims = (-ADGrid.Ly/2, ADGrid.Ly/2),
-                xticks = (-ADGrid.Lx/2:Int(250e3):ADGrid.Lx/2, string.(-750:250:750)),
-                yticks = (-ADGrid.Ly/2:Int(250e3):ADGrid.Ly/2, string.(-750:250:750)),
+                xticks = (-ADGrid.Lx/2:Int(ADGrid.Lx/8):ADGrid.Lx/2, string.(-Int(ADGrid.Lx/2e3):round(Int, ADGrid.Lx/6e3):Int(ADGrid.Lx/2e3))),
+                yticks = (-ADGrid.Lx/2:Int(ADGrid.Lx/8):ADGrid.Lx/2, string.(-Int(ADGrid.Lx/2e3):round(Int, ADGrid.Lx/6e3):Int(ADGrid.Lx/2e3))),
                 title = "C(x,y,t), day = "*string(round(Int, ADClock.t/3600)))
         push!(upper_layer_tracer_plots_AD, tp_u)
         tp_l = heatmap(x, y, ADVars.c[:, :, 2]',
@@ -90,8 +93,8 @@ while ADClock.step <= nsteps
                 colorbar = true,
                 xlims = (-ADGrid.Lx/2, ADGrid.Lx/2),
                 ylims = (-ADGrid.Ly/2, ADGrid.Ly/2),
-                xticks = (-ADGrid.Lx/2:Int(250e3):ADGrid.Lx/2, string.(-750:250:750)),
-                yticks = (-ADGrid.Ly/2:Int(250e3):ADGrid.Ly/2, string.(-750:250:750)),
+                xticks = (-ADGrid.Lx/2:Int(ADGrid.Lx/8):ADGrid.Lx/2, string.(-Int(ADGrid.Lx/2e3):round(Int, ADGrid.Lx/6e3):Int(ADGrid.Lx/2e3))),
+                yticks = (-ADGrid.Lx/2:Int(ADGrid.Lx/8):ADGrid.Lx/2, string.(-Int(ADGrid.Lx/2e3):round(Int, ADGrid.Lx/6e3):Int(ADGrid.Lx/2e3))),
                 title = "C(x,y,t), day = "*string(round(Int, ADClock.t/3600)))
         push!(lower_layer_tracer_plots_AD, tp_l)
         push!(step_nums, ADClock.step)
