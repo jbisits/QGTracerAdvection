@@ -74,8 +74,8 @@ LowerTracerPlots = plot(LowerLayerTracerPlots[1], LowerLayerTracerPlots[2],
 data = load(filename)
 
 for i ∈ step_nums
-    push!(UpperConcentrationHistograma, plot(data["Histograms/step"*string(i)][1]; histargs))
-    push!(LowerConcentrationHistograma, plot(data["Histograms/step"*string(i)][2]; histargs))
+    push!(UpperConcentrationHistograma, plot(data["Histograms/step"*string(i)][1]; histargs1))
+    push!(LowerConcentrationHistograma, plot(data["Histograms/step"*string(i)][2]; histargs2))
 end
 
 UpperConcentrationHistograms = plot(UpperConcentrationHistograms[1], UpperConcentrationHistograms[2], 

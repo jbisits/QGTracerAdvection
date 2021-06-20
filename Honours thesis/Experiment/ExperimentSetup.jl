@@ -1,5 +1,8 @@
 #Import the required packages to use for the simulation
-using .TracerAdvDiff_QG
+
+include(joinpath("/Users/Joey/Desktop/ThesisCode/QG_tracer_advection/Modules/TracerAdvDiff_QG.jl"))
+include(joinpath("/Users/Joey/Desktop/ThesisCode/QG_tracer_advection/Modules/MeasureMixing.jl"))
+using .TracerAdvDiff_QG, .MeasureMixing
 using GeophysicalFlows.MultiLayerQG, Plots, Distributions, StatsBase, LinearAlgebra, JLD2
 
 #Initial conditions
@@ -66,7 +69,13 @@ plotargs = (
 UpperConcentrationHistograms = Plots.Plot{Plots.GRBackend}[]
 LowerConcentrationHistograms = Plots.Plot{Plots.GRBackend}[]
 
-histargs = (
+histargs1 = (
+    label = false, 
+    xlabel = "Concentration", 
+    ylabel = "Normalised area",
+    xlims = (0, max_conc[1] + 0.01)
+)
+histargs2 = (
     label = false, 
     xlabel = "Concentration", 
     ylabel = "Normalised area",
