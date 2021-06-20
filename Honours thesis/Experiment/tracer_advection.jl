@@ -1,7 +1,7 @@
 #Tracer advcetion diffusion on large domain
-using .TracerAdvDiff_QG
 
-using GeophysicalFlows.MultiLayerQG, Plots, Distributions, StatsBase, LinearAlgebra, JLD2
+#Experiment setup script
+include("ExperimentSetup.jl")
 
 #Import a flow that has already been set up.
 include("Flows/FlowSetup_500domain_res128.jl")
@@ -22,17 +22,11 @@ x, y = ADGrid.x, ADGrid.y
 #Set the Gaussian blob initial condition
 μIC = [0, 0]
 Σ = [1 0; 0 1]
-blob = MvNormal(μIC, Σ)
-blob_IC(x, y) = pdf(blob, [x, y])
-C₀ = @. blob_IC(ADx, ADy)
+IC = GaussianBlobIC(μIC, Σ, ADGrid)
 
-TracerAdvDiff_QG.QGset_c!(ADProb, C₀)
+TracerAdvDiff_QG.QGset_c!(ADProb, IC.C₀)
 
 max_conc = [findmax(ADVars.c[:, :, 1])[1], findmax(ADVars.c[:, :, 2])[1]]
-
-#Define blank arrays in which to store the plots of tracer diffusion in each layer.
-lower_layer_tracer_plots_AD = Plots.Plot{Plots.GRBackend}[]
-upper_layer_tracer_plots_AD = Plots.Plot{Plots.GRBackend}[]
 
 #Define frequency at which to save a plot.
 #plot_time_AD is when to get the first plot, plot_time_inc is at what interval subsequent plots are created.
@@ -41,105 +35,58 @@ plot_time_AD, plot_time_inc = 0.2, 0.2
 #Blank array to save the step number so can plot histogram corresponding to the tracer advection plot.
 step_nums = []
 
-filepath = pwd()
-filename = joinpath(filepath, "Honours thesis/Experimet/hist_conc.jld2")
+#Create a file to save data to
+filename = CreateFile(ADProb)
 
 #Step the tracer advection problem forward and plot at the desired time step.
 while ADClock.step <= nsteps
     if ADClock.step == 0
-        tp_u = heatmap(x, y, ADVars.c[:, :, 1]',
-                aspectratio = 1,
-                c = :deep,
-                xlabel = "x",
-                ylabel = "y",
-                colorbar = true,
-                xlims = (-ADGrid.Lx/2, ADGrid.Lx/2),
-                ylims = (-ADGrid.Ly/2, ADGrid.Ly/2),
-                xticks = (-ADGrid.Lx/2:Int(ADGrid.Lx/8):ADGrid.Lx/2, string.(-Int(ADGrid.Lx/2e3):round(Int, ADGrid.Lx/6e3):Int(ADGrid.Lx/2e3))),
-                yticks = (-ADGrid.Lx/2:Int(ADGrid.Lx/8):ADGrid.Lx/2, string.(-Int(ADGrid.Lx/2e3):round(Int, ADGrid.Lx/6e3):Int(ADGrid.Lx/2e3))),
-                title = "C(x,y,t), day = "*string(round(Int, ADClock.t/3600)))
-        push!(upper_layer_tracer_plots_AD, tp_u)
-        tp_l = heatmap(x, y, ADVars.c[:, :, 2]',
-                aspectratio = 1,
-                c = :deep,
-                xlabel = "x",
-                ylabel = "y",
-                colorbar = true,
-                xlims = (-ADGrid.Lx/2, ADGrid.Lx/2),
-                ylims = (-ADGrid.Ly/2, ADGrid.Ly/2),
-                xticks = (-ADGrid.Lx/2:Int(ADGrid.Lx/8):ADGrid.Lx/2, string.(-Int(ADGrid.Lx/2e3):round(Int, ADGrid.Lx/6e3):Int(ADGrid.Lx/2e3))),
-                yticks = (-ADGrid.Lx/2:Int(ADGrid.Lx/8):ADGrid.Lx/2, string.(-Int(ADGrid.Lx/2e3):round(Int, ADGrid.Lx/6e3):Int(ADGrid.Lx/2e3))),
-                title = "C(x,y,t), day = "*string(round(Int, ADClock.t/3600)))
-        push!(lower_layer_tracer_plots_AD, tp_l)
+        tp_u = heatmap(x, y, ADVars.c[:, :, 1]'; plotargs...)
+        push!(UpperLayerTracerPlots, tp_u)
+        tp_l = heatmap(x, y, ADVars.c[:, :, 2]'; plotargs...)
+        push!(LowerLayerTracerPlots, tp_l)
         push!(step_nums, ADClock.step)
     elseif round(Int64, ADClock.step) == round(Int64, plot_time_AD*nsteps)
-        tp_u = heatmap(x, y, ADVars.c[:, :, 1]',
-                aspectratio = 1,
-                c = :deep,
-                xlabel = "x",
-                ylabel = "y",
-                colorbar = true,
-                xlims = (-ADGrid.Lx/2, ADGrid.Lx/2),
-                ylims = (-ADGrid.Ly/2, ADGrid.Ly/2),
-                xticks = (-ADGrid.Lx/2:Int(ADGrid.Lx/8):ADGrid.Lx/2, string.(-Int(ADGrid.Lx/2e3):round(Int, ADGrid.Lx/6e3):Int(ADGrid.Lx/2e3))),
-                yticks = (-ADGrid.Lx/2:Int(ADGrid.Lx/8):ADGrid.Lx/2, string.(-Int(ADGrid.Lx/2e3):round(Int, ADGrid.Lx/6e3):Int(ADGrid.Lx/2e3))),
-                title = "C(x,y,t), day = "*string(round(Int, ADClock.t/3600)))
-        push!(upper_layer_tracer_plots_AD, tp_u)
-        tp_l = heatmap(x, y, ADVars.c[:, :, 2]',
-                aspectratio = 1,
-                c = :deep,
-                xlabel = "x",
-                ylabel = "y",
-                colorbar = true,
-                xlims = (-ADGrid.Lx/2, ADGrid.Lx/2),
-                ylims = (-ADGrid.Ly/2, ADGrid.Ly/2),
-                xticks = (-ADGrid.Lx/2:Int(ADGrid.Lx/8):ADGrid.Lx/2, string.(-Int(ADGrid.Lx/2e3):round(Int, ADGrid.Lx/6e3):Int(ADGrid.Lx/2e3))),
-                yticks = (-ADGrid.Lx/2:Int(ADGrid.Lx/8):ADGrid.Lx/2, string.(-Int(ADGrid.Lx/2e3):round(Int, ADGrid.Lx/6e3):Int(ADGrid.Lx/2e3))),
-                title = "C(x,y,t), day = "*string(round(Int, ADClock.t/3600)))
-        push!(lower_layer_tracer_plots_AD, tp_l)
+        tp_u = heatmap(x, y, ADVars.c[:, :, 1]'; plotargs)
+        push!(UpperLayerTracerPlots, tp_u)
+        tp_l = heatmap(x, y, ADVars.c[:, :, 2]'; plotargs)
+        push!(LowerLayerTracerPlots, tp_l)
         push!(step_nums, ADClock.step)
         global plot_time_AD += plot_time_inc
     end
-    #MeasureMixing.fit_hist!(filename, ADProb, number_of_bins = 30)
+    MeasureMixing.fit_hist!(filename, ADProb, number_of_bins = 30)
     stepforward!(ADProb, nsubs)
     TracerAdvDiff_QG.QGupdatevars!(ADProb)
-    #Updates the velocity field in advection problem to the velocity field in the MultiLayerQG.Problem at each timestep.
     TracerAdvDiff_QG.vel_field_update!(ADProb, QGProb, nsubs)
 end
-#Need to set this up so this does not need to be hardcoded.
-#Display the tracer advection in the upper layer.
-plot_top = plot(upper_layer_tracer_plots_AD[1], upper_layer_tracer_plots_AD[2], 
-                upper_layer_tracer_plots_AD[3], upper_layer_tracer_plots_AD[4],
-                upper_layer_tracer_plots_AD[5], upper_layer_tracer_plots_AD[6])
+
+UpperTracerPlots = plot(UpperLayerTracerPlots[1], UpperLayerTracerPlots[2], 
+                        UpperLayerTracerPlots[3], UpperLayerTracerPlots[4],
+                        UpperLayerTracerPlots[5], UpperLayerTracerPlots[6])
      
-#Display the tracer advection in the lower layer.
-plot_bottom = plot(lower_layer_tracer_plots_AD[1], lower_layer_tracer_plots_AD[2], 
-                   lower_layer_tracer_plots_AD[3], lower_layer_tracer_plots_AD[4],
-                   lower_layer_tracer_plots_AD[5], lower_layer_tracer_plots_AD[6])
+
+LowerTracerPlots = plot(LowerLayerTracerPlots[1], LowerLayerTracerPlots[2], 
+                    LowerLayerTracerPlots[3], LowerLayerTracerPlots[4],
+                    LowerLayerTracerPlots[5], LowerLayerTracerPlots[6])
 
 #Now can load the output of the .jld2 file created to create histograms and plots of Concentration ~ normalised area.
 
-data = load("Experiment/hist_conc.jld2")
+data = load(filename)
 
-hist_top = Plots.Plot{Plots.GRBackend}[]
-hist_bottom = Plots.Plot{Plots.GRBackend}[]
 for i ∈ step_nums
-    push!(hist_top, plot(data["Histograms/step"*string(i)][1], 
-                             label = false, 
-                            xlabel = "Concentration", 
-                            ylabel = "Normalised area",
-                             xlims = (0, max_conc[1] + 0.01)))
-    push!(hist_bottom, plot(data["Histograms/step"*string(i)][2],
-                             label = false, 
-                            xlabel = "Concentration", 
-                            ylabel = "Normalised area",
-                             xlims = (0, max_conc[2] + 0.01)))
+    push!(UpperConcentrationHistograma, plot(data["Histograms/step"*string(i)][1]; histargs))
+    push!(LowerConcentrationHistograma, plot(data["Histograms/step"*string(i)][2]; histargs))
 end
-hist_top = plot(hist_top[1], hist_top[2], hist_top[3], hist_top[4], hist_top[5], hist_top[6])
-hist_bottom = plot(hist_bottom[1], hist_bottom[2], hist_bottom[3], hist_bottom[4], hist_bottom[5], hist_bottom[6])
 
-plot(plot_top, hist_top, layout=(2, 1), size=(1200, 1200))
-plot(plot_bottom, hist_bottom, layout=(2, 1), size=(1200, 1200))
+UpperConcentrationHistograms = plot(UpperConcentrationHistograms[1], UpperConcentrationHistograms[2], 
+                                    UpperConcentrationHistograms[3], UpperConcentrationHistograms[4], 
+                                    UpperConcentrationHistograms[5], UpperConcentrationHistograms[6])
+LowerConcentrationHistograms = plot(LowerConcentrationHistograms[1], LowerConcentrationHistograms[2], 
+                                    LowerConcentrationHistograms[3], LowerConcentrationHistograms[4], 
+                                    LowerConcentrationHistograms[5], LowerConcentrationHistograms[6])
+
+plot(UpperTracerPlots, UpperConcentrationHistograms, layout=(2, 1), size=(1200, 1200))
+plot(LowerTracerPlots, LowerConcentrationHistograms, layout=(2, 1), size=(1200, 1200))
 
 #Concentration ~ area example plot
 plot(data["ConcentrationData/step400"][1], data["Histograms/step400"][1].edges,
