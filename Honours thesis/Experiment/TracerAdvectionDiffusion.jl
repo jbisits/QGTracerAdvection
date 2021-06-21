@@ -21,9 +21,12 @@ ADx, ADy = gridpoints(ADGrid)
 x, y = ADGrid.x, ADGrid.y
 
 #Set the Gaussian blob initial condition
+#=
 μIC = [0, 0]
 Σ = [1 0; 0 1]
-IC = GaussianBlobIC(μIC, Σ, ADGrid)
+IC = GaussianBlobIC(μIC, Σ, ADGrid)=#
+
+IC = SquareIC(48:70, ADGrid)
 
 TracerAdvDiff_QG.QGset_c!(ADProb, IC.C₀)
 

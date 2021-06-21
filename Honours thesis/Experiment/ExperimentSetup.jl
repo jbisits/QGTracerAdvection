@@ -27,6 +27,12 @@ struct PointSource{T, U} <: InitialCondition
     C₀ :: U
 end
 
+struct Square{T, U} <: InitialCondition
+    x  :: T
+    y  :: T
+    C₀ :: U
+end
+
 function GaussianBlobIC(μ, Σ, grid)
     x, y = grid.x, grid.y
     xgrid, ygrid = gridpoints(grid)
@@ -62,6 +68,16 @@ function PointSourceIC(ConcentrationPoint, grid)
         end
     end
     return PointSource(xconcpt, yconcpt, C₀)
+end
+
+function SquareIC(x, grid)
+    C₀ = zeros(grid.nx, grid.ny)
+    for i ∈ x
+        for j ∈ x
+            C₀[i, j] = 1
+        end
+    end
+    return Square(x, x, C₀)
 end
 
 #Create directory and file for a given run that will be appended with flow characteristics and .jld2. If already exists uses directory and removes the file.
