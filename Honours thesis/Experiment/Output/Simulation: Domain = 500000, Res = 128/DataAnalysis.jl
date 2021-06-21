@@ -4,7 +4,7 @@ using .MeasureMixing
 data = load(filename)
 
 #Produce histogram plots from the histogram objects that are saved
-histplots = hist_plot(data)
+histplots = MeasureMixing.hist_plot(data)
 
 #Extract tracer plots from the simulation
 uppertracerplots = data["TracerPlots"]
