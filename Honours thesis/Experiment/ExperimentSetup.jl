@@ -27,20 +27,22 @@ struct PointSource{T, U} <: InitialCondition
 end
 
 function GaussianBlobIC(μ, Σ, grid)
-    x, y = gridpoints(grid)
+    x, y = grid.x, grid.y
+    xgrid, ygrid = gridpoints(grid)
     blob = MvNormal(μ, Σ)
     blob_IC(x, y) = pdf(blob, [x, y])
-    C₀ = @. blob_IC(ADx, ADy)
+    C₀ = @. blob_IC(xgrid, ygrid)
     return GaussianBlob(μ, Σ, C₀)
 end
 
 function GaussianStripIC(μ, σ², grid)
-    x, y = gridpoints(grid)
+    x= grid.x
+    ygrid = gridpoints(grid)
     strip = Normal(μ, σ²)
     strip_IC(x) = pdf(strip, x)
     C₀ = Array{Float64}(undef, grid.nx, grid.ny)
     for i in 1:grid.nx
-        C₀[i, :] = strip_IC(y[i, :])
+        C₀[i, :] = strip_IC(ygrid[i, :])
     end
     return GaussianStrip(μ, σ², C₀)
 end
