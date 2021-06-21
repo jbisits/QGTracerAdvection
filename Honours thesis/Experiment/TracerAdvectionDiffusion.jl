@@ -4,7 +4,8 @@
 include("ExperimentSetup.jl")
 
 #Import a flow that has already been set up.
-include("Flows/FlowSetup_500domain_res128.jl")
+include("Flows/ExampleFlow.jl")
+#include("Flows/FlowSetup_500domain_res128.jl")
 #include("Flows/FlowSetup_1000domain_res128.jl")
 #include("Flows/FlowSetup_1000domain_res256.jl")
 #include("Flows/FlowSetup_1500domain_res128.jl")
@@ -40,7 +41,7 @@ filename = CreateFile(ADProb)
 
 #Save parameters from the ADProb type so have the info
 jldopen(filename, "a+") do file
-    file["AdvecetionDiffusionParameters"] = ADParams
+    file["ADParameters"] = ADParams
     file["QGParameters"] = QGParams
     file["InitialCondition"] = IC
     file["MaxConcentration"] = max_conc

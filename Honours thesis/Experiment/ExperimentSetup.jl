@@ -4,6 +4,7 @@ include(joinpath("/Users/Joey/Desktop/ThesisCode/QG_tracer_advection/Modules/Tra
 include(joinpath("/Users/Joey/Desktop/ThesisCode/QG_tracer_advection/Modules/MeasureMixing.jl"))
 using .TracerAdvDiff_QG, .MeasureMixing #local modules
 using GeophysicalFlows.MultiLayerQG, Plots, Distributions, StatsBase, LinearAlgebra, JLD2 #packages
+using Random: seed!
 
 #Initial conditions
 abstract type InitialCondition end
@@ -36,8 +37,8 @@ function GaussianBlobIC(μ, Σ, grid)
 end
 
 function GaussianStripIC(μ, σ², grid)
-    x= grid.x
-    ygrid = gridpoints(grid)
+    x = grid.x
+    xgrid, ygrid = gridpoints(grid)
     strip = Normal(μ, σ²)
     strip_IC(x) = pdf(strip, x)
     C₀ = Array{Float64}(undef, grid.nx, grid.ny)
@@ -66,7 +67,7 @@ end
 #Create directory and file for a given run that will be appended with flow characteristics and .jld2. If already exists uses directory and removes the file.
 function CreateFile(ADProb)
     Lx, nx = ADProb.grid.Lx, ADProb.grid.nx
-    filepath = joinpath(pwd(), "Honours thesis/Experiment/Output/Simulation: Domain = "*string(round(Int, Lx/1e3))*", Res = "*string(nx))
+    filepath = joinpath(pwd(), "Honours thesis/Experiment/Output/Simulation: Domain = "*string(round(Int, Lx))*", Res = "*string(nx))
     if !isdir(filepath)
         mkdir(filepath)
     end
@@ -83,7 +84,7 @@ LowerLayerTracerPlots = Plots.Plot{Plots.GRBackend}[]
 
 #Key arguments for plots
 function Set_plotargs(ADProb)
-    ADGrid, ADClock = ADProb.grid, ADProb.clock
+    ADGrid = ADProb.grid
     plotargs = (
                 aspectratio = 1,
                 c = :deep,
@@ -92,9 +93,11 @@ function Set_plotargs(ADProb)
                 colorbar = true,
                 xlims = (-ADGrid.Lx/2, ADGrid.Lx/2),
                 ylims = (-ADGrid.Ly/2, ADGrid.Ly/2),
+                #=
+                These arguments are for plots on a larger domain.
                 xticks = (-ADGrid.Lx/2:round(Int, ADGrid.Lx/6):ADGrid.Lx/2, string.(-Int(ADGrid.Lx/2e3):round(Int, ADGrid.Lx/6e3):Int(ADGrid.Lx/2e3))),
-                yticks = (-ADGrid.Lx/2:round(Int, ADGrid.Lx/6):ADGrid.Lx/2, string.(-Int(ADGrid.Lx/2e3):round(Int, ADGrid.Lx/6e3):Int(ADGrid.Lx/2e3))),
-                title = "C(x,y,t), day = "*string(round(Int, ADClock.t/3600))
+                yticks = (-ADGrid.Lx/2:round(Int, ADGrid.Lx/6):ADGrid.Lx/2, string.(-Int(ADGrid.Lx/2e3):round(Int, ADGrid.Lx/6e3):Int(ADGrid.Lx/2e3)))
+                =#
     )
     return plotargs
 end
