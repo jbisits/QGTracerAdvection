@@ -1,6 +1,6 @@
 #Tracer advcetion diffusion on large domain
 
-#Experiment setup script
+#Experiment setup script. Depending on domain size and time step the title, xticks and yticks need to be manually done.
 include("ExperimentSetup.jl")
 
 #Import a flow that has already been set up.
