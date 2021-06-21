@@ -4,8 +4,8 @@
 include("ExperimentSetup.jl")
 
 #Import a flow that has already been set up.
-include("Flows/ExampleFlow.jl")
-#include("Flows/FlowSetup_500domain_res128.jl")
+#include("Flows/ExampleFlow.jl")
+include("Flows/FlowSetup_500domain_res128.jl")
 #include("Flows/FlowSetup_1000domain_res128.jl")
 #include("Flows/FlowSetup_1000domain_res256.jl")
 #include("Flows/FlowSetup_1500domain_res128.jl")
