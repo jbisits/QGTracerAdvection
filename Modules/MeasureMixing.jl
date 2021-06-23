@@ -134,7 +134,7 @@ Create an animation of Concetration ~ normalised area from the saved data in the
 function concarea_animate(data, nsteps)
 
     max_conc = data["MaxConcentration"]
-    ConcVsArea = @animate for i in 1:10:nsteps
+    ConcVsArea = @animate for i in 0:10:nsteps
     p1 = plot(data["ConcentrationData/step"*string(i)][1], data["Histograms/step"*string(i)][1].edges,
                  label = false,
                 xlabel = "Normalised area",

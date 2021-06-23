@@ -3,13 +3,14 @@
 #Experiment setup script. Depending on domain size and time step the title, xticks and yticks need to be manually done.
 include("ExperimentSetup.jl")
 
-#Import a flow that has already been set up.
+#Import a flow that has already been set up from the Flows folder
 #include("Flows/ExampleFlow.jl")
-include("Flows/FlowSetup_500domain_res128.jl")
+#include("Flows/FlowSetup_500domain_res128.jl")
 #include("Flows/FlowSetup_1000domain_res128.jl")
 #include("Flows/FlowSetup_1000domain_res256.jl")
 #include("Flows/FlowSetup_1500domain_res128.jl")
 #include("Flows/FlowSetup_1500domain_res256.jl")
+include("Flows/FlowSetup_nondim_32domain_128res.jl")
 
 κ = 0.01
 #Set delay time (that is flow for some number of days, then drop tracer in)
@@ -21,12 +22,9 @@ ADx, ADy = gridpoints(ADGrid)
 x, y = ADGrid.x, ADGrid.y
 
 #Set the Gaussian blob initial condition
-#=
 μIC = [0, 0]
-Σ = [1 0; 0 1]
-IC = GaussianBlobIC(μIC, Σ, ADGrid)=#
-
-IC = SquareIC(48:70, ADGrid)
+Σ = [5 0; 0 5]
+IC = GaussianBlobIC(μIC, Σ, ADGrid)
 
 TracerAdvDiff_QG.QGset_c!(ADProb, IC.C₀)
 
@@ -55,16 +53,19 @@ end
 plotargs = Set_plotargs(ADProb)
 #Step the tracer advection problem forward and plot at the desired time step.
 while ADClock.step <= nsteps
+    if ADClock.step % 1000 == 0
+        println("Step number: ", round(Int, ADClock.step))
+    end
     if ADClock.step == 0
-        tp_u = heatmap(x, y, ADVars.c[:, :, 1]'; plotargs...)
+        tp_u = heatmap(x, y, ADVars.c[:, :, 1]', title = "C(x, y, t), t = "*string(round(Int, ADClock.t)); plotargs...)
         push!(UpperLayerTracerPlots, tp_u)
-        tp_l = heatmap(x, y, ADVars.c[:, :, 2]'; plotargs...)
+        tp_l = heatmap(x, y, ADVars.c[:, :, 2]', title = "C(x, y, t), t = "*string(round(Int, ADClock.t)); plotargs...)
         push!(LowerLayerTracerPlots, tp_l)
         push!(step_nums, ADClock.step)
     elseif round(Int64, ADClock.step) == round(Int64, plot_time_AD*nsteps)
-        tp_u = heatmap(x, y, ADVars.c[:, :, 1]'; plotargs...)
+        tp_u = heatmap(x, y, ADVars.c[:, :, 1]', title = "C(x, y, t), t = "*string(round(Int, ADClock.t)); plotargs...)
         push!(UpperLayerTracerPlots, tp_u)
-        tp_l = heatmap(x, y, ADVars.c[:, :, 2]'; plotargs...)
+        tp_l = heatmap(x, y, ADVars.c[:, :, 2]', title = "C(x, y, t), t = "*string(round(Int, ADClock.t)); plotargs...)
         push!(LowerLayerTracerPlots, tp_l)
         push!(step_nums, ADClock.step)
         global plot_time_AD += plot_time_inc
