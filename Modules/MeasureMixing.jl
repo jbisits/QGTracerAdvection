@@ -97,23 +97,32 @@ end
 Create plots of histograms at the same timesteps as the tracer plots from the saved data
 in the output file. The input `data` is the loaded .jld2 file.
 """
-function hist_plot(data::Dict{String, Any}; plot_steps = 1:1000:nsteps)
-    max_conc = [findmax(data["snapshots/Concentration/0"][:, :, i])[1] for i in 1:nlayers]
+function hist_plot(data::Dict{String, Any}, nsteps)
+    plot_steps = 1:1000:nsteps
+    max_conc = [findmax(data["snapshots/Concentration/0"][:, :, i])[1] for i in 1:2]
     UpperConcentrationHistograms = Plots.Plot{Plots.GRBackend}[]
     LowerConcentrationHistograms = Plots.Plot{Plots.GRBackend}[]
     for i ∈ plot_steps
         upperdata = reshape(data["snapshots/Concentration/"*string(i)][:, :, 1], :)
         lowerdata = reshape(data["snapshots/Concentration/"*string(i)][:, :, 2], :)
-        push!(UpperConcentrationHistograms, plot(upperdata,
-                                                    label = false, 
-                                                    xlabel = "Concentration", 
-                                                    ylabel = "Normalised area",
-                                                    xlims = (0, max_conc[1] + 0.01)))
-        push!(LowerConcentrationHistograms, plot(lowerdata,
-                                                    label = false, 
-                                                    xlabel = "Concentration", 
-                                                    ylabel = "Normalised area",
-                                                    xlims = (0, max_conc[2] + 0.01)))
+        upperhist = fit(Histogram, upperdata)
+        lowerhist = fit(Histogram, lowerdata)
+        upperhist = normalize(upperhist, mode = :probability)
+        lowerhist = normalize(lowerhist, mode = :probability)
+        push!(UpperConcentrationHistograms, plot(upperhist,
+                                                label = false, 
+                                                xlabel = "Concentration", 
+                                                ylabel = "Normalised area",
+                                                xlims = (0, max_conc[1])
+                                                )
+            )
+        push!(LowerConcentrationHistograms, plot(lowerhist,
+                                                label = false, 
+                                                xlabel = "Concentration", 
+                                                ylabel = "Normalised area",
+                                                xlims = (0, max_conc[2])
+                                                )
+            )
     end
     return [UpperConcentrationHistograms, LowerConcentrationHistograms]
 end
@@ -122,31 +131,34 @@ end
 Create plots of Concetration ~ normalised area at the same time steps as the tracer plots from the 
 saved data in the output file. The input `data` is the loaded .jld2 file.
 """
-function concarea_plot(data::Dict{String, Any}; plot_steps = 1:1000:nsteps)
-    max_conc = [findmax(data["snapshots/Concentration/0"][:, :, i])[1] for i in 1:nlayers]
+function concarea_plot(data::Dict{String, Any}, nsteps)
+    plot_steps = 1:1000:nsteps
+    max_conc = [findmax(data["snapshots/Concentration/0"][:, :, i])[1] for i in 1:2]
     UpperConcentrationArea = Plots.Plot{Plots.GRBackend}[]
     LowerConcentrationArea = Plots.Plot{Plots.GRBackend}[]
     for i ∈ plot_steps
         upperdata = reshape(data["snapshots/Concentration/"*string(i)][:, :, 1], :)
         lowerdata = reshape(data["snapshots/Concentration/"*string(i)][:, :, 2], :)
-        upperhist = histogram(upperdata)
-        lowerhist = histogram(lowerdata)
+        upperhist = fit(Histogram, upperdata)
+        lowerhist = fit(Histogram, lowerdata)
         normalize!(upperhist, mode = :probability)
         normalize!(lowerhist, mode = :probability)
         upperconcdata = reverse(vcat(0, cumsum(reverse(upperhist.weights))))
         lowerconcdata = reverse(vcat(0, cumsum(reverse(lowerhist.weights))))
         push!(UpperConcentrationArea, plot(upperconcdata, upperhist.edges,
-                label = false,
-                xlabel = "Normalised area",
-                ylabel = "Concentration",
-                xlims = (0, max_conc[1] + 0.01)
-                ))
+                                            label = false,
+                                            xlabel = "Normalised area",
+                                            ylabel = "Concentration",
+                                            xlims = (0, max_conc[1] + 0.01)
+                                            )
+                )
         push!(LowerConcentrationArea, plot(lowerconcdata, lowerhist.edges,
-                label = false,
-                xlabel = "Normalised area",
-                ylabel = "Concentration",
-                xlims = (0, max_conc[2] + 0.01)
-                ))
+                                            label = false,
+                                            xlabel = "Normalised area",
+                                            ylabel = "Concentration",
+                                            xlims = (0, max_conc[2] + 0.01)
+                                            )
+            )
     end
     return [UpperConcentrationArea, LowerConcentrationArea]
 end

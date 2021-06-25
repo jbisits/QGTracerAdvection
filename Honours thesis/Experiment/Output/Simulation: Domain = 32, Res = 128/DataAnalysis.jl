@@ -1,8 +1,10 @@
 #Load in the data
-data = load(filename)
 
-#Produce histogram plots from the histogram objects that are saved
-histplots = hist_plot(data)
+file = joinpath(SimPath, "Output/Simulation: Domain = 32, res = 128/SimulationData.jld2")
+data = load(file)
+
+#Produce histogram plots from the saved concentration data
+histplots = hist_plot(data, nsteps)
 
 uppertracer = plot(tracerplots[1][1], tracerplots[1][2], tracerplots[1][3], tracerplots[1][4],
                     tracerplots[1][5],tracerplots[1][6])
