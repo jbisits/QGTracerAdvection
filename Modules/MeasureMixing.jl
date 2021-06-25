@@ -8,6 +8,7 @@
 =#
 module MeasureMixing
 
+using JLD2: FileIO
 export
     conc_var!,
     area_tracer_patch!,
@@ -25,12 +26,25 @@ using Distributions, GeophysicalFlows, StatsBase, LinearAlgebra, JLD2, Plots
 Calculate the variance of the tracer concentration in each layer for advection-diffusion problem `prob` and store the
 result at each timestep in the array concentration_variance. 
 """
-function conc_var!(concentration_variance, AD_prob) 
+function conc_var!(concentration_variance::Array, AD_prob::FourierFlows.Problem) 
 
     nlayers = AD_prob.params.nlayers
     step = AD_prob.clock.step + 1
     for i in 1:nlayers
         concentration_variance[step, i] = var(AD_prob.vars.c[:, :, i])
+    end
+
+end
+"""
+    function conc_var(data::Dict{String, Any})
+Compute the same concentration variance from saved output for an advection-diffusion problem
+"""
+function conc_var(data::Dict{String, Any})
+
+    concentration_variance = Array{Float64}(undef, nsteps, 2)
+    for i in 1:nsteps
+        concentration_variance[step, :] = [var(data["snapshots/Concentration/"*string(i)][:, :, 1]), 
+                                            var(data["snapshots/Concentration/"*string(i)][:, :, 2])]
     end
 
 end
@@ -54,7 +68,7 @@ end
 """
     function fit_hist!(filename, AD_prob, max_conc)
 Fits a histogram to the concentration data at each time step. From the histogram the concentration data 
-and area data can be extracted.
+and area data can be extracted. This is for use in a simulation like in `QG_hist.jl`
 """
 function fit_hist!(filename, AD_prob; number_of_bins = 0)
 
@@ -83,18 +97,19 @@ end
 Create plots of histograms at the same timesteps as the tracer plots from the saved data
 in the output file. The input `data` is the loaded .jld2 file.
 """
-function hist_plot(data)
-    step_nums = data["SaveStepsforTracerPlots"]
-    max_conc = data["MaxConcentration"]
+function hist_plot(data::Dict{String, Any}; plot_steps = 1:1000:nsteps)
+    max_conc = [findmax(data["snapshots/Concentration/0"][:, :, i])[1] for i in 1:nlayers]
     UpperConcentrationHistograms = Plots.Plot{Plots.GRBackend}[]
     LowerConcentrationHistograms = Plots.Plot{Plots.GRBackend}[]
-    for i ∈ step_nums
-        push!(UpperConcentrationHistograms, plot(data["Histograms/step"*string(i)][1],
+    for i ∈ plot_steps
+        upperdata = reshape(data["snapshots/Concentration/"*string(i)][:, :, 1], :)
+        lowerdata = reshape(data["snapshots/Concentration/"*string(i)][:, :, 2], :)
+        push!(UpperConcentrationHistograms, plot(upperdata,
                                                     label = false, 
                                                     xlabel = "Concentration", 
                                                     ylabel = "Normalised area",
                                                     xlims = (0, max_conc[1] + 0.01)))
-        push!(LowerConcentrationHistograms, plot(data["Histograms/step"*string(i)][2],
+        push!(LowerConcentrationHistograms, plot(lowerdata,
                                                     label = false, 
                                                     xlabel = "Concentration", 
                                                     ylabel = "Normalised area",
@@ -107,19 +122,26 @@ end
 Create plots of Concetration ~ normalised area at the same time steps as the tracer plots from the 
 saved data in the output file. The input `data` is the loaded .jld2 file.
 """
-function concarea_plot(data)
-    step_nums = data["SaveStepsforTracerPlots"]
-    max_conc = data["MaxConcentration"]
+function concarea_plot(data::Dict{String, Any}; plot_steps = 1:1000:nsteps)
+    max_conc = [findmax(data["snapshots/Concentration/0"][:, :, i])[1] for i in 1:nlayers]
     UpperConcentrationArea = Plots.Plot{Plots.GRBackend}[]
     LowerConcentrationArea = Plots.Plot{Plots.GRBackend}[]
-    for i ∈ step_nums
-        push!(UpperConcentrationArea, plot(data["ConcentrationData/step"*string(i)][1], data["Histograms/step"*string(i)][1].edges,
+    for i ∈ plot_steps
+        upperdata = reshape(data["snapshots/Concentration/"*string(i)][:, :, 1], :)
+        lowerdata = reshape(data["snapshots/Concentration/"*string(i)][:, :, 2], :)
+        upperhist = histogram(upperdata)
+        lowerhist = histogram(lowerdata)
+        normalize!(upperhist, mode = :probability)
+        normalize!(lowerhist, mode = :probability)
+        upperconcdata = reverse(vcat(0, cumsum(reverse(upperhist.weights))))
+        lowerconcdata = reverse(vcat(0, cumsum(reverse(lowerhist.weights))))
+        push!(UpperConcentrationArea, plot(upperconcdata, upperhist.edges,
                 label = false,
                 xlabel = "Normalised area",
                 ylabel = "Concentration",
                 xlims = (0, max_conc[1] + 0.01)
                 ))
-        push!(LowerConcentrationArea, plot(data["ConcentrationData/step"*string(i)][2], data["Histograms/step"*string(i)][2].edges,
+        push!(LowerConcentrationArea, plot(lowerconcdata, lowerhist.edges,
                 label = false,
                 xlabel = "Normalised area",
                 ylabel = "Concentration",
@@ -134,16 +156,24 @@ Create an animation of Concetration ~ normalised area from the saved data in the
 """
 function concarea_animate(data, nsteps)
 
-    max_conc = data["MaxConcentration"]
+    max_conc = [findmax(data["snapshots/Concentration/0"][:, :, i])[1] for i in 1:nlayers]
     ConcVsArea = @animate for i in 0:10:nsteps
-    p1 = plot(data["ConcentrationData/step"*string(i)][1], data["Histograms/step"*string(i)][1].edges,
+        upperdata = reshape(data["snapshots/Concentration/"*string(i)][:, :, 1], :)
+        lowerdata = reshape(data["snapshots/Concentration/"*string(i)][:, :, 2], :)
+        upperhist = histogram(upperdata)
+        lowerhist = histogram(lowerdata)
+        normalize!(upperhist, mode = :probability)
+        normalize!(lowerhist, mode = :probability)
+        upperconcdata = reverse(vcat(0, cumsum(reverse(upperhist.weights))))
+        lowerconcdata = reverse(vcat(0, cumsum(reverse(lowerhist.weights))))
+        p1 = plot(upperconcdata , upperhist.edges,
                  label = false,
                 xlabel = "Normalised area",
                 ylabel = "Concentration",
                  ylims = (0, max_conc[1] + 0.01),
                  title = "Top layer"
                 )
-    p2 = plot(data["ConcentrationData/step"*string(i)][2], data["Histograms/step"*string(i)][2].edges,
+        p2 = plot(lowerconcdata, lowerhist.edges,
                  label = false,
                 xlabel = "Normalised area",
                 ylabel = "Concentration",

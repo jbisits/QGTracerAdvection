@@ -1,5 +1,6 @@
 #Tracer advcetion diffusion experimetn
 
+#Change to the correct directory (if it was not already correct for some reason)
 SimPath = joinpath("/Users/Joey/Desktop/ThesisCode/QG_tracer_advection", "Honours thesis/Experiment")
 cd(SimPath)
 #Load in all the required packages for the simulation
@@ -26,7 +27,7 @@ x, y = ADGrid.x, ADGrid.y
 
 #Set the Gaussian blob initial condition
 μIC = [0, 0]
-Σ = [5 0; 0 5]
+Σ = [3 0; 0 3]
 IC = GaussianBlobIC(μIC, Σ, ADGrid)
 
 TracerAdvDiff_QG.QGset_c!(ADProb, IC.C₀)
@@ -39,7 +40,7 @@ while ADClock.step <= nsteps
     if ADClock.step % 1000 == 0
         println("Step number: ", round(Int, ADClock.step))
     end
-    saveoutput(out)
+    saveoutput(ADOutput)
     stepforward!(ADProb, nsubs)
     TracerAdvDiff_QG.QGupdatevars!(ADProb)
     TracerAdvDiff_QG.vel_field_update!(ADProb, QGProb, nsubs)
