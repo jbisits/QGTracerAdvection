@@ -4,7 +4,8 @@ export
     GaussianBlobIC,
     GaussianStripIC,
     PointSourceIC,
-    CreateFile
+    CreateFile, 
+    GetConcentration
 
 using GeophysicalFlows, Distributions, StatsBase, LinearAlgebra, JLD2
 """
@@ -83,23 +84,14 @@ function PointSourceIC(ConcentrationPoint, grid)
     end
     return PointSource(xconcpt, yconcpt, C₀)
 end
-
-"""
-    Struct to hold output from a tracer advection diffusion simulation.
-"""
-struct AdvectionOutput
-    ADProb :: FourierFlows.Problem
-    filepath :: String
-    fields :: Dict{Symbol, Function}
-end
 """
     CreateFile(ADProb)
 Create directory and file for a given run that will be appended with 
 flow characteristics and .jld2. If already exists uses directory and removes the file.
 """
-function CreateFile(ADProb)
+function CreateFile(ADProb, SimPath)
     Lx, nx = ADProb.grid.Lx, ADProb.grid.nx
-    filepath = joinpath(pwd(), "Honours thesis/Experiment/Output/Simulation: Domain = "*string(round(Int, Lx))*", Res = "*string(nx))
+    filepath = joinpath(SimPath, "Output/Simulation: Domain = "*string(round(Int, Lx))*", Res = "*string(nx))
     if !isdir(filepath)
         mkdir(filepath)
     end
@@ -108,6 +100,15 @@ function CreateFile(ADProb)
         rm(filename)
     end
     return filename
+end
+"""
+    GetConcentration(ADProb)
+Function to extract the concentration data from the `ADProb` so it can be saved into .jld2 
+that has been created for the simulation
+"""
+function GetConcentration(ADProb)
+    Concentration = @. ADProb.vars.c
+    return Concentration
 end
 
 end #module
