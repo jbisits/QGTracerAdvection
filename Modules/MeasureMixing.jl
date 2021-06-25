@@ -15,7 +15,8 @@ export
     fit_hist!,
     hist_plot,
     concarea_plot,
-    concarea_animate
+    concarea_animate,
+    set_plotargs
 
 using Distributions, GeophysicalFlows, StatsBase, LinearAlgebra, JLD2, Plots
 
@@ -152,6 +153,29 @@ function concarea_animate(data, nsteps)
     plot(p1, p2)
     end
     return ConcVsArea
+end
+
+"""
+    function Set_plotargs(ADProb)
+Create key word arguments for the heatmaps of tracer advection-diffusion.
+"""
+function set_plotargs(ADProb)
+    ADGrid = ADProb.grid
+    plotargs = (
+                aspectratio = 1,
+                c = :deep,
+                xlabel = "x",
+                ylabel = "y",
+                colorbar = true,
+                xlims = (-ADGrid.Lx/2, ADGrid.Lx/2),
+                ylims = (-ADGrid.Ly/2, ADGrid.Ly/2),
+                #=
+                These arguments are for plots on a larger domain.
+                xticks = (-ADGrid.Lx/2:round(Int, ADGrid.Lx/6):ADGrid.Lx/2, string.(-Int(ADGrid.Lx/2e3):round(Int, ADGrid.Lx/6e3):Int(ADGrid.Lx/2e3))),
+                yticks = (-ADGrid.Lx/2:round(Int, ADGrid.Lx/6):ADGrid.Lx/2, string.(-Int(ADGrid.Lx/2e3):round(Int, ADGrid.Lx/6e3):Int(ADGrid.Lx/2e3)))
+                =#
+    )
+    return plotargs
 end
 
 end #module
