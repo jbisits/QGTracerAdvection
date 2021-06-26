@@ -22,8 +22,6 @@ delay_time = 0
 #Set the tracer advection probelm by passing in the QG problem 
 ADProb = TracerAdvDiff_QG.Problem(;prob = QGProb, delay_time = delay_time, nsubs = nsubs, κ = κ)
 ADSol, ADClock, ADVars, ADParams, ADGrid = ADProb.sol, ADProb.clock, ADProb.vars, ADProb.params, ADProb.grid
-ADx, ADy = gridpoints(ADGrid)
-x, y = ADGrid.x, ADGrid.y
 
 #Set the Gaussian blob initial condition
 μIC = [0, 0]
