@@ -8,7 +8,6 @@
 =#
 module MeasureMixing
 
-using JLD2: FileIO
 export
     conc_mean,
     conc_var!,
@@ -19,7 +18,8 @@ export
     hist_plot,
     concarea_plot,
     concarea_animate,
-    tracer_plot
+    tracer_plot,
+    tracer_animate
 
 using Distributions, GeophysicalFlows, StatsBase, LinearAlgebra, JLD2, Plots
 """
@@ -27,8 +27,9 @@ using Distributions, GeophysicalFlows, StatsBase, LinearAlgebra, JLD2, Plots
 Calculate the mean at each timestep to see if it stays the same or if some concentration
 leaves the simulation.
 """
-function conc_mean(data::Dict{String, Any}, nsteps)
+function conc_mean(data::Dict{String, Any})
 
+    nsteps = data["clock/nsteps"]
     concentration_mean = Array{Float64}(undef, nsteps + 1, 2)
     for i ∈ 1:nsteps + 1
         concentration_mean[i, :] = [mean(data["snapshots/Concentration/"*string(i-1)][:, :, 1]), 
@@ -54,8 +55,9 @@ end
     function conc_var(data::Dict{String, Any})
 Compute the same concentration variance from saved output for an advection-diffusion problem
 """
-function conc_var(data::Dict{String, Any}, nsteps)
+function conc_var(data::Dict{String, Any})
 
+    nsteps = data["clock/nsteps"]
     concentration_variance = Array{Float64}(undef, nsteps + 1, 2)
     for i ∈ 1:nsteps + 1
         concentration_variance[i, :] = [var(data["snapshots/Concentration/"*string(i-1)][:, :, 1]), 
@@ -112,7 +114,9 @@ end
 Create plots of histograms at the same timesteps as the tracer plots from the saved data
 in the output file. The input `data` is the loaded .jld2 file.
 """
-function hist_plot(data::Dict{String, Any}, nsteps; plot_freq = 1000)
+function hist_plot(data::Dict{String, Any}; plot_freq = 1000)
+
+    nsteps = data["clock/nsteps"]
     plot_steps = 0:plot_freq:nsteps
     max_conc = [findmax(data["snapshots/Concentration/0"][:, :, i])[1] for i in 1:2]
     UpperConcentrationHistograms = Plots.Plot{Plots.GRBackend}[]
@@ -146,7 +150,9 @@ end
 Create plots of Concetration ~ normalised area at the same time steps as the tracer plots from the 
 saved data in the output file. The input `data` is the loaded .jld2 file.
 """
-function concarea_plot(data::Dict{String, Any}, nsteps; plot_freq = 1000)
+function concarea_plot(data::Dict{String, Any}; plot_freq = 1000)
+
+    nsteps = data["clock/nsteps"]
     plot_steps = 0:plot_freq:nsteps
     max_conc = [findmax(data["snapshots/Concentration/0"][:, :, i])[1] for i in 1:2]
     UpperConcentrationArea = Plots.Plot{Plots.GRBackend}[]
@@ -178,13 +184,14 @@ function concarea_plot(data::Dict{String, Any}, nsteps; plot_freq = 1000)
     return [UpperConcentrationArea, LowerConcentrationArea]
 end
 """
-    function concarea_animate(data, nsteps)
+    function concarea_animate(data)
 Create an animation of Concetration ~ normalised area from the saved data in the output file.
 """
-function concarea_animate(data::Dict{String, Any}, nsteps)
+function concarea_animate(data::Dict{String, Any}; plot_freq = 10)
 
+    nsteps = data["clock/nsteps"]
     max_conc = [findmax(data["snapshots/Concentration/0"][:, :, i])[1] for i in 1:2]
-    ConcVsArea = @animate for i in 0:10:nsteps
+    ConcVsArea = @animate for i in 0:plot_freq:nsteps
         upperdata = reshape(data["snapshots/Concentration/"*string(i)][:, :, 1], :)
         lowerdata = reshape(data["snapshots/Concentration/"*string(i)][:, :, 2], :)
         upperhist = histogram(upperdata)
@@ -216,38 +223,39 @@ end
 Plot a heatmap of the concentration field at specified time steps from a tracer advection
 diffusion simulation. The input is a loaded .jld2 output file.
 """
-function tracer_plot(data::Dict{String, Any}, ADProb, nsteps; plot_freq = 1000)
+function tracer_plot(data::Dict{String, Any}; plot_freq = 1000)
 
-    ADGrid = ADProb.grid
-    if ADGrid.Lx >= 500e3
+    nsteps = data["clock/nsteps"]
+    Lx, Ly = data["grid/Lx"], data["grid/Ly"]
+    if Lx >= 500e3
         #This just makes the domain a little easier to read if a really large domain is being used
-        set_xticks = (-ADGrid.Lx/2:round(Int, ADGrid.Lx/6):ADGrid.Lx/2, string.(-Int(ADGrid.Lx/2e3):round(Int, ADGrid.Lx/6e3):Int(ADGrid.Lx/2e3)))
-        set_yticks = (-ADGrid.Lx/2:round(Int, ADGrid.Lx/6):ADGrid.Lx/2, string.(-Int(ADGrid.Lx/2e3):round(Int, ADGrid.Lx/6e3):Int(ADGrid.Lx/2e3)))
+        set_xticks = (-Lx/2:round(Int, Lx/6):Lx/2, string.(-Int(Lx/2e3):round(Int, Lx/6e3):Int(Lx/2e3)))
+        set_yticks = (-Ly/2:round(Int, Ly/6):Ly/2, string.(-Int(Ly/2e3):round(Int, Ly/6e3):Int(Ly/2e3)))
         plotargs = (
-            aspectratio = 1,
-            color = :deep,
-            xlabel = "x",
-            ylabel = "y",
-            colorbar = true,
-            xlims = (-ADGrid.Lx/2, ADGrid.Lx/2),
-            ylims = (-ADGrid.Ly/2, ADGrid.Ly/2),
-            xticks = set_xticks,
-            yticks = set_yticks
-            )  
+                    aspectratio = 1,
+                    color = :deep,
+                    xlabel = "x",
+                    ylabel = "y",
+                    colorbar = true,
+                    xlims = (-Lx/2, Lx/2),
+                    ylims = (-Ly/2, Ly/2),
+                    xticks = set_xticks,
+                    yticks = set_yticks
+                    )  
     else
         plotargs = (
-                aspectratio = 1,
-                color = :deep,
-                xlabel = "x",
-                ylabel = "y",
-                colorbar = true,
-                xlims = (-ADGrid.Lx/2, ADGrid.Lx/2),
-                ylims = (-ADGrid.Ly/2, ADGrid.Ly/2)
-                ) 
+                    aspectratio = 1,
+                    color = :deep,
+                    xlabel = "x",
+                    ylabel = "y",
+                    colorbar = true,
+                    xlims = (-Lx/2, Lx/2),
+                    ylims = (-Ly/2, Ly/2)
+                    ) 
     end
     
     plot_steps = 0:plot_freq:nsteps
-    x, y = ADGrid.x, ADGrid.y
+    x, y = data["grid/x"], data["grid/y"]
     UpperTracerPlots = Plots.Plot{Plots.GRBackend}[]
     LowerTracerPlots = Plots.Plot{Plots.GRBackend}[]
     for i ∈ plot_steps
@@ -263,6 +271,56 @@ function tracer_plot(data::Dict{String, Any}, ADProb, nsteps; plot_freq = 1000)
         push!(LowerTracerPlots, lowertracer)
     end
     return [UpperTracerPlots, LowerTracerPlots]                   
+end
+"""
+    function tracer_animate(data)
+Turn the saved concentration data into an animation
+"""
+function tracer_animate(data::Dict{String, Any}; plot_freq = 10)
+
+    nsteps = data["clock/nsteps"]
+    Lx, Ly = data["grid/Lx"], data["grid/Ly"]
+    x, y = data["grid/x"], data["grid/y"]
+    if Lx >= 500e3
+        #This just makes the domain a little easier to read if a really large domain is being used
+        set_xticks = (-Lx/2:round(Int, Lx/6):Lx/2, string.(-Int(Lx/2e3):round(Int, Lx/6e3):Int(Lx/2e3)))
+        set_yticks = (-Ly/2:round(Int, Ly/6):Ly/2, string.(-Int(Ly/2e3):round(Int, Ly/6e3):Int(Ly/2e3)))
+        plotargs = (
+                    aspectratio = 1,
+                    color = :deep,
+                    xlabel = "x",
+                    ylabel = "y",
+                    colorbar = true,
+                    xlims = (-Lx/2, Lx/2),
+                    ylims = (-Ly/2, Ly/2),
+                    xticks = set_xticks,
+                    yticks = set_yticks
+                    )  
+    else
+        plotargs = (
+                    aspectratio = 1,
+                    color = :deep,
+                    xlabel = "x",
+                    ylabel = "y",
+                    colorbar = true,
+                    xlims = (-Lx/2, Lx/2),
+                    ylims = (-Ly/2, Ly/2)
+                    ) 
+    end
+
+    TracerAnimation = @animate for i ∈ 0:plot_freq:nsteps
+        uppertracer = heatmap(x, y, data["snapshots/Concentration/"*string(i)][:, :, 1]',
+                                title = "C(x,y,t) step = "*string(i); 
+                                plotargs...
+                            )
+        lowertracer = heatmap(x, y, data["snapshots/Concentration/"*string(i)][:, :, 2]',
+                                title = "C(x,y,t) step = "*string(i); 
+                                plotargs...
+                            )   
+
+        plot(uppertracer, lowertracer)
+    end
+    return TracerAnimation
 end
 
 end #module
