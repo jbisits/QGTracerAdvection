@@ -63,5 +63,5 @@ end
 plot(t, second_mom, label = ["Upper layer" "Lower layer"])
 plot(t, 1 ./ second_mom, label = ["Upper layer" "Lower layer"], legend = :topleft)
 
-ConcVsArea = concarea_animate(data, nsteps)
+ConcVsArea = concarea_animate(data)
 mp4(ConcVsArea, "ConcVsArea.mp4", fps=18)
