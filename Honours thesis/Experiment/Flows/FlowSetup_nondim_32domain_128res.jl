@@ -7,8 +7,8 @@ nsubs  = 1
 nsteps = 8000nsubs
 
 #Non dimensional paramters
-x̂ = 32
-ŷ = 32
+Lx̂ = 32
+Lŷ = 32
 
 #Timestep
 Δt̂ = 0.01
@@ -26,7 +26,7 @@ Û = [U₀, -U₀]
 f̂₀ = 1
 ĝ = 10
 
-QGProb = MultiLayerQG.Problem(nlayers, dev; nx=nx, Lx=x̂, f₀=f̂₀, g=ĝ, H=Ĥ, ρ=ρ̂, U=Û, dt=Δt̂, stepper=stepper, μ=μ̂, β=β̂, ν=ν̂)
+QGProb = MultiLayerQG.Problem(nlayers, dev; nx=nx, Lx=Lx̂, f₀=f̂₀, g=ĝ, H=Ĥ, ρ=ρ̂, U=Û, dt=Δt̂, stepper=stepper, μ=μ̂, β=β̂, ν=ν̂)
 QGSol, QGClock, QGParams, QGVars, QGrid = QGProb.sol, QGProb.clock, QGProb.params, QGProb.vars, QGProb.grid
 
 seed!(1234) # reset of the random number generator for reproducibility

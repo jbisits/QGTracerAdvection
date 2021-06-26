@@ -53,5 +53,15 @@ lowersecondmoment = plot(t, 1 ./ ConcentrationVaricance[:, 2], label = "Lower la
                         )
 plot(uppersecondmoment, lowersecondmoment, size = (1000, 600))
 
+#Instead consider the integral ∫C²dA which is the concentration per unit area as Garrett defines
+second_mom = Array{Float64}(undef, data["clock/nsteps"] + 1, 2)
+for i in 1:data["clock/nsteps"] + 1
+    second_mom[i, :] = [sum(data["snapshots/Concentration/"*string(i-1)][:, :, 1].^2),
+                        sum(data["snapshots/Concentration/"*string(i-1)][:, :, 2].^2)]
+end
+
+plot(t, second_mom, label = ["Upper layer" "Lower layer"])
+plot(t, 1 ./ second_mom, label = ["Upper layer" "Lower layer"], legend = :topleft)
+
 ConcVsArea = concarea_animate(data, nsteps)
 mp4(ConcVsArea, "ConcVsArea.mp4", fps=18)

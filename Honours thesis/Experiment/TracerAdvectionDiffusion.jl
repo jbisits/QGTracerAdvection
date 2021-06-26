@@ -45,7 +45,7 @@ while ADClock.step <= nsteps
     TracerAdvDiff_QG.vel_field_update!(ADProb, QGProb, nsubs)
 end
 
-#Save the number of steps in the simulation as well as the final time (for plotting)
+#Save the number of steps in the simulation
 jldopen(ADOutput.path, "a+") do path
     path["clock/nsteps"] = ADClock.step - 1
 end
