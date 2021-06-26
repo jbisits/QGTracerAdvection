@@ -27,13 +27,14 @@ x, y = ADGrid.x, ADGrid.y
 
 #Set the Gaussian blob initial condition
 μIC = [0, 0]
-Σ = [3 0; 0 3]
+Σ = [1 0; 0 1]
 IC = GaussianBlobIC(μIC, Σ, ADGrid)
 
 TracerAdvDiff_QG.QGset_c!(ADProb, IC.C₀)
 
 filename = CreateFile(ADProb, SimPath)
 ADOutput = Output(ADProb, filename, (:Concentration, GetConcentration))
+saveproblem(ADOutput)
 
 #Simulation loop
 while ADClock.step <= nsteps
