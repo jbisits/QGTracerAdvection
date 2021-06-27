@@ -12,6 +12,7 @@ export
     conc_mean,
     conc_var!,
     conc_var,
+    Garrett_int,
     area_tracer_patch!,
     fit_normal!, 
     fit_hist!,
@@ -20,7 +21,7 @@ export
     concarea_animate,
     tracer_plot,
     tracer_animate,
-    Garrett_int
+    time_vec
 
 using Distributions, GeophysicalFlows, StatsBase, LinearAlgebra, JLD2, Plots
 """
@@ -345,6 +346,20 @@ function tracer_animate(data::Dict{String, Any}; plot_freq = 10)
     end
 
     return TracerAnimation
+end
+"""
+    function time_vec(data::Dict{String, Any})
+Create a time vector for plotting from the saved .jld2 output. The save_freq argument
+ensures the vector is the correct length by passing how frequently data is saved during
+the simulation.
+"""
+function  time_vec(data::Dict{String, Any}; save_freq = 1)
+
+    Δt = data["clock/dt"] * save_freq
+    maxtime = Δt*data["clock/nsteps"]
+    t = 0:Δt:maxtime
+
+    return t
 end
 
 end #module

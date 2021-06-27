@@ -64,13 +64,13 @@ plot(t, conc_int,
         label = ["Upper layer" "Lower layer"], 
         xlabel = "t", 
         ylabel = "∫C²dA",
-        title = "Concentration per unit area calculated at each time step"
+        title = "Concentration per unit area \n calculated at each time step"
         )
 plot(t, 1 ./ conc_int, 
         label = ["Upper layer" "Lower layer"],
         xlabel = "t", 
         ylabel = "(∫C²dA)⁻¹",
-        title = "Inverse concentration per unit area calculated at each time step", 
+        title = "Inverse concentration per unit area \n calculated at each time step", 
         legend = :topleft)
 
 ConcVsArea = concarea_animate(data)
