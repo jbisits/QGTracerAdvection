@@ -9,7 +9,7 @@ An initial condition for tracer concentration is set in all layers then either a
 The tracer advection in either a steady flow or a time dependent flow remains unchanged from the original version of the module `TraverAdvDiff`.
 
 The module `MeasureMixing.jl` has various functions that can be used to calculate concentration diagnostics from either saved data or as a simulation is run.
-There are also functions that can plot various aspects of the simulations from saved data.
+There are also functions that can generate plots and histograms of concentration data that has been saved from a simulation.
 
 
 ## Using the modules
