@@ -34,18 +34,25 @@ filename = CreateFile(ADProb, IC, SimPath)
 ADOutput = Output(ADProb, filename, (:Concentration, GetConcentration))
 saveproblem(ADOutput)
 
+save_freq = 10
+
 #Simulation loop
 while ADClock.step <= nsteps
+
     if ADClock.step % 1000 == 0
         println("Step number: ", round(Int, ADClock.step))
     end
-    saveoutput(ADOutput)
+    if ADClock.step % save_freq == 0
+        saveoutput(ADOutput)
+    end
     stepforward!(ADProb, nsubs)
     TracerAdvDiff_QG.QGupdatevars!(ADProb)
     TracerAdvDiff_QG.vel_field_update!(ADProb, QGProb, nsubs)
+
 end
 
 #Save the number of steps in the simulation
 jldopen(ADOutput.path, "a+") do path
     path["clock/nsteps"] = ADClock.step - 1
+    path["save_freq"] = save_freq
 end

@@ -26,15 +26,16 @@ export
 using Distributions, GeophysicalFlows, StatsBase, LinearAlgebra, JLD2, Plots
 """
     conc_mean(data::Dict{String, Any})
-Calculate the mean at each timestep to see if it stays the same or if some concentration
-leaves the simulation.
+Calculate the mean concentration at each timestep where the data was saved.
 """
 function conc_mean(data::Dict{String, Any})
 
     nlayers = data["params/nlayers"]
     nsteps = data["clock/nsteps"]
-    concentration_mean = Array{Float64}(undef, nsteps + 1, nlayers)
-    for i ∈ 1:nsteps + 1
+    save_freq = data["save_freq"]
+    saved_steps = length(0:save_freq:nsteps)
+    concentration_mean = Array{Float64}(undef, saved_steps + 1, nlayers)
+    for i ∈ 1:saved_steps + 1
         concentration_mean[i, :] = [mean(data["snapshots/Concentration/"*string(i-1)][:, :, j]) for j ∈ 1:nlayers]
     end
 
@@ -43,7 +44,7 @@ end
 """
     function conc_var!(concentration_variance, AD_prob)
 Calculate the variance of the tracer concentration in each layer for advection-diffusion problem `prob` and store the
-result at each timestep in the array concentration_variance. 
+result at each timestep where the data was saved in the array concentration_variance. 
 """
 function conc_var!(concentration_variance::Array, AD_prob::FourierFlows.Problem) 
 
@@ -56,14 +57,16 @@ function conc_var!(concentration_variance::Array, AD_prob::FourierFlows.Problem)
 end
 """
     function conc_var(data::Dict{String, Any})
-Compute the same concentration variance from saved output for an advection-diffusion problem.
+Compute the concentration variance from saved output for an advection-diffusion problem.
 """
 function conc_var(data::Dict{String, Any})
 
     nlayers = data["params/nlayers"]
     nsteps = data["clock/nsteps"]
-    concentration_variance = Array{Float64}(undef, nsteps + 1, nlayers)
-    for i ∈ 1:nsteps + 1
+    save_freq = data["save_freq"]
+    saved_steps = length(0:save_freq:nsteps)
+    concentration_variance = Array{Float64}(undef, saved_steps + 1, nlayers)
+    for i ∈ 1:saved_steps + 1
         concentration_variance[i, :] = [var(data["snapshots/Concentration/"*string(i-1)][:, :, j]) for j ∈ 1:nlayers]
     end
 
@@ -71,14 +74,16 @@ function conc_var(data::Dict{String, Any})
 end
 """
     function Garrett_int(data::Dict{String, Any})
-Compute the diagnostic for tracer concentration ∫C²dA at each timestep (Garrett 1983).
+Compute the diagnostic for tracer concentration ∫C²dA at each saved data timestep (Garrett 1983).
 """
 function Garrett_int(data::Dict{String, Any})
 
     nlayers = data["params/nlayers"]
     nsteps = data["clock/nsteps"]
-    conc_int = Array{Float64}(undef, nsteps + 1, nlayers)
-    for i in 1:nsteps + 1
+    save_freq = data["save_freq"]
+    saved_steps = length(0:save_freq:nsteps)
+    conc_int = Array{Float64}(undef, saved_steps + 1, nlayers)
+    for i in 1:saved_steps + 1
         conc_int[i, :] = [sum(data["snapshots/Concentration/"*string(i-1)][:, :, j].^2) for j ∈ 1:nlayers]
     end
 
@@ -148,17 +153,17 @@ function hist_plot(data::Dict{String, Any}; plot_freq = 1000)
         upperhist = normalize(upperhist, mode = :probability)
         lowerhist = normalize(lowerhist, mode = :probability)
         push!(UpperConcentrationHistograms, plot(upperhist,
-                                                label = false, 
-                                                xlabel = "Concentration", 
-                                                ylabel = "Normalised area",
-                                                xlims = (0, max_conc[1])
+                                                    label = false, 
+                                                    xlabel = "Concentration", 
+                                                    ylabel = "Normalised area",
+                                                    xlims = (0, max_conc[1])
                                                 )
             )
         push!(LowerConcentrationHistograms, plot(lowerhist,
-                                                label = false, 
-                                                xlabel = "Concentration", 
-                                                ylabel = "Normalised area",
-                                                xlims = (0, max_conc[2])
+                                                    label = false, 
+                                                    xlabel = "Concentration", 
+                                                    ylabel = "Normalised area",
+                                                    xlims = (0, max_conc[2])
                                                 )
             )
     end
@@ -188,17 +193,17 @@ function concarea_plot(data::Dict{String, Any}; plot_freq = 1000)
         upperconcdata = reverse(vcat(0, cumsum(reverse(upperhist.weights))))
         lowerconcdata = reverse(vcat(0, cumsum(reverse(lowerhist.weights))))
         push!(UpperConcentrationArea, plot(upperconcdata, upperhist.edges,
-                                            label = false,
-                                            xlabel = "Normalised area",
-                                            ylabel = "Concentration",
-                                            xlims = (0, max_conc[1])
+                                                label = false,
+                                                xlabel = "Normalised area",
+                                                ylabel = "Concentration",
+                                                xlims = (0, max_conc[1])
                                             )
                 )
         push!(LowerConcentrationArea, plot(lowerconcdata, lowerhist.edges,
-                                            label = false,
-                                            xlabel = "Normalised area",
-                                            ylabel = "Concentration",
-                                            xlims = (0, max_conc[2])
+                                                label = false,
+                                                xlabel = "Normalised area",
+                                                ylabel = "Concentration",
+                                                xlims = (0, max_conc[2])
                                             )
             )
     end
@@ -208,8 +213,14 @@ end
     function concarea_animate(data)
 Create an animation of Concetration ~ normalised area from the saved data in the output file.
 """
-function concarea_animate(data::Dict{String, Any}; plot_freq = 10)
+function concarea_animate(data::Dict{String, Any})
 
+    save_freq = data["save_freq"]
+    if save_freq <  10
+        plot_freq = 10 * save_freq
+    else
+        plot_freq = save_freq
+    end
     nlayers = data["params/nlayers"]
     nsteps = data["clock/nsteps"]
     max_conc = [findmax(data["snapshots/Concentration/0"][:, :, i])[1] for i ∈ 1:nlayers]
@@ -300,7 +311,7 @@ end
     function tracer_animate(data)
 Turn the saved concentration data into an animation.
 """
-function tracer_animate(data::Dict{String, Any}; plot_freq = 10)
+function tracer_animate(data::Dict{String, Any})
 
     nsteps = data["clock/nsteps"]
     Lx, Ly = data["grid/Lx"], data["grid/Ly"]
@@ -332,6 +343,12 @@ function tracer_animate(data::Dict{String, Any}; plot_freq = 10)
                     ) 
     end
 
+    save_freq = data["save_freq"]
+    if save_freq <=  10
+        plot_freq = 10 * save_freq
+    else
+        plot_freq = save_freq
+    end
     TracerAnimation = @animate for i ∈ 0:plot_freq:nsteps
         uppertracer = heatmap(x, y, data["snapshots/Concentration/"*string(i)][:, :, 1]',
                                 title = "C(x,y,t) step = "*string(i); 
@@ -349,15 +366,13 @@ function tracer_animate(data::Dict{String, Any}; plot_freq = 10)
 end
 """
     function time_vec(data::Dict{String, Any})
-Create a time vector for plotting from the saved .jld2 output. The save_freq argument
-ensures the vector is the correct length by passing how frequently data is saved during
-the simulation.
+Create a time vector for plotting from the saved .jld2 output.
 """
-function  time_vec(data::Dict{String, Any}; save_freq = 1)
+function  time_vec(data::Dict{String, Any})
 
-    Δt = data["clock/dt"] * save_freq
-    maxtime = Δt * data["clock/nsteps"]
-    t = 0:Δt:maxtime
+    nsteps = data["clock/nsteps"]
+    save_freq = data["save_freq"]
+    t = [data["snapshots/t/"*string(i)] for i in 0:save_freq:nsteps]
 
     return t
 end
