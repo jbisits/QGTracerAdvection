@@ -22,12 +22,13 @@ lowertracer = plot(tracerplots[2][1], tracerplots[2][2], tracerplots[2][3], trac
 lowerhist = plot(histplots[2][1], histplots[2][2], histplots[2][3], histplots[2][4], histplots[2][5], histplots[2][6])
 plot(lowertracer, lowerhist, layout=(2, 1), size = (1200, 1200))
 
+#Time vector for plotting
+t = time_vec(data)
+
 #Create some plots of concentration diagnostics.
 ConcentrationMean = conc_mean(data)
 ConcentrationVaricance = conc_var(data)
-Δt = data["clock/dt"]
-maxtime = Δt*data["clock/nsteps"]
-t = 0:data["clock/dt"]:maxtime
+
 meanplot = plot(t, ConcentrationMean, 
                     label = ["Upper Layer" "Lower layer"],
                     title = "Mean concentration \n over the grid",
@@ -65,13 +66,14 @@ plot(t, conc_int,
         xlabel = "t", 
         ylabel = "∫C²dA",
         title = "Concentration per unit area \n calculated at each time step"
-        )
+    )
 plot(t, 1 ./ conc_int, 
         label = ["Upper layer" "Lower layer"],
         xlabel = "t", 
         ylabel = "(∫C²dA)⁻¹",
         title = "Inverse concentration per unit area \n calculated at each time step", 
-        legend = :topleft)
+        legend = :topleft
+    )
 
 ConcVsArea = concarea_animate(data)
 mp4(ConcVsArea, "ConcVsArea.mp4", fps=18)
