@@ -1,5 +1,5 @@
-#Change to the folder which has the data so anything saved will also be there
-cd(joinpath(SimPath, "Output/Simulation: Domain = 32, res = 128, save_freq = 111"))
+#Change to the current directory
+cd(joinpath(SimPath, "Output/Simulation: Domain = 32, res = 128, save_freq = 200"))
 file = joinpath(pwd(), "SimulationData.jld2")
 
 #Load in the data
@@ -79,6 +79,3 @@ plot(t, 1 ./ conc_int,
 
 ConcVsArea = concarea_animate(data)
 mp4(ConcVsArea, "ConcVsArea.mp4", fps=18)
-
-traceranim = tracer_animate(data)
-mp4(traceranim, "TracerAnimation.mp4", fps=18)

@@ -1,10 +1,6 @@
 #=
     Diagnostics to measure mixing and functions for data extraction from a .jld2 file created by a tracer 
     advection diffusion simulation.
-    The diagnostics are:
-     - variance of concentration over the grid
-     - evolution of the isopycnal second moment
-    From the .jld2 file can create plots and extract relevant information.
 =#
 module MeasureMixing
 

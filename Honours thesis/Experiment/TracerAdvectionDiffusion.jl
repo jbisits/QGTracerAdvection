@@ -30,8 +30,8 @@ IC = GaussianBlobIC(μIC, Σ, ADGrid)
 
 TracerAdvDiff_QG.QGset_c!(ADProb, IC.C₀)
 
-save_freq = 111 #Frequency at which to save data
-filename = CreateFile(ADProb, IC, save_freq, SimPath)
+save_freq = 200 #Frequency at which to save data
+filename = CreateFile(ADProb, save_freq, SimPath)
 ADOutput = Output(ADProb, filename, (:Concentration, GetConcentration))
 saveproblem(ADOutput)
 

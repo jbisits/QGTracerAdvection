@@ -1,6 +1,8 @@
-#Load in the data
+#Change to the current directory
+cd(joinpath(SimPath, "Output/Simulation: Domain = 32, res = 128"))
+file = joinpath(pwd(), "SimulationData.jld2")
 
-file = joinpath(SimPath, "Output/Simulation: Domain = 32, res = 128/SimulationData.jld2")
+#Load in the data
 data = load(file)
 
 #Produce histogram plots from the saved concentration data
