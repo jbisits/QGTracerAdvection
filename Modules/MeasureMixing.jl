@@ -56,7 +56,7 @@ function conc_var!(concentration_variance::Array, AD_prob::FourierFlows.Problem)
 end
 """
     function conc_var(data::Dict{String, Any})
-Compute the same concentration variance from saved output for an advection-diffusion problem
+Compute the same concentration variance from saved output for an advection-diffusion problem.
 """
 function conc_var(data::Dict{String, Any})
 
@@ -103,7 +103,7 @@ end
 """
     function fit_hist!(filename, AD_prob, max_conc)
 Fits a histogram to the concentration data at each time step. From the histogram the concentration data 
-and area data can be extracted. This is for use in a simulation like in `QG_hist.jl`
+and area data can be extracted. This is for use in a simulation like in `QG_hist.jl`.
 """
 function fit_hist!(filename, AD_prob; number_of_bins = 0)
 
@@ -298,7 +298,7 @@ function tracer_plot(data::Dict{String, Any}; plot_freq = 1000)
 end
 """
     function tracer_animate(data)
-Turn the saved concentration data into an animation
+Turn the saved concentration data into an animation.
 """
 function tracer_animate(data::Dict{String, Any}; plot_freq = 10)
 
