@@ -8,10 +8,8 @@ An initial condition for tracer concentration is set in all layers then either a
 
 The tracer advection in either a steady flow or a time dependent flow remains unchanged from the original version of the module `TraverAdvDiff`.
 
-The module `MeasureMixing.jl` has two diagnostics to look at how the tracer is being mixed by the flow.
-These are:
-* variance in concentration over the grid
-* evolution of the second moment of the tracer patch (work in progress).
+The module `MeasureMixing.jl` has various functions that can be used to calculate concentration diagnostics from either saved data or as a simulation is run.
+There are also functions that can plot various aspects of the simulations from saved data.
 
 
 ## Using the modules
