@@ -356,7 +356,7 @@ the simulation.
 function  time_vec(data::Dict{String, Any}; save_freq = 1)
 
     Δt = data["clock/dt"] * save_freq
-    maxtime = Δt*data["clock/nsteps"]
+    maxtime = Δt * data["clock/nsteps"]
     t = 0:Δt:maxtime
 
     return t
