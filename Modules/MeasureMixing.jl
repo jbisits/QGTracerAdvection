@@ -29,11 +29,11 @@ leaves the simulation.
 """
 function conc_mean(data::Dict{String, Any})
 
+    nlayers = data["params/nlayers"]
     nsteps = data["clock/nsteps"]
-    concentration_mean = Array{Float64}(undef, nsteps + 1, 2)
+    concentration_mean = Array{Float64}(undef, nsteps + 1, nlayers)
     for i ∈ 1:nsteps + 1
-        concentration_mean[i, :] = [mean(data["snapshots/Concentration/"*string(i-1)][:, :, 1]), 
-                                    mean(data["snapshots/Concentration/"*string(i-1)][:, :, 2])]
+        concentration_mean[i, :] = [mean(data["snapshots/Concentration/"*string(i-1)][:, :, j]) for j ∈ 1:nlayers]
     end
     return concentration_mean
 end
@@ -57,11 +57,11 @@ Compute the same concentration variance from saved output for an advection-diffu
 """
 function conc_var(data::Dict{String, Any})
 
+    nlayers = data["params/nlayers"]
     nsteps = data["clock/nsteps"]
-    concentration_variance = Array{Float64}(undef, nsteps + 1, 2)
+    concentration_variance = Array{Float64}(undef, nsteps + 1, nlayers)
     for i ∈ 1:nsteps + 1
-        concentration_variance[i, :] = [var(data["snapshots/Concentration/"*string(i-1)][:, :, 1]), 
-                                        var(data["snapshots/Concentration/"*string(i-1)][:, :, 2])]
+        concentration_variance[i, :] = [var(data["snapshots/Concentration/"*string(i-1)][:, :, j]) for j ∈ 1:nlayers]
     end
     return concentration_variance
 end
@@ -116,9 +116,10 @@ in the output file. The input `data` is the loaded .jld2 file.
 """
 function hist_plot(data::Dict{String, Any}; plot_freq = 1000)
 
+    nlayers = data["params/nlayers"]
     nsteps = data["clock/nsteps"]
     plot_steps = 0:plot_freq:nsteps
-    max_conc = [findmax(data["snapshots/Concentration/0"][:, :, i])[1] for i in 1:2]
+    max_conc = [findmax(data["snapshots/Concentration/0"][:, :, i])[1] for i ∈ 1:nlayers]
     UpperConcentrationHistograms = Plots.Plot{Plots.GRBackend}[]
     LowerConcentrationHistograms = Plots.Plot{Plots.GRBackend}[]
     for i ∈ plot_steps
@@ -152,9 +153,10 @@ saved data in the output file. The input `data` is the loaded .jld2 file.
 """
 function concarea_plot(data::Dict{String, Any}; plot_freq = 1000)
 
+    nlayers = data["params/nlayers"]
     nsteps = data["clock/nsteps"]
     plot_steps = 0:plot_freq:nsteps
-    max_conc = [findmax(data["snapshots/Concentration/0"][:, :, i])[1] for i in 1:2]
+    max_conc = [findmax(data["snapshots/Concentration/0"][:, :, i])[1] for i ∈ 1:nlayers]
     UpperConcentrationArea = Plots.Plot{Plots.GRBackend}[]
     LowerConcentrationArea = Plots.Plot{Plots.GRBackend}[]
     for i ∈ plot_steps
@@ -170,14 +172,14 @@ function concarea_plot(data::Dict{String, Any}; plot_freq = 1000)
                                             label = false,
                                             xlabel = "Normalised area",
                                             ylabel = "Concentration",
-                                            xlims = (0, max_conc[1] + 0.01)
+                                            xlims = (0, max_conc[1])
                                             )
                 )
         push!(LowerConcentrationArea, plot(lowerconcdata, lowerhist.edges,
                                             label = false,
                                             xlabel = "Normalised area",
                                             ylabel = "Concentration",
-                                            xlims = (0, max_conc[2] + 0.01)
+                                            xlims = (0, max_conc[2])
                                             )
             )
     end
@@ -189,8 +191,9 @@ Create an animation of Concetration ~ normalised area from the saved data in the
 """
 function concarea_animate(data::Dict{String, Any}; plot_freq = 10)
 
+    nlayers = data["params/nlayers"]
     nsteps = data["clock/nsteps"]
-    max_conc = [findmax(data["snapshots/Concentration/0"][:, :, i])[1] for i in 1:2]
+    max_conc = [findmax(data["snapshots/Concentration/0"][:, :, i])[1] for i ∈ 1:nlayers]
     ConcVsArea = @animate for i in 0:plot_freq:nsteps
         upperdata = reshape(data["snapshots/Concentration/"*string(i)][:, :, 1], :)
         lowerdata = reshape(data["snapshots/Concentration/"*string(i)][:, :, 2], :)
@@ -204,14 +207,14 @@ function concarea_animate(data::Dict{String, Any}; plot_freq = 10)
                  label = false,
                 xlabel = "Normalised area",
                 ylabel = "Concentration",
-                 ylims = (0, max_conc[1] + 0.01),
+                 ylims = (0, max_conc[1]),
                  title = "Top layer"
                 )
         p2 = plot(lowerconcdata, lowerhist.edges,
                  label = false,
                 xlabel = "Normalised area",
                 ylabel = "Concentration",
-                 ylims = (0, max_conc[2] + 0.01),
+                 ylims = (0, max_conc[2]),
                  title = "Bottom layer"
                 )
     plot(p1, p2)
