@@ -28,40 +28,50 @@ ConcentrationVaricance = conc_var(data)
 Δt = data["clock/dt"]
 maxtime = Δt*data["clock/nsteps"]
 t = 0:data["clock/dt"]:maxtime
-meanplot = plot(t, ConcentrationMean, label = ["Upper Layer" "Lower layer"],
+meanplot = plot(t, ConcentrationMean, 
+                    label = ["Upper Layer" "Lower layer"],
                     title = "Mean concentration \n over the grid",
                     xlabel = "t",
                     ylabel = "Concentration",
                     ylims = (0, 0.01)
                 )
-varplot = plot(t, ConcentrationVaricance, label = ["Upper Layer" "Lower layer"],
-                title = "Variance of concentration \n over the grid",
-                xlabel = "t",
-                ylabel = "Concentration"    
+varplot = plot(t, ConcentrationVaricance, 
+                    label = ["Upper Layer" "Lower layer"],
+                    title = "Variance of concentration \n over the grid",
+                    xlabel = "t",
+                    ylabel = "Concentration"    
                 )
 plot(meanplot, varplot, size = (1000, 600))
 
-uppersecondmoment = plot(t, 1 ./ ConcentrationVaricance[:, 1], label = "Upper layer",
-                        title = "Inverse of variance of concentration \n over the upper layer grid",
-                        xlabel = "t",
-                        legend = :topleft 
+uppersecondmoment = plot(t, 1 ./ ConcentrationVaricance[:, 1], 
+                            label = "Upper layer",
+                            title = "Inverse of variance of concentration \n over the upper layer grid",
+                            xlabel = "t",
+                            legend = :topleft 
                         )
-lowersecondmoment = plot(t, 1 ./ ConcentrationVaricance[:, 2], label = "Lower layer",
-                        title = "Inverse of variance of concentration \n over the lower layer grid",
-                        xlabel = "t",
-                        legend = :topleft    
+lowersecondmoment = plot(t, 1 ./ ConcentrationVaricance[:, 2], 
+                            label = "Lower layer",
+                            title = "Inverse of variance of concentration \n over the lower layer grid",
+                            xlabel = "t",
+                            legend = :topleft    
                         )
 plot(uppersecondmoment, lowersecondmoment, size = (1000, 600))
 
 #Instead consider the integral ∫C²dA which is the concentration per unit area as Garrett defines
-second_mom = Array{Float64}(undef, data["clock/nsteps"] + 1, 2)
-for i in 1:data["clock/nsteps"] + 1
-    second_mom[i, :] = [sum(data["snapshots/Concentration/"*string(i-1)][:, :, 1].^2),
-                        sum(data["snapshots/Concentration/"*string(i-1)][:, :, 2].^2)]
-end
+conc_int = Garrett_int(data)
 
-plot(t, second_mom, label = ["Upper layer" "Lower layer"])
-plot(t, 1 ./ second_mom, label = ["Upper layer" "Lower layer"], legend = :topleft)
+plot(t, conc_int, 
+        label = ["Upper layer" "Lower layer"], 
+        xlabel = "t", 
+        ylabel = "∫C²dA",
+        title = "Concentration per unit area calculated at each time step"
+        )
+plot(t, 1 ./ conc_int, 
+        label = ["Upper layer" "Lower layer"],
+        xlabel = "t", 
+        ylabel = "(∫C²dA)⁻¹",
+        title = "Inverse concentration per unit area calculated at each time step", 
+        legend = :topleft)
 
 ConcVsArea = concarea_animate(data)
 mp4(ConcVsArea, "ConcVsArea.mp4", fps=18)

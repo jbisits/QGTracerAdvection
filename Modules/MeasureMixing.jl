@@ -19,7 +19,8 @@ export
     concarea_plot,
     concarea_animate,
     tracer_plot,
-    tracer_animate
+    tracer_animate,
+    Garrett_int
 
 using Distributions, GeophysicalFlows, StatsBase, LinearAlgebra, JLD2, Plots
 """
@@ -35,6 +36,7 @@ function conc_mean(data::Dict{String, Any})
     for i ∈ 1:nsteps + 1
         concentration_mean[i, :] = [mean(data["snapshots/Concentration/"*string(i-1)][:, :, j]) for j ∈ 1:nlayers]
     end
+
     return concentration_mean
 end
 """
@@ -63,9 +65,24 @@ function conc_var(data::Dict{String, Any})
     for i ∈ 1:nsteps + 1
         concentration_variance[i, :] = [var(data["snapshots/Concentration/"*string(i-1)][:, :, j]) for j ∈ 1:nlayers]
     end
+
     return concentration_variance
 end
+"""
+    function Garrett_int(data::Dict{String, Any})
+Compute the diagnostic for tracer concentration ∫C²dA at each timestep (Garrett 1983).
+"""
+function Garrett_int(data::Dict{String, Any})
 
+    nlayers = data["params/nlayers"]
+    nsteps = data["clock/nsteps"]
+    conc_int = Array{Float64}(undef, nsteps + 1, nlayers)
+    for i in 1:nsteps + 1
+        conc_int[i, :] = [sum(data["snapshots/Concentration/"*string(i-1)][:, :, j].^2) for j ∈ 1:nlayers]
+    end
+
+    return conc_int
+end
 """
     function fit_normal!(σ², AD_prob)
 Fit a normal distribution to the concentration of tracer at each time step to look at how σ² changes.
@@ -144,6 +161,7 @@ function hist_plot(data::Dict{String, Any}; plot_freq = 1000)
                                                 )
             )
     end
+
     return [UpperConcentrationHistograms, LowerConcentrationHistograms]
 end
 """
@@ -219,6 +237,7 @@ function concarea_animate(data::Dict{String, Any}; plot_freq = 10)
                 )
     plot(p1, p2)
     end
+
     return ConcVsArea
 end
 """
@@ -273,6 +292,7 @@ function tracer_plot(data::Dict{String, Any}; plot_freq = 1000)
                             )
         push!(LowerTracerPlots, lowertracer)
     end
+
     return [UpperTracerPlots, LowerTracerPlots]                   
 end
 """
@@ -323,6 +343,7 @@ function tracer_animate(data::Dict{String, Any}; plot_freq = 10)
 
         plot(uppertracer, lowertracer)
     end
+
     return TracerAnimation
 end
 

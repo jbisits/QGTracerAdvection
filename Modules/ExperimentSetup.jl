@@ -43,11 +43,13 @@ Create a Gaussian blob initial condition on a advection diffusion problem grid f
 μ (as vector) and covariance matrx Σ.
 """
 function GaussianBlobIC(μ::Vector, Σ::Matrix, grid)
+
     x, y = grid.x, grid.y
     xgrid, ygrid = gridpoints(grid)
     blob = MvNormal(μ, Σ)
     blob_IC(x, y) = pdf(blob, [x, y])
     C₀ = @. blob_IC(xgrid, ygrid)
+
     return GaussianBlob(μ, Σ, C₀)
 end
 """
@@ -56,6 +58,7 @@ Create a Gaussian strip initial condition on a advection diffusion problem grid 
 μ and variance σ².
 """
 function GaussianStripIC(μ::Union{Int, Float64}, σ²::Union{Int, Float64}, grid)
+
     x = grid.x
     xgrid, ygrid = gridpoints(grid)
     strip = Normal(μ, σ²)
@@ -64,6 +67,7 @@ function GaussianStripIC(μ::Union{Int, Float64}, σ²::Union{Int, Float64}, gri
     for i in 1:grid.nx
         C₀[i, :] = strip_IC(ygrid[i, :])
     end
+
     return GaussianStrip(μ, σ², C₀)
 end
 """
@@ -71,6 +75,7 @@ end
 Create a point source initial condition at `ConcentrationPoint` on a advection diffusion problem grid.
 """
 function PointSourceIC(ConcentrationPoint, grid)
+
     xconcpt = ConcentrationPoint[1]
     yconcpt = ConcentrationPoint[2]
     C₀ = Array{Float64}(undef, grid.nx, grid.ny)
@@ -83,6 +88,7 @@ function PointSourceIC(ConcentrationPoint, grid)
             end
         end
     end
+
     return PointSource(xconcpt, yconcpt, C₀)
 end
 """
@@ -91,10 +97,12 @@ Create directory and file for a given run that will be appended with
 flow characteristics and .jld2. If already exists uses directory and removes the file.
 """
 function CreateFile(ADProb, IC::InitialCondition, SimPath)
+
     Lx, nx = ADProb.grid.Lx, ADProb.grid.nx
     filepath = joinpath(SimPath, 
                         "Output/Simulation: Domain = "*string(round(Int, Lx))*", Res = "*string(nx)*", IC = "*string(typeof(IC))
                         )
+
     if !isdir(filepath)
         mkdir(filepath)
     end
@@ -102,6 +110,7 @@ function CreateFile(ADProb, IC::InitialCondition, SimPath)
     if isfile(filename)
         rm(filename)
     end
+
     return filename
 end
 """
@@ -110,6 +119,7 @@ Function to extract the concentration data from the `ADProb` so it can be saved 
 that has been created for the simulation
 """
 function GetConcentration(ADProb)
+    
     Concentration = @. ADProb.vars.c
     return Concentration
 end
