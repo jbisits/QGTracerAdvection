@@ -30,7 +30,7 @@ IC = GaussianBlobIC(μIC, Σ, ADGrid)
 
 TracerAdvDiff_QG.QGset_c!(ADProb, IC.C₀)
 
-filename = CreateFile(ADProb, SimPath)
+filename = CreateFile(ADProb, IC, SimPath)
 ADOutput = Output(ADProb, filename, (:Concentration, GetConcentration))
 saveproblem(ADOutput)
 
