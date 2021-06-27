@@ -34,9 +34,9 @@ function conc_mean(data::Dict{String, Any})
     nsteps = data["clock/nsteps"]
     save_freq = data["save_freq"]
     saved_steps = length(0:save_freq:nsteps)
-    concentration_mean = Array{Float64}(undef, saved_steps + 1, nlayers)
-    for i ∈ 1:saved_steps + 1
-        concentration_mean[i, :] = [mean(data["snapshots/Concentration/"*string(i-1)][:, :, j]) for j ∈ 1:nlayers]
+    concentration_mean = Array{Float64}(undef, saved_steps, nlayers)
+    for i ∈ 1:saved_steps
+        concentration_mean[i, :] = [mean(data["snapshots/Concentration/"*string( (i-1) * save_freq )][:, :, j]) for j ∈ 1:nlayers]
     end
 
     return concentration_mean
@@ -65,9 +65,9 @@ function conc_var(data::Dict{String, Any})
     nsteps = data["clock/nsteps"]
     save_freq = data["save_freq"]
     saved_steps = length(0:save_freq:nsteps)
-    concentration_variance = Array{Float64}(undef, saved_steps + 1, nlayers)
-    for i ∈ 1:saved_steps + 1
-        concentration_variance[i, :] = [var(data["snapshots/Concentration/"*string(i-1)][:, :, j]) for j ∈ 1:nlayers]
+    concentration_variance = Array{Float64}(undef, saved_steps, nlayers)
+    for i ∈ 1:saved_steps
+        concentration_variance[i, :] = [var(data["snapshots/Concentration/"*string( (i-1) * save_freq )][:, :, j]) for j ∈ 1:nlayers]
     end
 
     return concentration_variance
@@ -82,9 +82,9 @@ function Garrett_int(data::Dict{String, Any})
     nsteps = data["clock/nsteps"]
     save_freq = data["save_freq"]
     saved_steps = length(0:save_freq:nsteps)
-    conc_int = Array{Float64}(undef, saved_steps + 1, nlayers)
-    for i in 1:saved_steps + 1
-        conc_int[i, :] = [sum(data["snapshots/Concentration/"*string(i-1)][:, :, j].^2) for j ∈ 1:nlayers]
+    conc_int = Array{Float64}(undef, saved_steps, nlayers)
+    for i in 1:saved_steps
+        conc_int[i, :] = [sum(data["snapshots/Concentration/"*string( (i-1) * save_freq )][:, :, j].^2) for j ∈ 1:nlayers]
     end
 
     return conc_int
@@ -188,8 +188,8 @@ function concarea_plot(data::Dict{String, Any}; plot_freq = 1000)
         lowerdata = reshape(data["snapshots/Concentration/"*string(i)][:, :, 2], :)
         upperhist = fit(Histogram, upperdata)
         lowerhist = fit(Histogram, lowerdata)
-        normalize!(upperhist, mode = :probability)
-        normalize!(lowerhist, mode = :probability)
+        upperhist = normalize(upperhist, mode = :probability)
+        lowerhist = normalize(lowerhist, mode = :probability)
         upperconcdata = reverse(vcat(0, cumsum(reverse(upperhist.weights))))
         lowerconcdata = reverse(vcat(0, cumsum(reverse(lowerhist.weights))))
         push!(UpperConcentrationArea, plot(upperconcdata, upperhist.edges,
@@ -227,25 +227,25 @@ function concarea_animate(data::Dict{String, Any})
     ConcVsArea = @animate for i in 0:plot_freq:nsteps
         upperdata = reshape(data["snapshots/Concentration/"*string(i)][:, :, 1], :)
         lowerdata = reshape(data["snapshots/Concentration/"*string(i)][:, :, 2], :)
-        upperhist = histogram(upperdata)
-        lowerhist = histogram(lowerdata)
-        normalize!(upperhist, mode = :probability)
-        normalize!(lowerhist, mode = :probability)
+        upperhist = fit(Histogram, upperdata)
+        lowerhist = fit(Histogram, lowerdata)
+        upperhist = normalize(upperhist, mode = :probability)
+        lowerhist = normalize(lowerhist, mode = :probability)
         upperconcdata = reverse(vcat(0, cumsum(reverse(upperhist.weights))))
         lowerconcdata = reverse(vcat(0, cumsum(reverse(lowerhist.weights))))
         p1 = plot(upperconcdata , upperhist.edges,
-                 label = false,
-                xlabel = "Normalised area",
-                ylabel = "Concentration",
-                 ylims = (0, max_conc[1]),
-                 title = "Top layer"
+                    label = false,
+                    xlabel = "Normalised area",
+                    ylabel = "Concentration",
+                    ylims = (0, max_conc[1]),
+                    title = "Top layer"
                 )
         p2 = plot(lowerconcdata, lowerhist.edges,
-                 label = false,
-                xlabel = "Normalised area",
-                ylabel = "Concentration",
-                 ylims = (0, max_conc[2]),
-                 title = "Bottom layer"
+                    label = false,
+                    xlabel = "Normalised area",
+                    ylabel = "Concentration",
+                    ylims = (0, max_conc[2]),
+                    title = "Bottom layer"
                 )
     plot(p1, p2)
     end

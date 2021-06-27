@@ -96,11 +96,11 @@ end
 Create directory and file for a given run that will be appended with 
 flow characteristics and .jld2. If already exists uses directory and removes the file.
 """
-function CreateFile(ADProb, IC::InitialCondition, SimPath)
+function CreateFile(ADProb, save_freq, SimPath)
 
     Lx, nx = ADProb.grid.Lx, ADProb.grid.nx
     filepath = joinpath(SimPath, 
-                        "Output/Simulation: Domain = "*string(round(Int, Lx))*", Res = "*string(nx)*", IC = "*string(typeof(IC))
+                        "Output/Simulation: Domain = "*string(round(Int, Lx))*", Res = "*string(nx)*", save_freq = "*string(save_freq)
                         )
 
     if !isdir(filepath)

@@ -1,4 +1,4 @@
-#Tracer advcetion diffusion experimetn
+#Tracer advcetion diffusion experiment
 
 #Change to the correct directory (if it was not already correct for some reason)
 SimPath = joinpath("/Users/Joey/Desktop/ThesisCode/QG_tracer_advection", "Honours thesis/Experiment")
@@ -30,11 +30,10 @@ IC = GaussianBlobIC(μIC, Σ, ADGrid)
 
 TracerAdvDiff_QG.QGset_c!(ADProb, IC.C₀)
 
-filename = CreateFile(ADProb, IC, SimPath)
+save_freq = 111 #Frequency at which to save data
+filename = CreateFile(ADProb, IC, save_freq, SimPath)
 ADOutput = Output(ADProb, filename, (:Concentration, GetConcentration))
 saveproblem(ADOutput)
-
-save_freq = 10
 
 #Simulation loop
 while ADClock.step <= nsteps
