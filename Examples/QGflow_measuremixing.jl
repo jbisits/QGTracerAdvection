@@ -205,12 +205,6 @@ plot(concentration_variance_top, concentration_variance_bottom, size=(900, 400))
 =#
 
 #=
-second_moment_con_top = plot(t, second_moment_con[:, 1], xlabel = "t", title = "Second moment of tracer concentration", label = false)
-second_moment_con_bottom = plot(t, second_moment_con[:, 2], xlabel = "t", title = "Second moment of tracer concentration", label = false)
-plot(second_moment_con_top, second_moment_con_bottom, size=(900, 400))
-=#
-
-#=
 σ²_top = plot(t, σ²[:, 1], xlabel = "t", title = "σ² from mle fit each time step in top layer", label = false)
 σ²_bottom = plot(t, σ²[:, 2], xlabel = "t", title = "σ² from mle fit each time step in bottom layer", label = false)
 plot(σ²_top, σ²_bottom, size=(900, 400))

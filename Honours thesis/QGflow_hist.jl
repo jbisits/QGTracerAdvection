@@ -4,7 +4,7 @@
 
 using .TracerAdvDiff_QG
 
-using GeophysicalFlows.MultiLayerQG, Plots, Distributions, StatsBase, LinearAlgebra
+using GeophysicalFlows.MultiLayerQG, Plots, Distributions, StatsBase, LinearAlgebra, JLD2
 
 #Set up the MultiLayerQG.Problem to test with the modified module.
 
@@ -92,51 +92,22 @@ end
 #If using strip_IC use C₀' for a vertical strip
 TracerAdvDiff_QG.QGset_c!(AD_prob, C₀)
 
-initial_data = reshape(AD_prob.vars.c[:, :, 1], :) #Get this here to play with down below
-
-#Plot of initial condition in the upper layer.
-IC_upper = heatmap(x, y, v_AD.c[:, :, 1]',
-            title = "Upper layer initial tracer concentration",
-            xlabel = "x",
-            ylabel = "y",
-            color = :balance,
-            aspecetratio = 1,
-            colorbar = true,
-            xlim = (-g_AD.Lx/2, g_AD.Lx/2),
-            ylim = (-g_AD.Ly/2, g_AD.Ly/2))
-IC_lower = heatmap(x, y, v_AD.c[:, :, 2]',
-            title = "Lower layer initial tracer concentration",
-            xlabel = "x",
-            ylabel = "y",
-            color = :balance,
-            aspecetratio = 1,
-            colorbar = true,
-            xlim = (-g_AD.Lx/2, g_AD.Lx/2),
-            ylim = (-g_AD.Ly/2, g_AD.Ly/2))
-plot(IC_upper, IC_lower, size = (900, 400))
+max_conc = [findmax(AD_prob.vars.c[:, :, 1])[1], findmax(AD_prob.vars.c[:, :, 1])[1]]
 
 #Define blank arrays in which to store the plots of tracer diffusion in each layer.
 lower_layer_tracer_plots_AD = Plots.Plot{Plots.GRBackend}[]
 upper_layer_tracer_plots_AD = Plots.Plot{Plots.GRBackend}[]
 
-#Define blank arrays to save a histogram at each time step a plot is saved.
-upper_concentration_hist = Plots.Plot{Plots.GRBackend}[]
-lower_concentration_hist = Plots.Plot{Plots.GRBackend}[]
-
 #Define frequency at which to save a plot.
 #plot_time_AD is when to get the first plot, plot_time_inc is at what interval subsequent plots are created.
 #Setting them the same gives plots at equal time increments. (Might be a better work around)
 plot_time_AD, plot_time_inc = 0.2, 0.2
-#Define arguments for plots.
-kwargs = (
-         xlabel = "x",
-         ylabel = "y",
-    aspectratio = 1,
-          color = :balance,
-       colorbar = true,
-           xlim = (-g_AD.Lx/2, g_AD.Lx/2),
-           ylim = (-g_AD.Ly/2, g_AD.Ly/2)
-)
+#Blank array to save the step number so can plot histogram corresponding to the tracer advection plot.
+step_nums = []
+
+#Define a file for .jld2 to save into
+filepath = "."
+filename = joinpath(filepath, "Honours thesis/hist_conc.jld2")
 
 #Step the tracer advection problem forward and plot at the desired time step.
 while cl_AD.step <= nsteps
@@ -147,26 +118,21 @@ while cl_AD.step <= nsteps
                 xlabel = "x",
                 ylabel = "y",
                 colorbar = true,
-                xlim = (-g_AD.Lx/2, g_AD.Lx/2),
-                ylim = (-g_AD.Ly/2, g_AD.Ly/2),
+                xlims = (-g_AD.Lx/2, g_AD.Lx/2),
+                ylims = (-g_AD.Ly/2, g_AD.Ly/2),
                 title = "C(x,y,t), t = "*string(round(cl_AD.t; digits = 2)));
         push!(upper_layer_tracer_plots_AD, tp_u)
-        hist_upper = histogram(reshape(AD_prob.vars.c[:, :, 1], :), label = false, normalize = :probability,
-                               title = "Normalised histogram of \ntracer concentration, t = "*string(round(cl_AD.t; digits = 2)))
-        push!(upper_concentration_hist, hist_upper)
         tp_l = heatmap(x, y, v_AD.c[:, :, 2]',
                 aspectratio = 1,
                 c = :balance,
                 xlabel = "x",
                 ylabel = "y",
                 colorbar = true,
-                xlim = (-g_AD.Lx/2, g_AD.Lx/2),
-                ylim = (-g_AD.Ly/2, g_AD.Ly/2),
+                xlims = (-g_AD.Lx/2, g_AD.Lx/2),
+                ylims = (-g_AD.Ly/2, g_AD.Ly/2),
                 title = "C(x,y,t), t = "*string(round(cl_AD.t; digits = 2)))
         push!(lower_layer_tracer_plots_AD, tp_l)
-        hist_lower = histogram(reshape(AD_prob.vars.c[:, :, 2], :), label = false, normalize = :probability,
-                               title = "Normalised histogram of \ntracer concentration, t = "*string(round(cl_AD.t; digits = 2)))
-        push!(lower_concentration_hist, hist_lower)
+        push!(step_nums, AD_prob.clock.step)
     elseif round(Int64, cl_AD.step) == round(Int64, plot_time_AD*nsteps)
         tp_u = heatmap(x, y, v_AD.c[:, :, 1]',
                 aspectratio = 1,
@@ -174,28 +140,25 @@ while cl_AD.step <= nsteps
                 xlabel = "x",
                 ylabel = "y",
                 colorbar = true,
-                xlim = (-g_AD.Lx/2, g_AD.Lx/2),
-                ylim = (-g_AD.Ly/2, g_AD.Ly/2),
+                xlims = (-g_AD.Lx/2, g_AD.Lx/2),
+                ylims = (-g_AD.Ly/2, g_AD.Ly/2),
                 title = "C(x,y,t), t = "*string(round(cl_AD.t; digits = 2)))
         push!(upper_layer_tracer_plots_AD, tp_u)
-        hist_upper = histogram(reshape(AD_prob.vars.c[:, :, 1], :), label = false, normalize = :probability,
-                               title = "Normalised histogram of \ntracer concentration, t = "*string(round(cl_AD.t; digits = 2)))
-        push!(upper_concentration_hist, hist_upper)
         tp_l = heatmap(x, y, v_AD.c[:, :, 2]',
                 aspectratio = 1,
                 c = :balance,
                 xlabel = "x",
                 ylabel = "y",
                 colorbar = true,
-                xlim = (-g_AD.Lx/2, g_AD.Lx/2),
-                ylim = (-g_AD.Ly/2, g_AD.Ly/2),
+                xlims = (-g_AD.Lx/2, g_AD.Lx/2),
+                ylims = (-g_AD.Ly/2, g_AD.Ly/2),
                 title = "C(x,y,t), t = "*string(round(cl_AD.t; digits = 2)))
         push!(lower_layer_tracer_plots_AD, tp_l)
-        hist_lower = histogram(reshape(AD_prob.vars.c[:, :, 2], :), label = false, normalize = :probability,
-                                       title = "Normalised histogram of \ntracer concentration, t = "*string(round(cl_AD.t; digits = 2)))
-        push!(lower_concentration_hist, hist_lower)
+        push!(step_nums, AD_prob.clock.step)
         global plot_time_AD += plot_time_inc
     end
+    #I have this file saved so it is commented out for now.
+    #MeasureMixing.fit_hist!(filename, AD_prob, number_of_bins = 30)
     stepforward!(AD_prob, nsubs)
     TracerAdvDiff_QG.QGupdatevars!(AD_prob)
     #Updates the velocity field in advection problem to the velocity field in the MultiLayerQG.Problem at each timestep.
@@ -212,52 +175,58 @@ plot_bottom = plot(lower_layer_tracer_plots_AD[1], lower_layer_tracer_plots_AD[2
                    lower_layer_tracer_plots_AD[3], lower_layer_tracer_plots_AD[4],
                    lower_layer_tracer_plots_AD[5], lower_layer_tracer_plots_AD[6])
 
-#Histograms in upper layer
-hist_top = plot(upper_concentration_hist[1], upper_concentration_hist[2],
-                upper_concentration_hist[3], upper_concentration_hist[4],
-                upper_concentration_hist[5], upper_concentration_hist[6])
+#Now can load the output of the .jld2 file created to create histograms and plots of Concentration ~ normalised area.
 
-#Histograms in lower layer
-hist_bottom = plot(lower_concentration_hist[1], lower_concentration_hist[2],
-                   lower_concentration_hist[3], lower_concentration_hist[4],
-                   lower_concentration_hist[5], lower_concentration_hist[6])
+data = load("Honours thesis/hist_conc.jld2")
+
+hist_top = Plots.Plot{Plots.GRBackend}[]
+hist_bottom = Plots.Plot{Plots.GRBackend}[]
+for i ∈ step_nums
+    push!(hist_top, plot(data["Histograms/step"*string(i)][1], 
+                             label = false, 
+                            xlabel = "Concentration", 
+                            ylabel = "Normalised area",
+                             xlims = (0, max_conc[1] + 0.01)))
+    push!(hist_bottom, plot(data["Histograms/step"*string(i)][2],
+                             label = false, 
+                            xlabel = "Concentration", 
+                            ylabel = "Normalised area",
+                             xlims = (0, max_conc[2] + 0.01)))
+end
+hist_top = plot(hist_top[1], hist_top[2], hist_top[3], hist_top[4], hist_top[5], hist_top[6])
+hist_bottom = plot(hist_bottom[1], hist_bottom[2], hist_bottom[3], hist_bottom[4], hist_bottom[5], hist_bottom[6])
 
 plot(plot_top, hist_top, layout=(2, 1), size=(1200, 1200))
 plot(plot_bottom, hist_bottom, layout=(2, 1), size=(1200, 1200))
 
-#Want to integrate (cumumlative sum) over the historgram to get the area of the tracer patch
-#To do this need to fit the histogram as an object rather than just using the histogram from Plots
+#Concentration ~ area example plot
+plot(data["ConcentrationData/step400"][1], data["Histograms/step400"][1].edges,
+         label = false,
+        xlabel = "Normalised area",
+        ylabel = "Concentration",
+        ylims = (0, max_conc[1] + 0.01)
+        )
 
-histi = fit(Histogram, initial_data, nbins = 30)
-probhisti = normalize(histi, mode = :probability)
-#Now cumlulative sum to each bin and will get data that you can plot.
-#Use cumlulative sum from highest concentration to lowest concentration. That is why need reverse argument on the weights.
-hist_data = cumsum(reverse(probhisti.weights)) 
-hist_data = vcat(0, hist_data)
-plot(probhisti, label = false)
-plot!(probhisti.edges, reverse(hist_data), label = false, linewidth = 4, color = :red,
-        xlabel = "Concentration", ylabel = "Normalised area")
-#Looks to just be a swap between the x and y axes to get the correct plot.
-initial_conc_area = plot(reverse(hist_data), probhisti.edges, label = "Initial concentration level over grid", 
-                        xlabel = "Normalised area", ylabel = "Concentration")
+#Animation of #Concentration ~ area 
+#This animation is already saved so is commented out
+#=
+ConcVsArea = @animate for i in 1:10:nsteps
+    p1 = plot(data["ConcentrationData/step"*string(i)][1], data["Histograms/step"*string(i)][1].edges,
+                 label = false,
+                xlabel = "Normalised area",
+                ylabel = "Concentration",
+                 ylims = (0, max_conc[1] + 0.01),
+                 title = "Top layer"
+                )
+    p2 = plot(data["ConcentrationData/step"*string(i)][2], data["Histograms/step"*string(i)][2].edges,
+                 label = false,
+                xlabel = "Normalised area",
+                ylabel = "Concentration",
+                 ylims = (0, max_conc[2] + 0.01),
+                 title = "Bottom layer"
+                )
+    plot(p1, p2)
+end
 
-
-final_data = reshape(AD_prob.vars.c[:, :, 1], :)
-histf = fit(Histogram, final_data)
-probhistf = normalize(histf, mode = :probability)
-hist_dataf = cumsum(reverse(probhistf.weights))
-hist_dataf = vcat(0, hist_dataf)
-#This plots only the part of the domain where there is concentration so need to make zero 
-#either side of this. In reality would asymptote to zero as a Gaussian but will start by just
-#setting it to zero. 
-plot(probhistf, label = false)
-plot!(probhistf.edges, reverse(hist_dataf), label = false, linewidth = 4, color = :red,
-    xlabel = "Concentration", ylabel = "Normalised area")
-final_conc_area = plot(reverse(hist_dataf), probhistf.edges, label = "Initial concentration level over grid", 
-                        xlabel = "Normalised area", ylabel = "Concentration")
-
-#I think a plot of this at every time step (then animate) would show the mixing of the tracer into the domain as we want it to.
-#Running this for longer the line stays horizontal!! That means that the mixing in the domain is linear (I think). On the right track!
-plot!(initial_conc_area, reverse(hist_dataf), probhistf.edges, label = "Final concentration level over grid", xlabel = "Normalised area", ylabel = "Concentration")
-
-#This now needs to be done at every timestep. Could then animate it to get a movie which I think would show things best.
+mp4(ConcVsArea, "Movies/ConcVsArea.mp4", fps=18)
+=#

@@ -391,7 +391,7 @@ end
 
 #################################################################################################
 """
-  function
+  function flow_till_delay_time!(QG_prob, delay_time, nsubs)
 Flows the QG problem (`QG_prob`) forward until `delay_time` so that the tracer can be dropped into 
 the QG flow at a time specified by the user.
 """
