@@ -48,13 +48,15 @@ uppersecondmoment = plot(t, 1 ./ ConcentrationVaricance[:, 1],
                             label = "Upper layer",
                             title = "Inverse of variance of concentration \n over the upper layer grid",
                             xlabel = "t",
-                            legend = :topleft 
+                            legend = :topleft,
+                            yscale = :log10 
                         )
 lowersecondmoment = plot(t, 1 ./ ConcentrationVaricance[:, 2], 
                             label = "Lower layer",
                             title = "Inverse of variance of concentration \n over the lower layer grid",
                             xlabel = "t",
-                            legend = :topleft    
+                            legend = :topleft,
+                            yscale = :log10    
                         )
 plot(uppersecondmoment, lowersecondmoment, size = (1000, 600))
 
