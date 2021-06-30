@@ -57,7 +57,7 @@ for i ∈ 1:ADSims
     end
 
     saveproblem(ADOutput)
-    #Save the number of steps in the simulation. This only needs to be done once
+    #Save the number of steps in the simulation
     jldopen(ADOutput.path, "a+") do path
         path["clock/nsteps"] = ADClock.step - 1
         path["save_freq"] = nsubs
