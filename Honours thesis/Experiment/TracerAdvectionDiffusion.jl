@@ -10,7 +10,7 @@ include("PackageSetup.jl")
 #include("Flows/ExampleFlow.jl")
 include("Flows/FlowSetup_nondim_32domain_128res.jl")
 
-nsubs  = 200            #Set the number of steps the simulation takes at each iteration of the simulation. This is also the frequency that data is saved at.         
+nsubs  = 200            #Set the number of steps the simulation takes at each iteration. This is also the frequency that data is saved at.         
 nsteps = 10000          #Set the total amount of time steps the advection-diffusion simulation should run for
 
 κ = 0.01
