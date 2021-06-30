@@ -7,8 +7,7 @@ cd(SimPath)
 include("PackageSetup.jl")
 
 #Import a flow that has already been set up from the Flows folder
-#include("Flows/ExampleFlow.jl")
-include("Flows/FlowSetup_nondim_32domain_128res.jl")
+include("Flows/FlowSetup_nondim_64domain_128res.jl")
 
 nsubs  = 200            #Set the number of steps the simulation takes at each iteration. This is also the frequency that data is saved at.         
 nsteps = 15000          #Set the total amount of time steps the advection-diffusion simulation should run for
