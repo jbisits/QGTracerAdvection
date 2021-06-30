@@ -96,7 +96,7 @@ end
 Create directory and file for a given run that will be appended with 
 flow characteristics and .jld2. If already exists uses directory and removes the file.
 """
-function CreateFile(ADProb::FourierFlows.Problem, IC::InitialCondition, save_freq::Int64, SimPath::String)
+function CreateFile(ADProb::FourierFlows.Problem, IC::InitialCondition, save_freq::Int64, SimPath::String; Ensemble = false)
 
     IC = string(typeof(IC))
     first = length("Main.ExperimentSetup.")
@@ -104,7 +104,7 @@ function CreateFile(ADProb::FourierFlows.Problem, IC::InitialCondition, save_fre
     IC = IC[(first + 1):(last - 1)]
     Lx, nx = ADProb.grid.Lx, ADProb.grid.nx
     filepath = joinpath(SimPath, 
-                        "Output/Simulation: Domain = "*string(round(Int, Lx))*", Res = "*string(nx)*", save_freq = "*string(save_freq)*", IC = "*IC
+                        "Output/Simulation: Domain = "*string(round(Int, Lx))*", Res = "*string(nx)*", save_freq = "*string(save_freq)*", IC = "*IC*", Ensemble = "*string(Ensemble)
                         )
 
     if !isdir(filepath)
