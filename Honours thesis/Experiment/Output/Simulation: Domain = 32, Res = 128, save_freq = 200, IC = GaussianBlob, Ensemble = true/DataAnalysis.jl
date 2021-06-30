@@ -7,10 +7,10 @@ file2 = joinpath(pwd(), "SimulationData_1.jld2")
 data = [load(file1), load(file2)]
 
 #Produce histogram plots from the saved concentration data
-histplots = hist_plot(data[1])
+histplots = hist_plot(data[2])
 
 #Produce heatmaps of tacer concentration from the saved concentration data
-tracerplots = tracer_plot(data[1])
+tracerplots = tracer_plot(data[2])
 
 #Plot heatmaps and histograms togehter.
 uppertacer = plot(tracerplots[1]...)
@@ -24,11 +24,11 @@ lowerhist = plot(histplots[2]...)
 plot(lowertracer, lowerhist, layout=(2, 1), size = (1200, 1200))
 
 #Time vector for plotting
-t = time_vec(data)
+t = time_vec(data[1])
 
 #Create some plots of concentration diagnostics.
-ConcentrationMean = conc_mean(data)
-ConcentrationVaricance = conc_var(data)
+ConcentrationMean = conc_mean(data[1])
+ConcentrationVaricance = conc_var(data[1])
 
 meanplot = plot(t, ConcentrationMean, 
                     label = ["Upper Layer" "Lower layer"],
@@ -62,7 +62,7 @@ lowersecondmoment = plot(t, 1 ./ ConcentrationVaricance[:, 2],
 plot(uppersecondmoment, lowersecondmoment, size = (1000, 600))
 
 #Instead consider the integral ∫C²dA which is the concentration per unit area as Garrett defines
-conc_int = Garrett_int(data)
+conc_int = Garrett_int(data[1])
 
 plot(t, conc_int, 
         label = ["Upper layer" "Lower layer"], 

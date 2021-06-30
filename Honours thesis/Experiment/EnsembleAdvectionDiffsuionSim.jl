@@ -14,8 +14,8 @@ nsubs  = 200            #Set the number of steps the simulation takes at each it
 nsteps = 6000           #Set the total amount of time steps the advection-diffusion simulation should run for
 
 κ = 0.01
-#Set delay time (that is flow for some length of time, then drop tracer in)
-delay_time = Δt̂ * 3000
+#Set delay times (that is flow for some length of time, then drop tracer in)
+delay_time = [Δt̂ * 3000, Δt̂ * 3500]
 #Define number of tracer advection simulations
 ADSims = 2
 
@@ -23,7 +23,7 @@ ADSims = 2
 for i ∈ 1:ADSims
 
     if i == 1
-        ADProb = TracerAdvDiff_QG.Problem(;prob = QGProb, delay_time = delay_time, nsubs = nsubs, κ = κ)
+        ADProb = TracerAdvDiff_QG.Problem(;prob = QGProb, delay_time = delay_time[i], nsubs = nsubs, κ = κ)
         ADSol, ADClock, ADVars, ADParams, ADGrid = ADProb.sol, ADProb.clock, ADProb.vars, ADProb.params, ADProb.grid
         #Set the input for Gaussian blob initial condition
         μIC = [0, 0]
@@ -36,12 +36,13 @@ for i ∈ 1:ADSims
         global QGProb = MultiLayerQG.Problem(nlayers, dev; nx=nx, Lx=Lx̂, f₀=f̂₀, g=ĝ, H=Ĥ, ρ=ρ̂, U=Û, dt=Δt̂, stepper=stepper, μ=μ̂, β=β̂, ν=ν̂)
         global QGSol, QGClock, QGParams, QGVars, QGrid = QGProb.sol, QGProb.clock, QGProb.params, QGProb.vars, QGProb.grid
         MultiLayerQG.set_q!(QGProb, q₀)
-        ADProb = TracerAdvDiff_QG.Problem(;prob = QGProb, delay_time = delay_time + Δt̂ * 10, nsubs = nsubs, κ = κ)
+        ADProb = TracerAdvDiff_QG.Problem(;prob = QGProb, delay_time = delay_time[i], nsubs = nsubs, κ = κ)
         ADSol, ADClock, ADVars, ADParams, ADGrid = ADProb.sol, ADProb.clock, ADProb.vars, ADProb.params, ADProb.grid
     end
 
     TracerAdvDiff_QG.QGset_c!(ADProb, IC.C₀)
     ADOutput = Output(ADProb, filename, (:Concentration, GetConcentration))
+    saveproblem(ADOutput)
     
     #Simulation loop
     while ADClock.step <= nsteps
@@ -56,7 +57,6 @@ for i ∈ 1:ADSims
 
     end
 
-    saveproblem(ADOutput)
     #Save the number of steps in the simulation
     jldopen(ADOutput.path, "a+") do path
         path["clock/nsteps"] = ADClock.step - 1
