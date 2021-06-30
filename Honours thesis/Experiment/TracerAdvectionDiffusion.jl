@@ -8,12 +8,6 @@ include("PackageSetup.jl")
 
 #Import a flow that has already been set up from the Flows folder
 #include("Flows/ExampleFlow.jl")
-#include("Flows/FlowSetup_500domain_res128.jl")
-#include("Flows/FlowSetup_1000domain_res128.jl")
-#include("Flows/FlowSetup_1000domain_res256.jl")
-#include("Flows/FlowSetup_1500domain_res128.jl")
-#include("Flows/FlowSetup_1500domain_res256.jl")
-#include("Flows/FlowSetup_nondim_32domain_128res.jl")
 include("Flows/FlowSetup_nondim_32domain_128res.jl")
 
 κ = 0.01

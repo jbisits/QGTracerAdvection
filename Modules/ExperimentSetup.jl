@@ -96,11 +96,15 @@ end
 Create directory and file for a given run that will be appended with 
 flow characteristics and .jld2. If already exists uses directory and removes the file.
 """
-function CreateFile(ADProb, save_freq, SimPath)
+function CreateFile(ADProb, IC::InitialCondition, save_freq, SimPath)
 
+    IC = string(typeof(IC))
+    first = length("Main.ExperimentSetup.")
+    last = findfirst('{', IC)
+    IC = IC[(first + 1):(last - 1)]
     Lx, nx = ADProb.grid.Lx, ADProb.grid.nx
     filepath = joinpath(SimPath, 
-                        "Output/Simulation: Domain = "*string(round(Int, Lx))*", Res = "*string(nx)*", save_freq = "*string(save_freq)
+                        "Output/Simulation: Domain = "*string(round(Int, Lx))*", Res = "*string(nx)*", save_freq = "*string(save_freq)*"IC = "*IC
                         )
 
     if !isdir(filepath)
@@ -154,7 +158,7 @@ function nondim2dim(prob;
     f₀ = (U/Ld) * f̂₀
     β = (U/Ld^2) * β̂
     μ = (U/Ld) * μ̂
-    ν = (U/Ld) * ν̂
+    ν = (U*Ld) * ν̂
 
     #Time
     Δt̂ = prob.clock.dt
