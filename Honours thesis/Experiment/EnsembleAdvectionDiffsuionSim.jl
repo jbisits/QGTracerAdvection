@@ -11,7 +11,7 @@ include("PackageSetup.jl")
 include("Flows/FlowSetup_nondim_32domain_128res.jl")
 
 nsubs  = 200            #Set the number of steps the simulation takes at each iteration. This is also the frequency that data is saved at.         
-nsteps = 5000           #Set the total amount of time steps the advection-diffusion simulation should run for
+nsteps = 6000           #Set the total amount of time steps the advection-diffusion simulation should run for
 
 κ = 0.01
 #Set delay time (that is flow for some length of time, then drop tracer in)
@@ -36,12 +36,12 @@ for i ∈ 1:ADSims
         global QGProb = MultiLayerQG.Problem(nlayers, dev; nx=nx, Lx=Lx̂, f₀=f̂₀, g=ĝ, H=Ĥ, ρ=ρ̂, U=Û, dt=Δt̂, stepper=stepper, μ=μ̂, β=β̂, ν=ν̂)
         global QGSol, QGClock, QGParams, QGVars, QGrid = QGProb.sol, QGProb.clock, QGProb.params, QGProb.vars, QGProb.grid
         MultiLayerQG.set_q!(QGProb, q₀)
-        ADProb = TracerAdvDiff_QG.Problem(;prob = QGProb, delay_time = delay_time, nsubs = nsubs, κ = κ)
+        ADProb = TracerAdvDiff_QG.Problem(;prob = QGProb, delay_time = delay_time + Δt̂ * 10, nsubs = nsubs, κ = κ)
         ADSol, ADClock, ADVars, ADParams, ADGrid = ADProb.sol, ADProb.clock, ADProb.vars, ADProb.params, ADProb.grid
     end
 
     TracerAdvDiff_QG.QGset_c!(ADProb, IC.C₀)
-    ADOutput = Output(ADProb, filename, (Symbol(:ConcentrationProb, i), GetConcentration))
+    ADOutput = Output(ADProb, filename, (:Concentration, GetConcentration))
     
     #Simulation loop
     while ADClock.step <= nsteps
