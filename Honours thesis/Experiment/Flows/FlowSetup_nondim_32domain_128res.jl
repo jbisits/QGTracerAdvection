@@ -4,26 +4,27 @@ dev = CPU()
 nx, ny = 128, 128
 stepper = "FilteredRK4"
 nsubs  = 1         
-nsteps = 8000nsubs
+nsteps = 10000nsubs
 
 #Non dimensional paramters
 Lx̂ = 32
 Lŷ = 32
 
 #Timestep
-Δt̂ = 0.01
+Δt̂ = 0.005
 
 nlayers = 2
 ρ̂ = [0.9, 1.0]
-Ĥ = [0.5, 0.5]
+ĥ = 900
+Ĥ = [ĥ/2, ĥ/2]
 U₀ = 1.0
 Û = [U₀, -U₀]
 
 #Parameters
-μ̂ = 0.1
-ν̂ = 0.2
-β̂ = 1
-f̂₀ = 1
+μ̂ = 0.45
+ν̂ = 0.45
+β̂ = 0.1
+f̂₀ = 30
 ĝ = 10
 
 QGProb = MultiLayerQG.Problem(nlayers, dev; nx=nx, Lx=Lx̂, f₀=f̂₀, g=ĝ, H=Ĥ, ρ=ρ̂, U=Û, dt=Δt̂, stepper=stepper, μ=μ̂, β=β̂, ν=ν̂)
