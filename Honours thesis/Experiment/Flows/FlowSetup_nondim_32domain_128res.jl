@@ -3,8 +3,6 @@
 dev = CPU()
 nx, ny = 128, 128
 stepper = "FilteredRK4"
-nsubs  = 1         
-nsteps = 10000nsubs
 
 #Non dimensional paramters
 Lx̂ = 32

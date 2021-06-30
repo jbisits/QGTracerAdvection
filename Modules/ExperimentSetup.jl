@@ -104,7 +104,7 @@ function CreateFile(ADProb, IC::InitialCondition, save_freq, SimPath)
     IC = IC[(first + 1):(last - 1)]
     Lx, nx = ADProb.grid.Lx, ADProb.grid.nx
     filepath = joinpath(SimPath, 
-                        "Output/Simulation: Domain = "*string(round(Int, Lx))*", Res = "*string(nx)*", save_freq = "*string(save_freq)*"IC = "*IC
+                        "Output/Simulation: Domain = "*string(round(Int, Lx))*", Res = "*string(nx)*", save_freq = "*string(save_freq)*", IC = "*IC
                         )
 
     if !isdir(filepath)

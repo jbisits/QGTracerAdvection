@@ -10,6 +10,9 @@ include("PackageSetup.jl")
 #include("Flows/ExampleFlow.jl")
 include("Flows/FlowSetup_nondim_32domain_128res.jl")
 
+nsubs  = 200            #Set the frequency that data is saved at in the simulation         
+nsteps = 10000          #Set the total amount of time steps the simulation should run for
+
 κ = 0.01
 #Set delay time (that is flow for some number of days, then drop tracer in)
 delay_time = 0
@@ -24,8 +27,7 @@ IC = GaussianBlobIC(μIC, Σ, ADGrid)
 
 TracerAdvDiff_QG.QGset_c!(ADProb, IC.C₀)
 
-save_freq = 200 #Frequency at which to save data
-filename = CreateFile(ADProb, save_freq, SimPath)
+filename = CreateFile(ADProb, IC, save_freq = nsubs, SimPath)
 ADOutput = Output(ADProb, filename, (:Concentration, GetConcentration))
 saveproblem(ADOutput)
 
@@ -35,9 +37,7 @@ while ADClock.step <= nsteps
     if ADClock.step % 1000 == 0
         println("Step number: ", round(Int, ADClock.step))
     end
-    if ADClock.step % save_freq == 0
-        saveoutput(ADOutput)
-    end
+    saveoutput(ADOutput)
     stepforward!(ADProb, nsubs)
     TracerAdvDiff_QG.QGupdatevars!(ADProb)
     TracerAdvDiff_QG.vel_field_update!(ADProb, QGProb, nsubs)
@@ -47,5 +47,5 @@ end
 #Save the number of steps in the simulation
 jldopen(ADOutput.path, "a+") do path
     path["clock/nsteps"] = ADClock.step - 1
-    path["save_freq"] = save_freq
+    path["save_freq"] = nsubs
 end
