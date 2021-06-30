@@ -11,11 +11,11 @@ include("PackageSetup.jl")
 include("Flows/FlowSetup_nondim_32domain_128res.jl")
 
 nsubs  = 200            #Set the frequency that data is saved at in the simulation         
-nsteps = 10000          #Set the total amount of time steps the simulation should run for
+nsteps = 10000          #Set the total amount of time steps the advection-diffusion simulation should run for
 
 κ = 0.01
 #Set delay time (that is flow for some number of days, then drop tracer in)
-delay_time = 0
+delay_time = Δt̂ * 3000
 #Set the tracer advection probelm by passing in the QG problem 
 ADProb = TracerAdvDiff_QG.Problem(;prob = QGProb, delay_time = delay_time, nsubs = nsubs, κ = κ)
 ADSol, ADClock, ADVars, ADParams, ADGrid = ADProb.sol, ADProb.clock, ADProb.vars, ADProb.params, ADProb.grid
@@ -48,4 +48,7 @@ end
 jldopen(ADOutput.path, "a+") do path
     path["clock/nsteps"] = ADClock.step - 1
     path["save_freq"] = nsubs
+    if delay_time != 0
+        paths["delay_time"] = delay_time
+    end
 end
