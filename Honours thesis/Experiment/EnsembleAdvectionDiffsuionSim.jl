@@ -18,7 +18,6 @@ nsteps = 5000           #Set the total amount of time steps the advection-diffus
 delay_time = Δt̂ * 3000
 #Define number of tracer advection simulations
 ADSims = 2
-#ADProb = Vector{FourierFlows.Problem}(undef, ADSims)
 
 #This runs a non-parallel simulation where an array of advection-diffusion problems is defined then stepped forward separately with the flow reset each time
 for i ∈ 1:ADSims
