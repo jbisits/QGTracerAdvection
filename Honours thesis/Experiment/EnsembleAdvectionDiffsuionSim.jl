@@ -16,33 +16,33 @@ nsteps = 5000           #Set the total amount of time steps the advection-diffus
 κ = 0.01
 #Set delay time (that is flow for some length of time, then drop tracer in)
 delay_time = Δt̂ * 3000
-#Define blank array for advection problems
+#Define number of tracer advection simulations
 ADSims = 2
-ADProb = Vector{FourierFlows.Problem}(undef, ADSims)
+#ADProb = Vector{FourierFlows.Problem}(undef, ADSims)
 
 #This runs a non-parallel simulation where an array of advection-diffusion problems is defined then stepped forward separately with the flow reset each time
 for i ∈ 1:ADSims
 
     if i == 1
-        ADProb[i] = TracerAdvDiff_QG.Problem(;prob = QGProb, delay_time = delay_time, nsubs = nsubs, κ = κ)
-        ADSol, ADClock, ADVars, ADParams, ADGrid = ADProb[i].sol, ADProb[i].clock, ADProb[i].vars, ADProb[i].params, ADProb[i].grid
+        ADProb = TracerAdvDiff_QG.Problem(;prob = QGProb, delay_time = delay_time, nsubs = nsubs, κ = κ)
+        ADSol, ADClock, ADVars, ADParams, ADGrid = ADProb.sol, ADProb.clock, ADProb.vars, ADProb.params, ADProb.grid
         #Set the input for Gaussian blob initial condition
         μIC = [0, 0]
         Σ = [1 0; 0 1]
         global IC = GaussianBlobIC(μIC, Σ, ADGrid)
         #File name for saving. Only needs to be done the first time in the loop.
-        global filename = CreateFile(ADProb[i], IC, nsubs, SimPath; Ensemble = true)
-    elseif i != 1
+        global filename = CreateFile(ADProb, IC, nsubs, SimPath; Ensemble = true)
+    else
         #Reset the QG flow
         global QGProb = MultiLayerQG.Problem(nlayers, dev; nx=nx, Lx=Lx̂, f₀=f̂₀, g=ĝ, H=Ĥ, ρ=ρ̂, U=Û, dt=Δt̂, stepper=stepper, μ=μ̂, β=β̂, ν=ν̂)
         global QGSol, QGClock, QGParams, QGVars, QGrid = QGProb.sol, QGProb.clock, QGProb.params, QGProb.vars, QGProb.grid
         MultiLayerQG.set_q!(QGProb, q₀)
-        ADProb[i] = TracerAdvDiff_QG.Problem(;prob = QGProb, delay_time = delay_time, nsubs = nsubs, κ = κ)
-        ADSol, ADClock, ADVars, ADParams, ADGrid = ADProb[i].sol, ADProb[i].clock, ADProb[i].vars, ADProb[i].params, ADProb[i].grid
+        ADProb = TracerAdvDiff_QG.Problem(;prob = QGProb, delay_time = delay_time, nsubs = nsubs, κ = κ)
+        ADSol, ADClock, ADVars, ADParams, ADGrid = ADProb.sol, ADProb.clock, ADProb.vars, ADProb.params, ADProb.grid
     end
 
-    TracerAdvDiff_QG.QGset_c!(ADProb[i], IC.C₀)
-    ADOutput = Output(ADProb[i], filename, (Symbol(:ConcentrationProb, i), GetConcentration))
+    TracerAdvDiff_QG.QGset_c!(ADProb, IC.C₀)
+    ADOutput = Output(ADProb, filename, (Symbol(:ConcentrationProb, i), GetConcentration))
     
     #Simulation loop
     while ADClock.step <= nsteps
@@ -51,21 +51,20 @@ for i ∈ 1:ADSims
             println("Step number: ", round(Int, ADClock.step))
         end
         saveoutput(ADOutput)
-        stepforward!(ADProb[i], nsubs)
-        TracerAdvDiff_QG.QGupdatevars!(ADProb[i])
-        TracerAdvDiff_QG.vel_field_update!(ADProb[i], QGProb, nsubs)
+        stepforward!(ADProb, nsubs)
+        TracerAdvDiff_QG.QGupdatevars!(ADProb)
+        TracerAdvDiff_QG.vel_field_update!(ADProb, QGProb, nsubs)
 
     end
 
-    if i == 1
-        saveproblem(ADOutput)
-        #Save the number of steps in the simulation. This only needs to be done once
-        jldopen(ADOutput.path, "a+") do path
-            path["clock/nsteps"] = ADClock.step - 1
-            path["save_freq"] = nsubs
-            if delay_time != 0
-                path["delay_time"] = delay_time
-            end
+    saveproblem(ADOutput)
+    #Save the number of steps in the simulation. This only needs to be done once
+    jldopen(ADOutput.path, "a+") do path
+        path["clock/nsteps"] = ADClock.step - 1
+        path["save_freq"] = nsubs
+        if delay_time != 0
+            path["delay_time"] = delay_time
         end
     end
+
 end
