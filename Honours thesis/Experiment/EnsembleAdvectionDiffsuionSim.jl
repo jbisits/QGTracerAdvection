@@ -15,7 +15,7 @@ nsteps = 6000           #Set the total amount of time steps the advection-diffus
 
 κ = 0.01
 #Set delay times (that is flow for some length of time, then drop tracer in)
-delay_time = [Δt̂ * 3000, Δt̂ * 3500]
+delay_time = Δt̂ * 3000
 #Define number of tracer advection simulations
 ADSims = 2
 
@@ -40,7 +40,7 @@ for i ∈ 1:ADSims
         ADSol, ADClock, ADVars, ADParams, ADGrid = ADProb.sol, ADProb.clock, ADProb.vars, ADProb.params, ADProb.grid
     end
 
-    TracerAdvDiff_QG.QGset_c!(ADProb, IC.C₀)
+    QGset_c!(ADProb, IC.C₀)
     ADOutput = Output(ADProb, filename, (:Concentration, GetConcentration))
     saveproblem(ADOutput)
     
@@ -52,8 +52,8 @@ for i ∈ 1:ADSims
         end
         saveoutput(ADOutput)
         stepforward!(ADProb, nsubs)
-        TracerAdvDiff_QG.QGupdatevars!(ADProb)
-        TracerAdvDiff_QG.vel_field_update!(ADProb, QGProb, nsubs)
+        QGupdatevars!(ADProb)
+        vel_field_update!(ADProb, QGProb, nsubs)
 
     end
 

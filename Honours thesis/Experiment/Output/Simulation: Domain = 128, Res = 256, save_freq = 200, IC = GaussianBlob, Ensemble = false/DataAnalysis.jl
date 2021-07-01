@@ -1,5 +1,5 @@
 #Change to the current directory
-cd(joinpath(SimPath, "Output/Simulation: Domain = 64, res = 128, save_freq = 200, IC = GaussianBlob, Ensemble = false"))
+cd(joinpath(SimPath, "Output/Simulation: Domain = 128, res = 256, save_freq = 200, IC = GaussianBlob, Ensemble = false"))
 file = joinpath(pwd(), "SimulationData.jld2")
 
 #Load in the data

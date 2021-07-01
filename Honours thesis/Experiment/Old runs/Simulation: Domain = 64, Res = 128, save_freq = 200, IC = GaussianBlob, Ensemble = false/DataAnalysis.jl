@@ -6,10 +6,10 @@ file = joinpath(pwd(), "SimulationData.jld2")
 data = load(file)
 
 #Produce histogram plots from the saved concentration data
-histplots = hist_plot(data; plot_freq = 3000)
+histplots = hist_plot(data)
 
 #Produce heatmaps of tacer concentration from the saved concentration data
-tracerplots = tracer_plot(data; plot_freq = 3000)
+tracerplots = tracer_plot(data)
 
 #Plot heatmaps and histograms togehter.
 uppertacer = plot(tracerplots[1]...)
@@ -26,15 +26,15 @@ plot(lowertracer, lowerhist, layout=(2, 1), size = (1200, 1200))
 t = time_vec(data)
 
 #Create some plots of concentration diagnostics.
-ConcentrationVaricance = conc_var(data)
 ConcentrationMean = conc_mean(data)
+ConcentrationVaricance = conc_var(data)
 
 meanplot = plot(t, ConcentrationMean, 
                     label = ["Upper Layer" "Lower layer"],
                     title = "Mean concentration \n over the grid",
                     xlabel = "t",
                     ylabel = "Concentration",
-                    ylims = (0, 0.001)
+                    ylims = (0, 0.002)
                 )
 varplot = plot(t, ConcentrationVaricance, 
                     label = ["Upper Layer" "Lower layer"],
@@ -49,14 +49,14 @@ uppersecondmoment = plot(t, 1 ./ ConcentrationVaricance[:, 1],
                             title = "Inverse of variance of concentration \n over the upper layer grid",
                             xlabel = "t",
                             legend = :topleft,
-                            yscale = :log10
+                            yscale = :log10 
                         )
 lowersecondmoment = plot(t, 1 ./ ConcentrationVaricance[:, 2], 
                             label = "Lower layer",
                             title = "Inverse of variance of concentration \n over the lower layer grid",
                             xlabel = "t",
                             legend = :topleft,
-                            yscale = :log10   
+                            yscale = :log10    
                         )
 plot(uppersecondmoment, lowersecondmoment, size = (1000, 600))
 
@@ -80,7 +80,7 @@ plot(t, 1 ./ conc_int,
         xlabel = "t", 
         ylabel = "(∫C²dA)⁻¹",
         title = "Inverse concentration per unit area \n calculated at each time step", 
-        legend = :bottomright
+        legend = :topleft
     )
 
 ConcVsArea = concarea_animate(data)

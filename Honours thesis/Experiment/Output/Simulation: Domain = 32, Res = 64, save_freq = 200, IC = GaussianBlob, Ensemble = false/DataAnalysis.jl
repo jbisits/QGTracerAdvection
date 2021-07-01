@@ -1,5 +1,5 @@
 #Change to the current directory
-cd(joinpath(SimPath, "Output/Simulation: Domain = 64, res = 128, save_freq = 200, IC = GaussianBlob, Ensemble = false"))
+cd(joinpath(SimPath, "Output/Simulation: Domain = 32, res = 64, save_freq = 200, IC = GaussianBlob, Ensemble = false"))
 file = joinpath(pwd(), "SimulationData.jld2")
 
 #Load in the data
@@ -34,7 +34,7 @@ meanplot = plot(t, ConcentrationMean,
                     title = "Mean concentration \n over the grid",
                     xlabel = "t",
                     ylabel = "Concentration",
-                    ylims = (0, 0.001)
+                    ylims = (0, 0.01)
                 )
 varplot = plot(t, ConcentrationVaricance, 
                     label = ["Upper Layer" "Lower layer"],
