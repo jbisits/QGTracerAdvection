@@ -1,12 +1,12 @@
-#Flow on the non-dimensional domain of 64 (that is 64 * Ld in real space) and 128 resolution.
+#Flow on the non-dimensional domain of 32 (that is 32 * Ld in real space) and 64 resolution.
 
 dev = CPU()
-nx, ny = 128, 128
+nx, ny = 256, 256
 stepper = "FilteredRK4"
 
 #Non dimensional paramters
-Lx̂ = 64
-Lŷ = 64
+Lx̂ = 128
+Lŷ = 128
 
 #Timestep
 Δt̂ = 0.01
