@@ -56,7 +56,7 @@ lowersecondmoment = plot(t, 1 ./ ConcentrationVaricance[:, 2],
                             title = "Inverse of variance of concentration \n over the lower layer grid",
                             xlabel = "t",
                             legend = :topleft,
-                            yscale = :log10   
+                            yscale = :log10 
                         )
 plot(uppersecondmoment, lowersecondmoment, size = (1000, 600))
 
