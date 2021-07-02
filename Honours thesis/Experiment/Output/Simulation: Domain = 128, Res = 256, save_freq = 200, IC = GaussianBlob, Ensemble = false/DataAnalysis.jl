@@ -79,7 +79,7 @@ plot(t, 1 ./ conc_int,
         label = ["Upper layer" "Lower layer"],
         xlabel = "t", 
         ylabel = "(∫C²dA)⁻¹",
-        title = "Inverse concentration per unit area \n calculated at each time step", 
+        title = "Inverse concentration per unit area \n squared calculated at each time step", 
         legend = :bottomright
     )
 
