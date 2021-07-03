@@ -75,7 +75,7 @@ end
     function PointSourceIC(ConcentrationPoint, grid)
 Create a point source initial condition at `ConcentrationPoint` on a advection diffusion problem grid.
 """
-function PointSourceIC(ConcentrationPoint, ConcentraitonAmount, grid)
+function PointSourceIC(ConcentrationPoint::Vector, ConcentrationAmount, grid)
 
     xconcpt = ConcentrationPoint[1]
     yconcpt = ConcentrationPoint[2]

@@ -12,7 +12,7 @@ include("PackageSetup.jl")
 #include("Flows/FlowSetup_nondim_128domain_256res.jl")
 
 nsubs  = 200            #Set the number of steps the simulation takes at each iteration. This is also the frequency that data is saved at.         
-nsteps = 22000          #Set the total amount of time steps the advection-diffusion simulation should run for
+nsteps = 12000          #Set the total amount of time steps the advection-diffusion simulation should run for
 
 κ = 6e-4
 #Set delay time (that is flow for some length of time, then drop tracer in)
@@ -25,6 +25,8 @@ ADSol, ADClock, ADVars, ADParams, ADGrid = ADProb.sol, ADProb.clock, ADProb.vars
 μIC = [0, 0]
 Σ = [1 0; 0 1]
 IC = GaussianBlobIC(μIC, Σ, ADGrid)
+#IC = GaussianStripIC(μIc, σ², ADGrid)
+#IC = PointSourceIC([64, 64], 1, ADGrid)
 
 QGset_c!(ADProb, IC.C₀)
 
