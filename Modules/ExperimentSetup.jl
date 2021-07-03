@@ -32,10 +32,11 @@ end
 """
     Strcut for point source initial condition
 """
-struct PointSource{T, U} <: InitialCondition
+struct PointSource{T, U, V} <: InitialCondition
     x  :: T
     y  :: T
     C₀ :: U
+    ConcentrationAmount :: V
 end
 """
     function GaussianBlobIC(μ, Σ, grid)
@@ -74,7 +75,7 @@ end
     function PointSourceIC(ConcentrationPoint, grid)
 Create a point source initial condition at `ConcentrationPoint` on a advection diffusion problem grid.
 """
-function PointSourceIC(ConcentrationPoint, grid)
+function PointSourceIC(ConcentrationPoint, ConcentraitonAmount, grid)
 
     xconcpt = ConcentrationPoint[1]
     yconcpt = ConcentrationPoint[2]
@@ -84,12 +85,12 @@ function PointSourceIC(ConcentrationPoint, grid)
             if [i, j] != [xconcpt, yconcpt]
                 C₀[i, j] = 0
             else
-                C₀[i, j] = 1
+                C₀[i, j] = ConcentrationAmount
             end
         end
     end
 
-    return PointSource(xconcpt, yconcpt, C₀)
+    return PointSource(xconcpt, yconcpt, C₀, ConcentrationAmount)
 end
 """
     CreateFile(ADProb)
