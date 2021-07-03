@@ -85,3 +85,6 @@ plot(t, 1 ./ conc_int,
 
 ConcVsArea = concarea_animate(data)
 mp4(ConcVsArea, "ConcVsArea.mp4", fps=18)
+
+TracerAnim = tracer_animate(data)
+mp4(TracerAnim, "TracerAnim.mp4", fps = 18)

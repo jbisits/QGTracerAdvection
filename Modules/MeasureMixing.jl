@@ -347,15 +347,15 @@ function tracer_animate(data::Dict{String, Any})
     end
     TracerAnimation = @animate for i ∈ 0:plot_freq:nsteps
         uppertracer = heatmap(x, y, data["snapshots/Concentration/"*string(i)][:, :, 1]',
-                                title = "C(x,y,t) step = "*string(i); 
+                                title = "Upper layer, C(x,y,t) step = "*string(i); 
                                 plotargs...
                             )
         lowertracer = heatmap(x, y, data["snapshots/Concentration/"*string(i)][:, :, 2]',
-                                title = "C(x,y,t) step = "*string(i); 
+                                title = "Lower layer, C(x,y,t) step = "*string(i); 
                                 plotargs...
                             )   
 
-        plot(uppertracer, lowertracer)
+        plot(uppertracer, lowertracer, size = (900, 600))
     end
 
     return TracerAnimation
