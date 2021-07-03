@@ -234,14 +234,14 @@ function concarea_animate(data::Dict{String, Any})
                     xlabel = "Normalised area",
                     ylabel = "Concentration",
                     ylims = (0, max_conc[1]),
-                    title = "Top layer"
+                    title = "Upper layer"
                 )
         p2 = plot(lowerconcdata, lowerhist.edges,
                     label = false,
                     xlabel = "Normalised area",
                     ylabel = "Concentration",
                     ylims = (0, max_conc[2]),
-                    title = "Bottom layer"
+                    title = "Lower layer"
                 )
     plot(p1, p2)
     end
