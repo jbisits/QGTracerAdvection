@@ -67,7 +67,7 @@ plot(t, conc_int,
         label = ["Upper layer" "Lower layer"], 
         xlabel = "t", 
         ylabel = "∫C²dA",
-        title = "Concentration per unit area \n calculated at each time step"
+        title = "Sum of squared concentration per unit area \n calculated at each time step"
     )
 plot!(t, ConcentrationMean,
         label = ["Upper Layer" "Lower layer"],
@@ -79,7 +79,7 @@ plot(t, 1 ./ conc_int,
         label = ["Upper layer" "Lower layer"],
         xlabel = "t", 
         ylabel = "(∫C²dA)⁻¹",
-        title = "Inverse concentration per unit area \n calculated at each time step", 
+        title = "Inverse sum of squared concentration \n per unit area calculated at each time step", 
         legend = :bottomright
     )
 
