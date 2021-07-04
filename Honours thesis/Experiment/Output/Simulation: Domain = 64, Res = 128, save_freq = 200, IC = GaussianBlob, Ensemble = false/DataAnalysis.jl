@@ -28,6 +28,7 @@ t = time_vec(data)
 #Create some plots of concentration diagnostics.
 ConcentrationVaricance = conc_var(data)
 ConcentrationMean = conc_mean(data)
+SecondMoment = ConcentrationVaricance .+ ConcentrationMean.^2
 
 meanplot = plot(t, ConcentrationMean, 
                     label = ["Upper Layer" "Lower layer"],
@@ -44,21 +45,19 @@ varplot = plot(t, ConcentrationVaricance,
                 )
 plot(meanplot, varplot, size = (1000, 600))
 
-uppersecondmoment = plot(t, 1 ./ ConcentrationVaricance[:, 1], 
-                            label = "Upper layer",
-                            title = "Inverse of variance of concentration \n over the upper layer grid",
-                            xlabel = "t",
-                            legend = :topleft,
-                            yscale = :log10
-                        )
-lowersecondmoment = plot(t, 1 ./ ConcentrationVaricance[:, 2], 
-                            label = "Lower layer",
-                            title = "Inverse of variance of concentration \n over the lower layer grid",
-                            xlabel = "t",
-                            legend = :topleft,
-                            yscale = :log10   
-                        )
-plot(uppersecondmoment, lowersecondmoment, size = (1000, 600))
+plot(t, SecondMoment, 
+        label = ["Upper Layer" "Lower layer"],
+        title = "Inverse of variance of concentration \n over the lower layer grid",
+        xlabel = "t",
+        legend = :bottomright 
+    )
+
+plot(t, 1 ./ SecondMoment, 
+        label = ["Upper Layer" "Lower layer"],
+        title = "Inverse of variance of concentration \n over the upper layer grid",
+        xlabel = "t",
+        legend = :bottomright
+    )
 
 #Instead consider the integral ∫C²dA which is the concentration per unit area as Garrett defines
 conc_int = Garrett_int(data)
