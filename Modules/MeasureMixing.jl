@@ -133,7 +133,7 @@ end
 Create plots of histograms at the same timesteps as the tracer plots from the saved data
 in the output file. The input `data` is the loaded .jld2 file.
 """
-function hist_plot(data::Dict{String, Any}; plot_freq = 1000)
+function hist_plot(data::Dict{String, Any}; plot_freq = 1000, number_of_bins = 0)
 
     nlayers = data["params/nlayers"]
     nsteps = data["clock/nsteps"]
@@ -144,8 +144,13 @@ function hist_plot(data::Dict{String, Any}; plot_freq = 1000)
     for i ∈ plot_steps
         upperdata = reshape(data["snapshots/Concentration/"*string(i)][:, :, 1], :)
         lowerdata = reshape(data["snapshots/Concentration/"*string(i)][:, :, 2], :)
-        upperhist = fit(Histogram, upperdata)
-        lowerhist = fit(Histogram, lowerdata)
+        if number_of_bins == 0
+            upperhist = fit(Histogram, upperdata)
+            lowerhist = fit(Histogram, lowerdata)
+        else
+            upperhist = fit(Histogram, upperdata, nbins = number_of_bins)
+            lowerhist = fit(Histogram, lowerdata, nbins = number_of_bins)
+        end
         upperhist = normalize(upperhist, mode = :probability)
         lowerhist = normalize(lowerhist, mode = :probability)
         push!(UpperConcentrationHistograms, plot(upperhist,
