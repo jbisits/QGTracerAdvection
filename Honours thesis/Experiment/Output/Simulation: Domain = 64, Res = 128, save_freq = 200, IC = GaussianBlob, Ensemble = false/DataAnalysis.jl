@@ -6,10 +6,10 @@ file = joinpath(pwd(), "SimulationData.jld2")
 data = load(file)
 
 #Produce histogram plots from the saved concentration data
-histplots = hist_plot(data; plot_freq = 3000)
+histplots = hist_plot(data; plot_freq = 4000, xlims_same = false)
 
 #Produce heatmaps of tacer concentration from the saved concentration data
-tracerplots = tracer_plot(data; plot_freq = 3000)
+tracerplots = tracer_plot(data; plot_freq = 4000)
 
 #Plot heatmaps and histograms togehter.
 uppertacer = plot(tracerplots[1]...)
@@ -83,7 +83,7 @@ plot(t, 1 ./ conc_int,
         legend = :bottomright
     )
 
-ConcVsArea = concarea_animate(data)
+ConcVsArea = concarea_animate(data; number_of_bins = 30)
 mp4(ConcVsArea, "ConcVsArea.mp4", fps=18)
 
 TracerAnim = tracer_animate(data)

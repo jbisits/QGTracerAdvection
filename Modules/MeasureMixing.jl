@@ -133,7 +133,7 @@ end
 Create plots of histograms at the same timesteps as the tracer plots from the saved data
 in the output file. The input `data` is the loaded .jld2 file.
 """
-function hist_plot(data::Dict{String, Any}; plot_freq = 1000, number_of_bins = 0)
+function hist_plot(data::Dict{String, Any}; plot_freq = 1000, number_of_bins = 0, xlims_same = false)
 
     nlayers = data["params/nlayers"]
     nsteps = data["clock/nsteps"]
@@ -141,6 +141,13 @@ function hist_plot(data::Dict{String, Any}; plot_freq = 1000, number_of_bins = 0
     max_conc = [findmax(data["snapshots/Concentration/0"][:, :, i])[1] for i ∈ 1:nlayers]
     UpperConcentrationHistograms = Plots.Plot{Plots.GRBackend}[]
     LowerConcentrationHistograms = Plots.Plot{Plots.GRBackend}[]
+    if xlims_same == true
+        upperxlims = (0, max_conc[1])
+        lowerxlims = (0, max_conc[2])
+    else
+        upperxlims = nothing
+        lowerxlims = nothing
+    end
     for i ∈ plot_steps
         upperdata = reshape(data["snapshots/Concentration/"*string(i)][:, :, 1], :)
         lowerdata = reshape(data["snapshots/Concentration/"*string(i)][:, :, 2], :)
@@ -157,14 +164,14 @@ function hist_plot(data::Dict{String, Any}; plot_freq = 1000, number_of_bins = 0
                                                     label = false, 
                                                     xlabel = "Concentration", 
                                                     ylabel = "Normalised area",
-                                                    xlims = (0, max_conc[1])
+                                                    xlims = upperxlims
                                                 )
             )
         push!(LowerConcentrationHistograms, plot(lowerhist,
                                                     label = false, 
                                                     xlabel = "Concentration", 
                                                     ylabel = "Normalised area",
-                                                    xlims = (0, max_conc[2])
+                                                    xlims = lowerxlims
                                                 )
             )
     end
@@ -176,7 +183,7 @@ end
 Create plots of Concetration ~ normalised area at the same time steps as the tracer plots from the 
 saved data in the output file. The input `data` is the loaded .jld2 file.
 """
-function concarea_plot(data::Dict{String, Any}; plot_freq = 1000)
+function concarea_plot(data::Dict{String, Any}; plot_freq = 1000, number_of_bins = 0)
 
     nlayers = data["params/nlayers"]
     nsteps = data["clock/nsteps"]
@@ -187,8 +194,13 @@ function concarea_plot(data::Dict{String, Any}; plot_freq = 1000)
     for i ∈ plot_steps
         upperdata = reshape(data["snapshots/Concentration/"*string(i)][:, :, 1], :)
         lowerdata = reshape(data["snapshots/Concentration/"*string(i)][:, :, 2], :)
-        upperhist = fit(Histogram, upperdata)
-        lowerhist = fit(Histogram, lowerdata)
+        if number_of_bins == 0
+            upperhist = fit(Histogram, upperdata)
+            lowerhist = fit(Histogram, lowerdata)
+        else
+            upperhist = fit(Histogram, upperdata, nbins = number_of_bins)
+            lowerhist = fit(Histogram, lowerdata, nbins = number_of_bins)
+        end
         upperhist = normalize(upperhist, mode = :probability)
         lowerhist = normalize(lowerhist, mode = :probability)
         upperconcdata = reverse(vcat(0, cumsum(reverse(upperhist.weights))))
@@ -214,7 +226,7 @@ end
     function concarea_animate(data)
 Create an animation of Concetration ~ normalised area from the saved data in the output file.
 """
-function concarea_animate(data::Dict{String, Any})
+function concarea_animate(data::Dict{String, Any}; number_of_bins = 0)
 
     save_freq = data["save_freq"]
     if save_freq <  10
@@ -228,8 +240,13 @@ function concarea_animate(data::Dict{String, Any})
     ConcVsArea = @animate for i in 0:plot_freq:nsteps
         upperdata = reshape(data["snapshots/Concentration/"*string(i)][:, :, 1], :)
         lowerdata = reshape(data["snapshots/Concentration/"*string(i)][:, :, 2], :)
-        upperhist = fit(Histogram, upperdata)
-        lowerhist = fit(Histogram, lowerdata)
+        if number_of_bins == 0
+            upperhist = fit(Histogram, upperdata)
+            lowerhist = fit(Histogram, lowerdata)
+        else
+            upperhist = fit(Histogram, upperdata, nbins = number_of_bins)
+            lowerhist = fit(Histogram, lowerdata, nbins = number_of_bins)
+        end
         upperhist = normalize(upperhist, mode = :probability)
         lowerhist = normalize(lowerhist, mode = :probability)
         upperconcdata = reverse(vcat(0, cumsum(reverse(upperhist.weights))))
