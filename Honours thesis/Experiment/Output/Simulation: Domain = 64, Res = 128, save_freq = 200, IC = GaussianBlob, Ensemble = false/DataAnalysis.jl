@@ -65,8 +65,8 @@ conc_int = Garrett_int(data)
 plot(t, conc_int, 
         label = ["Upper layer" "Lower layer"], 
         xlabel = "t", 
-        ylabel = "∫C²dA",
-        title = "Sum of squared concentration per unit area \n calculated at each time step"
+        ylabel = "∑C²",
+        title = "Sum of squared concentration over \n grid calculated at each time step"
     )
 plot!(t, ConcentrationMean,
         label = ["Upper Layer" "Lower layer"],
@@ -77,8 +77,8 @@ plot!(t, ConcentrationMean,
 plot(t, 1 ./ conc_int, 
         label = ["Upper layer" "Lower layer"],
         xlabel = "t", 
-        ylabel = "(∫C²dA)⁻¹",
-        title = "Inverse sum of squared concentration \n per unit area calculated at each time step", 
+        ylabel = "(∑C²)⁻¹",
+        title = "Inverse sum of squared concentration \n over the grid calculated at each time step", 
         legend = :bottomright
     )
 
