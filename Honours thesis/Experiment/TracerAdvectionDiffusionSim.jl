@@ -7,13 +7,14 @@ cd(SimPath)
 include("PackageSetup.jl")
 
 #Import a flow that has already been set up from the Flows folder
-#include("Flows/ExampleFlow.jl")
-include("Flows/FlowSetup_nondim_32domain_128res.jl")
+#include("Flows/FlowSetup_nondim_32domain_64res.jl")
+#include("Flows/FlowSetup_nondim_64domain_128res.jl")
+#include("Flows/FlowSetup_nondim_128domain_256res.jl")
 
 nsubs  = 200            #Set the number of steps the simulation takes at each iteration. This is also the frequency that data is saved at.         
-nsteps = 15000          #Set the total amount of time steps the advection-diffusion simulation should run for
+nsteps = 12000          #Set the total amount of time steps the advection-diffusion simulation should run for
 
-κ = 0.01
+κ = 6e-4
 #Set delay time (that is flow for some length of time, then drop tracer in)
 delay_time = Δt̂ * 3000
 #Set the tracer advection probelm by passing in the QG problem 
@@ -24,8 +25,10 @@ ADSol, ADClock, ADVars, ADParams, ADGrid = ADProb.sol, ADProb.clock, ADProb.vars
 μIC = [0, 0]
 Σ = [1 0; 0 1]
 IC = GaussianBlobIC(μIC, Σ, ADGrid)
+#IC = GaussianStripIC(μIc, σ², ADGrid)
+#IC = PointSourceIC([64, 64], 1, ADGrid)
 
-TracerAdvDiff_QG.QGset_c!(ADProb, IC.C₀)
+QGset_c!(ADProb, IC.C₀)
 
 filename = CreateFile(ADProb, IC, nsubs, SimPath)
 ADOutput = Output(ADProb, filename, (:Concentration, GetConcentration))
@@ -39,8 +42,8 @@ while ADClock.step <= nsteps
     end
     saveoutput(ADOutput)
     stepforward!(ADProb, nsubs)
-    TracerAdvDiff_QG.QGupdatevars!(ADProb)
-    TracerAdvDiff_QG.vel_field_update!(ADProb, QGProb, nsubs)
+    QGupdatevars!(ADProb)
+    vel_field_update!(ADProb, QGProb, nsubs)
 
 end
 

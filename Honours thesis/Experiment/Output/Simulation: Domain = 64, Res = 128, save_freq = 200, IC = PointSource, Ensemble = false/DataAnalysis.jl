@@ -1,15 +1,15 @@
 #Change to the current directory
-cd(joinpath(SimPath, "Output/Simulation: Domain = 32, res = 128, save_freq = 200, IC = GaussianBlob"))
+cd(joinpath(SimPath, "Output/Simulation: Domain = 64, res = 128, save_freq = 200, IC = PointSource, Ensemble = false"))
 file = joinpath(pwd(), "SimulationData.jld2")
 
 #Load in the data
 data = load(file)
 
 #Produce histogram plots from the saved concentration data
-histplots = hist_plot(data)
+histplots = hist_plot(data; plot_freq = 3000)
 
 #Produce heatmaps of tacer concentration from the saved concentration data
-tracerplots = tracer_plot(data)
+tracerplots = tracer_plot(data; plot_freq = 200)
 
 #Plot heatmaps and histograms togehter.
 uppertacer = plot(tracerplots[1]...)
@@ -26,15 +26,15 @@ plot(lowertracer, lowerhist, layout=(2, 1), size = (1200, 1200))
 t = time_vec(data)
 
 #Create some plots of concentration diagnostics.
-ConcentrationMean = conc_mean(data)
 ConcentrationVaricance = conc_var(data)
+ConcentrationMean = conc_mean(data)
 
 meanplot = plot(t, ConcentrationMean, 
                     label = ["Upper Layer" "Lower layer"],
                     title = "Mean concentration \n over the grid",
                     xlabel = "t",
                     ylabel = "Concentration",
-                    ylims = (0, 0.01)
+                    ylims = (0, 0.001)
                 )
 varplot = plot(t, ConcentrationVaricance, 
                     label = ["Upper Layer" "Lower layer"],
@@ -49,16 +49,16 @@ uppersecondmoment = plot(t, 1 ./ ConcentrationVaricance[:, 1],
                             title = "Inverse of variance of concentration \n over the upper layer grid",
                             xlabel = "t",
                             legend = :topleft,
-                            yscale = :log10 
+                            yscale = :log10
                         )
 lowersecondmoment = plot(t, 1 ./ ConcentrationVaricance[:, 2], 
                             label = "Lower layer",
                             title = "Inverse of variance of concentration \n over the lower layer grid",
                             xlabel = "t",
                             legend = :topleft,
-                            yscale = :log10    
+                            yscale = :log10   
                         )
-plot(uppersecondmoment, lowersecondmoment, size = (1000, 600))
+tplot(uppersecondmoment, lowersecondmoment, size = (1000, 600))
 
 #Instead consider the integral ∫C²dA which is the concentration per unit area as Garrett defines
 conc_int = Garrett_int(data)
@@ -80,8 +80,11 @@ plot(t, 1 ./ conc_int,
         xlabel = "t", 
         ylabel = "(∫C²dA)⁻¹",
         title = "Inverse concentration per unit area \n calculated at each time step", 
-        legend = :topleft
+        legend = :bottomright
     )
 
 ConcVsArea = concarea_animate(data)
 mp4(ConcVsArea, "ConcVsArea.mp4", fps=18)
+
+TracerAnim = tracer_animate(data)
+mp4(TracerAnim, "TracerAnim.mp4", fps = 18)

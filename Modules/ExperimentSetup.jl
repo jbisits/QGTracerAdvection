@@ -32,10 +32,11 @@ end
 """
     Strcut for point source initial condition
 """
-struct PointSource{T, U} <: InitialCondition
+struct PointSource{T, U, V} <: InitialCondition
     x  :: T
     y  :: T
     C₀ :: U
+    ConcentrationAmount :: V
 end
 """
     function GaussianBlobIC(μ, Σ, grid)
@@ -74,7 +75,7 @@ end
     function PointSourceIC(ConcentrationPoint, grid)
 Create a point source initial condition at `ConcentrationPoint` on a advection diffusion problem grid.
 """
-function PointSourceIC(ConcentrationPoint, grid)
+function PointSourceIC(ConcentrationPoint::Vector, ConcentrationAmount, grid)
 
     xconcpt = ConcentrationPoint[1]
     yconcpt = ConcentrationPoint[2]
@@ -84,19 +85,19 @@ function PointSourceIC(ConcentrationPoint, grid)
             if [i, j] != [xconcpt, yconcpt]
                 C₀[i, j] = 0
             else
-                C₀[i, j] = 1
+                C₀[i, j] = ConcentrationAmount
             end
         end
     end
 
-    return PointSource(xconcpt, yconcpt, C₀)
+    return PointSource(xconcpt, yconcpt, C₀, ConcentrationAmount)
 end
 """
     CreateFile(ADProb)
 Create directory and file for a given run that will be appended with 
 flow characteristics and .jld2. If already exists uses directory and removes the file.
 """
-function CreateFile(ADProb::FourierFlows.Problem, IC::InitialCondition, save_freq::Int64, SimPath::String)
+function CreateFile(ADProb::FourierFlows.Problem, IC::InitialCondition, save_freq::Int64, SimPath::String; Ensemble = false)
 
     IC = string(typeof(IC))
     first = length("Main.ExperimentSetup.")
@@ -104,7 +105,7 @@ function CreateFile(ADProb::FourierFlows.Problem, IC::InitialCondition, save_fre
     IC = IC[(first + 1):(last - 1)]
     Lx, nx = ADProb.grid.Lx, ADProb.grid.nx
     filepath = joinpath(SimPath, 
-                        "Output/Simulation: Domain = "*string(round(Int, Lx))*", Res = "*string(nx)*", save_freq = "*string(save_freq)*", IC = "*IC
+                        "Output/Simulation: Domain = "*string(round(Int, Lx))*", Res = "*string(nx)*", save_freq = "*string(save_freq)*", IC = "*IC*", Ensemble = "*string(Ensemble)
                         )
 
     if !isdir(filepath)
