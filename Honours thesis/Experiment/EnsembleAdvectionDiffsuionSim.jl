@@ -11,7 +11,7 @@ include("PackageSetup.jl")
 include("Flows/FlowSetup_nondim_32domain_128res.jl")
 
 nsubs  = 200            #Set the number of steps the simulation takes at each iteration. This is also the frequency that data is saved at.         
-nsteps = 6000           #Set the total amount of time steps the advection-diffusion simulation should run for
+nsteps = 4000           #Set the total amount of time steps the advection-diffusion simulation should run for
 
 κ = 0.01
 #Set delay times (that is flow for some length of time, then drop tracer in)
@@ -23,7 +23,7 @@ ADSims = 2
 for i ∈ 1:ADSims
 
     if i == 1
-        ADProb = TracerAdvDiff_QG.Problem(;prob = QGProb, delay_time = delay_time[i], nsubs = nsubs, κ = κ)
+        ADProb = TracerAdvDiff_QG.Problem(;prob = QGProb, delay_time = delay_time, nsubs = nsubs, κ = κ)
         ADSol, ADClock, ADVars, ADParams, ADGrid = ADProb.sol, ADProb.clock, ADProb.vars, ADProb.params, ADProb.grid
         #Set the input for Gaussian blob initial condition
         μIC = [0, 0]
@@ -35,8 +35,12 @@ for i ∈ 1:ADSims
         #Reset the QG flow
         global QGProb = MultiLayerQG.Problem(nlayers, dev; nx=nx, Lx=Lx̂, f₀=f̂₀, g=ĝ, H=Ĥ, ρ=ρ̂, U=Û, dt=Δt̂, stepper=stepper, μ=μ̂, β=β̂, ν=ν̂)
         global QGSol, QGClock, QGParams, QGVars, QGrid = QGProb.sol, QGProb.clock, QGProb.params, QGProb.vars, QGProb.grid
+        seed!(1234) # reset of the random number generator for reproducibility
+        local q₀  = 1e-2 * ArrayType(dev)(randn((QGrid.nx, QGrid.ny, nlayers)))
+        local q₀h = QGProb.timestepper.filter .* rfft(q₀, (1, 2)) # only apply rfft in dims=1, 2
+        q₀  = irfft(q₀h, QGrid.nx, (1, 2)) # only apply irfft in dims=1, 2
         MultiLayerQG.set_q!(QGProb, q₀)
-        ADProb = TracerAdvDiff_QG.Problem(;prob = QGProb, delay_time = delay_time[i], nsubs = nsubs, κ = κ)
+        ADProb = TracerAdvDiff_QG.Problem(;prob = QGProb, delay_time = delay_time, nsubs = nsubs, κ = κ)
         ADSol, ADClock, ADVars, ADParams, ADGrid = ADProb.sol, ADProb.clock, ADProb.vars, ADProb.params, ADProb.grid
     end
 
