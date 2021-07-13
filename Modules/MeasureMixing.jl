@@ -394,5 +394,47 @@ function  time_vec(data::Dict{String, Any})
 
     return t
 end
+"""
+    function tracer_area_avg(data::Dict{String, Any})
+Calculate the average area of the tracer patch. This is done by transfroming the 
+concentration into a function of area then computing 
+    A = (∫Ad * C(Ad) dAd)/∫∫C dAd.
+This may change but for now I will work with this and see where I get to.
+"""
+function tracer_area_avg(data::Dict{String, Any}; number_of_bins = 0)
+
+    nlayers = data["params/nlayers"]
+    nsteps = data["clock/nsteps"]
+    saved_steps = data["save_freq"]
+    plot_steps = 0:saved_steps:nsteps
+    grid_area = data["grid/nx"] * data["grid/ny"]
+    AreaVConcentration = Array{Float64}(undef, nsteps + 1, nlayers)
+    for i ∈ plot_steps
+        upperdata = reshape(data["snapshots/Concentration/"*string(i)][:, :, 1], :)
+        lowerdata = reshape(data["snapshots/Concentration/"*string(i)][:, :, 2], :)
+        if number_of_bins == 0
+            upperhist = fit(Histogram, upperdata)
+            lowerhist = fit(Histogram, lowerdata)
+        else
+            upperhist = fit(Histogram, upperdata, nbins = number_of_bins)
+            lowerhist = fit(Histogram, lowerdata, nbins = number_of_bins)
+        end
+        upperconcdata = Vector(upperhist.edges[1])
+        lowerconcdata = Vector(lowerhist.edges[1])
+        upperarea = reverse(vcat(0, cumsum(reverse(upperhist.weights))))
+        lowerarea = reverse(vcat(0, cumsum(reverse(lowerhist.weights))))
+        #@. upperarea *= grid_area
+        #@. lowerarea *= grid_area
+
+        uppertraceramount = sum(upperdata)
+        lowertraceramount = sum(lowerdata)
+
+        AreaVConcentration[i + 1, :] = [sum(upperarea), sum(lowerarea)]
+
+    end
+
+    return AreaVConcentration
+
+end
 
 end #module
