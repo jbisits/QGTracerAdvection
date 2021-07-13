@@ -423,13 +423,13 @@ function tracer_area_avg(data::Dict{String, Any}; number_of_bins = 0)
         lowerconcdata = Vector(lowerhist.edges[1])
         upperarea = reverse(vcat(0, cumsum(reverse(upperhist.weights))))
         lowerarea = reverse(vcat(0, cumsum(reverse(lowerhist.weights))))
-        #@. upperarea *= grid_area
-        #@. lowerarea *= grid_area
+        @. upperconcdata *= upperarea
+        @. lowerconcdata *= lowerarea
 
         uppertraceramount = sum(upperdata)
         lowertraceramount = sum(lowerdata)
 
-        AreaVConcentration[i + 1, :] = [sum(upperarea), sum(lowerarea)]
+        AreaVConcentration[i + 1, :] = [sum(upperconcdata)*grid_area, sum(lowerconcdata)*grid_area]
 
     end
 
