@@ -17,7 +17,8 @@ export
     concarea_animate,
     tracer_plot,
     tracer_animate,
-    time_vec
+    time_vec,
+    tracer_area_avg
 
 using Distributions, GeophysicalFlows, StatsBase, LinearAlgebra, JLD2, Plots
 """
