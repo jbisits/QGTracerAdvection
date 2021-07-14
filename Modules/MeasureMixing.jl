@@ -209,14 +209,14 @@ function concarea_plot(data::Dict{String, Any}; plot_freq = 1000, number_of_bins
                                                 label = false,
                                                 xlabel = "Normalised area",
                                                 ylabel = "Concentration",
-                                                xlims = (0, max_conc[1])
+                                                ylims = (0, max_conc[1])
                                             )
                 )
         push!(LowerConcentrationArea, plot(lowerarea, lowerhist.edges,
                                                 label = false,
                                                 xlabel = "Normalised area",
                                                 ylabel = "Concentration",
-                                                xlims = (0, max_conc[2])
+                                                ylims = (0, max_conc[2])
                                             )
             )
     end
