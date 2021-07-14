@@ -203,16 +203,18 @@ function concarea_plot(data::Dict{String, Any}; plot_freq = 1000, number_of_bins
         end
         upperhist = normalize(upperhist, mode = :probability)
         lowerhist = normalize(lowerhist, mode = :probability)
-        upperarea = reverse(vcat(0, cumsum(reverse(upperhist.weights))))
-        lowerarea = reverse(vcat(0, cumsum(reverse(lowerhist.weights))))
-        push!(UpperConcentrationArea, plot(upperarea, upperhist.edges,
+        upperarea = vcat(0, cumsum(reverse(upperhist.weights)))
+        lowerarea = vcat(0, cumsum(reverse(lowerhist.weights)))
+        upperconc = reverse(Vector(upperhist.edges[1]))
+        lowerconc = reverse(Vector(lowerhist.edges[1]))
+        push!(UpperConcentrationArea, plot(upperarea, upperconc,
                                                 label = false,
                                                 xlabel = "Normalised area",
                                                 ylabel = "Concentration",
                                                 ylims = (0, max_conc[1])
                                             )
                 )
-        push!(LowerConcentrationArea, plot(lowerarea, lowerhist.edges,
+        push!(LowerConcentrationArea, plot(lowerarea, lowerconc,
                                                 label = false,
                                                 xlabel = "Normalised area",
                                                 ylabel = "Concentration",
@@ -249,16 +251,18 @@ function concarea_animate(data::Dict{String, Any}; number_of_bins = 0)
         end
         upperhist = normalize(upperhist, mode = :probability)
         lowerhist = normalize(lowerhist, mode = :probability)
-        upperarea = reverse(vcat(0, cumsum(reverse(upperhist.weights))))
-        lowerarea = reverse(vcat(0, cumsum(reverse(lowerhist.weights))))
-        p1 = plot(upperarea , upperhist.edges,
+        upperarea = vcat(0, cumsum(reverse(upperhist.weights)))
+        lowerarea = vcat(0, cumsum(reverse(lowerhist.weights)))
+        upperconc = reverse(Vector(upperhist.edges[1]))
+        lowerconc = reverse(Vector(lowerhist.edges[1]))
+        p1 = plot(upperarea , upperconc,
                     label = false,
                     xlabel = "Normalised area",
                     ylabel = "Concentration",
                     ylims = (0, max_conc[1]),
                     title = "Upper layer"
                 )
-        p2 = plot(lowerarea, lowerhist.edges,
+        p2 = plot(lowerarea, lowerconc,
                     label = false,
                     xlabel = "Normalised area",
                     ylabel = "Concentration",
@@ -407,11 +411,10 @@ function tracer_area_avg(data::Dict{String, Any}; number_of_bins = 0)
     nsteps = data["clock/nsteps"]
     saved_steps = data["save_freq"]
     plot_steps = 0:saved_steps:nsteps
-    grid_area = data["grid/nx"] * data["grid/ny"]
-    AreaVConcentration = Array{Float64}(undef, nsteps + 1, nlayers)
+    AreaVConcentration = Array{Float64}(undef, length(plot_steps), nlayers)
     for i ∈ plot_steps
-        upperdata = reshape(data["snapshots/Concentration/"*string(i)][:, :, 1], :)
-        lowerdata = reshape(data["snapshots/Concentration/"*string(i)][:, :, 2], :)
+        upperdata = abs.(reshape(data["snapshots/Concentration/"*string(i)][:, :, 1], :))
+        lowerdata = abs.(reshape(data["snapshots/Concentration/"*string(i)][:, :, 2], :))
         if number_of_bins == 0
             upperhist = fit(Histogram, upperdata)
             lowerhist = fit(Histogram, lowerdata)
@@ -419,17 +422,19 @@ function tracer_area_avg(data::Dict{String, Any}; number_of_bins = 0)
             upperhist = fit(Histogram, upperdata, nbins = number_of_bins)
             lowerhist = fit(Histogram, lowerdata, nbins = number_of_bins)
         end
-        upperconcdata = Vector(upperhist.edges[1])
-        lowerconcdata = Vector(lowerhist.edges[1])
-        upperarea = reverse(vcat(0, cumsum(reverse(upperhist.weights))))
-        lowerarea = reverse(vcat(0, cumsum(reverse(lowerhist.weights))))
-        @. upperconcdata *= upperarea
-        @. lowerconcdata *= lowerarea
+        upperconc = Vector(upperhist.edges[1])
+        lowerconc = Vector(lowerhist.edges[1])
+        upperarea = vcat(0, cumsum(reverse(upperhist.weights)))
+        lowerarea = vcat(0, cumsum(reverse(lowerhist.weights)))
+        upperarea = upperarea .* reverse(upperconc)
+        lowerarea = lowerarea .* reverse(lowerconc)
 
         uppertraceramount = sum(upperdata)
         lowertraceramount = sum(lowerdata)
 
-        AreaVConcentration[i + 1, :] = [sum(upperconcdata)*grid_area, sum(lowerconcdata)*grid_area]
+        j = round(Int, i/saved_steps)
+        AreaVConcentration[j + 1, :] .= [sum(upperarea)/uppertraceramount, 
+                                        sum(lowerarea)/lowertraceramount]
 
     end
 

@@ -66,7 +66,7 @@ function GaussianStripIC(μ::Union{Int, Float64}, σ²::Union{Int, Float64}, gri
     strip_IC(x) = pdf(strip, x)
     C₀ = Array{Float64}(undef, grid.nx, grid.ny)
     for i in 1:grid.nx
-        C₀[i, :] = strip_IC(ygrid[i, :])
+        C₀[:, i] = strip_IC(ygrid[i, :])
     end
 
     return GaussianStrip(μ, σ², C₀)
