@@ -203,16 +203,16 @@ function concarea_plot(data::Dict{String, Any}; plot_freq = 1000, number_of_bins
         end
         upperhist = normalize(upperhist, mode = :probability)
         lowerhist = normalize(lowerhist, mode = :probability)
-        upperconcdata = reverse(vcat(0, cumsum(reverse(upperhist.weights))))
-        lowerconcdata = reverse(vcat(0, cumsum(reverse(lowerhist.weights))))
-        push!(UpperConcentrationArea, plot(upperconcdata, upperhist.edges,
+        upperarea = reverse(vcat(0, cumsum(reverse(upperhist.weights))))
+        lowerarea = reverse(vcat(0, cumsum(reverse(lowerhist.weights))))
+        push!(UpperConcentrationArea, plot(upperarea, upperhist.edges,
                                                 label = false,
                                                 xlabel = "Normalised area",
                                                 ylabel = "Concentration",
                                                 xlims = (0, max_conc[1])
                                             )
                 )
-        push!(LowerConcentrationArea, plot(lowerconcdata, lowerhist.edges,
+        push!(LowerConcentrationArea, plot(lowerarea, lowerhist.edges,
                                                 label = false,
                                                 xlabel = "Normalised area",
                                                 ylabel = "Concentration",
@@ -249,16 +249,16 @@ function concarea_animate(data::Dict{String, Any}; number_of_bins = 0)
         end
         upperhist = normalize(upperhist, mode = :probability)
         lowerhist = normalize(lowerhist, mode = :probability)
-        upperconcdata = reverse(vcat(0, cumsum(reverse(upperhist.weights))))
-        lowerconcdata = reverse(vcat(0, cumsum(reverse(lowerhist.weights))))
-        p1 = plot(upperconcdata , upperhist.edges,
+        upperarea = reverse(vcat(0, cumsum(reverse(upperhist.weights))))
+        lowerarea = reverse(vcat(0, cumsum(reverse(lowerhist.weights))))
+        p1 = plot(upperarea , upperhist.edges,
                     label = false,
                     xlabel = "Normalised area",
                     ylabel = "Concentration",
                     ylims = (0, max_conc[1]),
                     title = "Upper layer"
                 )
-        p2 = plot(lowerconcdata, lowerhist.edges,
+        p2 = plot(lowerarea, lowerhist.edges,
                     label = false,
                     xlabel = "Normalised area",
                     ylabel = "Concentration",
