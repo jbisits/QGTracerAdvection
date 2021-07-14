@@ -18,7 +18,8 @@ export
     tracer_plot,
     tracer_animate,
     time_vec,
-    tracer_area_avg
+    tracer_area_avg,
+    tracer_area_percentile
 
 using Distributions, GeophysicalFlows, StatsBase, LinearAlgebra, JLD2, Plots
 """
@@ -440,6 +441,40 @@ function tracer_area_avg(data::Dict{String, Any}; number_of_bins = 0)
     end
 
     return AreaVConcentration
+
+end
+"""
+    function tracer_area_percentile(data::Dict{String, Any})
+Compute the percentile of area from a concentration field using 
+        ∫A(C)dC over interval (Cmax, C₁)
+where C₁ is some chosen min value of concentration. 
+"""
+function tracer_area_percentile(data::Dict{String, Any}; number_of_bins = 0)
+
+    nlayers = data["params/nlayers"]
+    nsteps = data["clock/nsteps"]
+    saved_steps = data["save_freq"]
+    grid_area = data["grid/Lx"] * data["grid/Ly"]
+    plot_steps = 0:saved_steps:nsteps
+    area_percentiles = Array{Float64}(undef, length(plot_steps), nlayers)
+    for i ∈ plot_steps
+        upperdata = reshape(data["snapshots/Concentration/"*string(i)][:, :, 1], :)
+        lowerdata = reshape(data["snapshots/Concentration/"*string(i)][:, :, 2], :)
+        
+        uppersd = std(upperdata)
+        lowersd = std(lowerdata)
+
+        findupper = findall(upperdata .> uppersd)
+        findlower = findall(lowerdata .> lowersd)
+
+        upperarea = sum(length(findupper))
+        lowerarea = sum(length(findlower))
+
+        j = round(Int, i/saved_steps)
+        area_percentiles[j + 1, :] .= [upperarea/grid_area, lowerarea/grid_area]
+    end
+
+    return area_percentiles
 
 end
 

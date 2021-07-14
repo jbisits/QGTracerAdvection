@@ -89,3 +89,5 @@ TracerAnim = tracer_animate(data)
 mp4(TracerAnim, "TracerAnim.mp4", fps = 18)
 
 AreaVConnc = tracer_area_avg(data)
+
+area_per = MeasureMixing.tracer_area_percentile(data)

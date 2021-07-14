@@ -1,15 +1,15 @@
 #Change to the current directory
-cd(joinpath(SimPath, "Output/Simulation: Domain = 64, res = 128, save_freq = 1, IC = GaussianBlob, Ensemble = false"))
+cd(joinpath(SimPath, "Output/Simulation: Domain = 64, res = 128, save_freq = 10, IC = GaussianBlob, Ensemble = false"))
 file = joinpath(pwd(), "SimulationData.jld2")
 
 #Load in the data
 data = load(file)
 
 #Produce histogram plots from the saved concentration data
-histplots = hist_plot(data; plot_freq = 200, xlims_same = false)
+histplots = hist_plot(data; plot_freq = 1000, xlims_same = false)
 
 #Produce heatmaps of tacer concentration from the saved concentration data
-tracerplots = tracer_plot(data; plot_freq = 1)
+tracerplots = tracer_plot(data; plot_freq = 1000)
 
 #Plot heatmaps and histograms togehter.
 uppertacer = plot(tracerplots[1]...)
@@ -91,3 +91,4 @@ mp4(TracerAnim, "TracerAnim.mp4", fps = 18)
 AreaVConnc = tracer_area_avg(data)
 
 area_per = tracer_area_percentile(data)
+plot(t, area_per, legend = :topleft)
