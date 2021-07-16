@@ -103,7 +103,7 @@ plot(t, area_per[:, 1],
      legend = :topleft
      )
 
-plot(t[1:480], area_per[1:480, 1], legend = :topleft)
+plot(t[300:500], area_per[300:500, 1], legend = :topleft)
 plot(t[480:end], area_per[480:end, 1])
 
 phys_params = nondim2dim(data)

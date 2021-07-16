@@ -91,7 +91,7 @@ mp4(TracerAnim, "TracerAnim.mp4", fps = 18)
 AreaVConnc = tracer_area_avg(data)
 
 area_per = tracer_area_percentile(data; sd_multiple = 2)
-plot(t, area_per, 
+plot(t[1:100], area_per[1:100, :], 
     label = ["Upper layer" "Lower layer"],
     title = "Growth of area of tracer patch in both layers layer",
     legend = :topleft
@@ -108,13 +108,12 @@ scatter!([t[230]], [area_per[230, 1]],
         )
 scatter!([t[315]], [area_per[315, 1]],
         label = "Tracer patch ≈ size of domain",
-        annotations = ([t[310]], 3.5, Plots.text("After approx 3.7 years \n tracer patch is size  \n of domain", :left, :green))
+        annotations = ([t[310]], .85, Plots.text("After approx 3.7 years \n tracer patch is size  \n of domain", :left, :green))
         )
-
 
 phys_params = nondim2dim(data)
 
-steps = t[251] / data["clock/dt"]
+steps = t[100] / data["clock/dt"]
 days = (steps * phys_params["Δt̂"]) / 3600
 years = days / 365
 
