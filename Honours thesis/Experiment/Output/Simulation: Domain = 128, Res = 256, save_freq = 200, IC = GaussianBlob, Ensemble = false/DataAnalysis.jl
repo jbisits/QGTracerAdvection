@@ -84,3 +84,46 @@ plot(t, 1 ./ conc_int,
 
 ConcVsArea = concarea_animate(data)
 mp4(ConcVsArea, "ConcVsArea.mp4", fps=18)
+
+area_per = tracer_area_percentile(data; sd_multiple = 2)
+plot(t, area_per, 
+    label = ["Upper layer" "Lower layer"],
+    title = "Growth of area of tracer patch in both layers layer",
+    legend = :topleft
+    )
+
+plot(t, area_per[:, 1],
+     label = "Upper layer",
+     title = "Growth of area of tracer patch in the upper layer",
+     legend = :topleft
+     )
+scatter!([t[230]], [area_per[230, 1]],
+        label = "Stage 2 -> stage 3",
+        annotations = (13, area_per[230, 1], Plots.text("Stage three begins after \n approximately 2.6 years", :left, :orange))
+        )
+scatter!([t[315]], [area_per[315, 1]],
+        label = "Tracer patch ≈ size of domain",
+        annotations = ([t[310]], 3.5, Plots.text("After approx 3.7 years \n tracer patch is size  \n of domain", :left, :green))
+        )
+
+
+phys_params = nondim2dim(data)
+
+steps = t[251] / data["clock/dt"]
+days = (steps * phys_params["Δt̂"]) / 3600
+years = days / 365
+
+plot(t, area_per[:, 2],
+     label = "Lower layer",
+     title = "Growth of area of tracer patch in the Lower layer",
+     legend = :topleft,
+     color = :red
+     )
+scatter!([t[251]], [area_per[251, 2]],
+        label = "Stage 2 -> stage 3",
+        annotations = (13, area_per[230, 1], Plots.text("Stage three begins after \n approximately 2.8 years", :left, :orange))
+        )
+scatter!([t[315]], [area_per[315, 1]],
+        label = "Tracer patch ≈ size of domain",
+        annotations = ([t[310]], 3.5, Plots.text("After approx 3.7 years \n tracer patch is size  \n of domain", :left, :green))
+        )

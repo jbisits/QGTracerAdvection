@@ -414,6 +414,7 @@ function tracer_area_avg(data::Dict{String, Any}; number_of_bins = 0)
     saved_steps = data["save_freq"]
     plot_steps = 0:saved_steps:nsteps
     AreaVConcentration = Array{Float64}(undef, length(plot_steps), nlayers)
+    grid_area = data["grid/Lx"] * data["grid/Ly"]
     for i ∈ plot_steps
         upperdata = abs.(reshape(data["snapshots/Concentration/"*string(i)][:, :, 1], :))
         lowerdata = abs.(reshape(data["snapshots/Concentration/"*string(i)][:, :, 2], :))
@@ -436,7 +437,7 @@ function tracer_area_avg(data::Dict{String, Any}; number_of_bins = 0)
 
         j = round(Int, i/saved_steps)
         AreaVConcentration[j + 1, :] .= [sum(upperarea)/uppertraceramount, 
-                                        sum(lowerarea)/lowertraceramount]
+                                         sum(lowerarea)/lowertraceramount]
 
     end
 
@@ -447,9 +448,11 @@ end
     function tracer_area_percentile(data::Dict{String, Any})
 Compute the percentile of area from a concentration field using 
         ∫A(C)dC over interval (Cmax, C₁)
-where C₁ is some chosen min value of concentration. 
+where C₁ is some chosen value of concentration. By default the 
+standard deviation of concentration at each time step is used for C₁
+but this can also be set to false and some other quantile can be entered.
 """
-function tracer_area_percentile(data::Dict{String, Any}; number_of_bins = 0)
+function tracer_area_percentile(data::Dict{String, Any}; standard_dev = true, sd_multiple = 1)
 
     nlayers = data["params/nlayers"]
     nsteps = data["clock/nsteps"]
@@ -461,11 +464,16 @@ function tracer_area_percentile(data::Dict{String, Any}; number_of_bins = 0)
         upperdata = reshape(data["snapshots/Concentration/"*string(i)][:, :, 1], :)
         lowerdata = reshape(data["snapshots/Concentration/"*string(i)][:, :, 2], :)
         
-        uppersd = std(upperdata)
-        lowersd = std(lowerdata)
+        if standard_dev == true && sd_multiple == 1
+            upperquant = std(upperdata)
+            lowerquant = std(lowerdata)
+        else
+            upperquant = std(upperdata) * sd_multiple
+            lowerquant = std(lowerdata) * sd_multiple
+        end
 
-        findupper = findall(upperdata .> uppersd)
-        findlower = findall(lowerdata .> lowersd)
+        findupper = findall(upperdata .> upperquant)
+        findlower = findall(lowerdata .> lowerquant)
 
         upperarea = sum(length(findupper))
         lowerarea = sum(length(findlower))

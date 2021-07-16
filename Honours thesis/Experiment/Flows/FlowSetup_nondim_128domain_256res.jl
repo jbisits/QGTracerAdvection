@@ -1,4 +1,4 @@
-#Flow on the non-dimensional domain of 32 (that is 32 * Ld in real space) and 64 resolution.
+#Flow on the non-dimensional domain of 128 (that is 128 * Ld in real space) and 256 resolution.
 
 dev = CPU()
 nx, ny = 256, 256
@@ -9,7 +9,7 @@ Lx̂ = 128
 Lŷ = 128
 
 #Timestep
-Δt̂ = 0.01
+Δt̂ = 0.005
 
 nlayers = 2
 ρ̂ = [0.9, 1.0]
@@ -19,8 +19,8 @@ U₀ = 1.0
 Û = [U₀, -U₀]
 
 #Parameters
-μ̂ = 0.5
-ν̂ = 0.5
+μ̂ = 0.65
+ν̂ = 0.001
 β̂ = 0.1
 f̂₀ = 30
 ĝ = 10
