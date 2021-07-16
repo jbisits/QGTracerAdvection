@@ -90,7 +90,7 @@ mp4(TracerAnim, "TracerAnim.mp4", fps = 18)
 
 AreaVConnc = tracer_area_avg(data)
 
-area_per = tracer_area_percentile(data; sd_multiple = 2)
+area_per = tracer_area_percentile(data; standard_dev = true, sd_multiple = 1)
 plot(t[1:300], area_per[1:300, :], 
     label = ["Upper layer" "Lower layer"],
     title = "Growth of area of tracer patch in both layers layer",

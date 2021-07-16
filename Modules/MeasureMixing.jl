@@ -414,7 +414,7 @@ function tracer_area_avg(data::Dict{String, Any}; number_of_bins = 0)
     saved_steps = data["save_freq"]
     plot_steps = 0:saved_steps:nsteps
     AreaVConcentration = Array{Float64}(undef, length(plot_steps), nlayers)
-    grid_area = data["grid/Lx"] * data["grid/Ly"]
+    grid_area = data["grid/nx"] * data["grid/ny"]
     for i ∈ plot_steps
         upperdata = abs.(reshape(data["snapshots/Concentration/"*string(i)][:, :, 1], :))
         lowerdata = abs.(reshape(data["snapshots/Concentration/"*string(i)][:, :, 2], :))
@@ -425,19 +425,22 @@ function tracer_area_avg(data::Dict{String, Any}; number_of_bins = 0)
             upperhist = fit(Histogram, upperdata, nbins = number_of_bins)
             lowerhist = fit(Histogram, lowerdata, nbins = number_of_bins)
         end
-        upperconc = Vector(upperhist.edges[1])
-        lowerconc = Vector(lowerhist.edges[1])
-        upperarea = vcat(0, cumsum(reverse(upperhist.weights)))
-        lowerarea = vcat(0, cumsum(reverse(lowerhist.weights)))
-        upperarea = upperarea .* reverse(upperconc)
-        lowerarea = lowerarea .* reverse(lowerconc)
+        #=
+        C_Aupper = Vector(upperhist.edges[1])
+        C_Alower = Vector(lowerhist.edges[1])=#
+        C_Aupper = vcat(0, cumsum(reverse(upperhist.weights)))
+        C_Alower = vcat(0, cumsum(reverse(lowerhist.weights)))
+        dAupper = vcat(0, reverse(upperhist.weights))
+        dAlower = vcat(0, reverse(lowerhist.weights))
+        upperarea = sum(grid_area .* reverse(C_Aupper) .* dAupper)
+        lowerarea = sum(grid_area .* reverse(C_Alower) .* dAlower)
 
         uppertraceramount = sum(upperdata)
-        lowertraceramount = sum(lowerdata)
+        lowertraceramount = sum(upperdata)
 
         j = round(Int, i/saved_steps)
-        AreaVConcentration[j + 1, :] .= [sum(upperarea)/uppertraceramount, 
-                                         sum(lowerarea)/lowertraceramount]
+        AreaVConcentration[j + 1, :] .= [upperarea/uppertraceramount, 
+                                         lowerarea/lowertraceramount]
 
     end
 
@@ -452,7 +455,7 @@ where C₁ is some chosen value of concentration. By default the
 standard deviation of concentration at each time step is used for C₁
 but this can also be set to false and some other quantile can be entered.
 """
-function tracer_area_percentile(data::Dict{String, Any}; standard_dev = true, sd_multiple = 1)
+function tracer_area_percentile(data::Dict{String, Any}; conc_min = 0.5, standard_dev = false, sd_multiple = 1)
 
     nlayers = data["params/nlayers"]
     nsteps = data["clock/nsteps"]
@@ -462,24 +465,24 @@ function tracer_area_percentile(data::Dict{String, Any}; standard_dev = true, sd
     area_percentiles = Array{Float64}(undef, length(plot_steps), nlayers)
     for i ∈ plot_steps
         upperdata = reshape(data["snapshots/Concentration/"*string(i)][:, :, 1], :)
+        sort!(upperdata, rev = true)
         lowerdata = reshape(data["snapshots/Concentration/"*string(i)][:, :, 2], :)
+        sort!(lowerdata, rev = true)
+        max_conc = [findmax(data["snapshots/Concentration/"*string(i)][:, :, j])[1] for j ∈ 1:nlayers]
         
         if standard_dev == true && sd_multiple == 1
-            upperquant = std(upperdata)
-            lowerquant = std(lowerdata)
+            upperarea = findlast(upperdata .> std(upperdata))
+            lowerarea = findlast(lowerdata .> std(lowerdata))
+        elseif standard_dev == true && sd_multiple != 1
+            upperarea = findlast(upperdata .> std(upperdata) * sd_multiple)
+            lowerarea = findlast(lowerdata .> std(lowerdata) * sd_multiple)
         else
-            upperquant = std(upperdata) * sd_multiple
-            lowerquant = std(lowerdata) * sd_multiple
+            upperarea = findlast(upperdata .> conc_min * max_conc[1])
+            lowerarea = findlast(lowerdata .> conc_min * max_conc[2])
         end
 
-        findupper = findall(upperdata .> upperquant)
-        findlower = findall(lowerdata .> lowerquant)
-
-        upperarea = length(findupper)
-        lowerarea = length(findlower)
-
-        j = round(Int, i/saved_steps)
-        area_percentiles[j + 1, :] .= [upperarea/grid_area, lowerarea/grid_area]
+        k = round(Int, i/saved_steps)
+        area_percentiles[k + 1, :] .= [upperarea/grid_area, lowerarea/grid_area]
     end
 
     return area_percentiles
