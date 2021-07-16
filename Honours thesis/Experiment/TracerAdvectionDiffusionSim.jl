@@ -7,8 +7,8 @@ cd(SimPath)
 include("PackageSetup.jl")
 
 #Import a flow that has already been set up from the Flows folder
-#include("Flows/FlowSetup_nondim_32domain_64res.jl")
-include("Flows/FlowSetup_nondim_64domain_128res.jl")
+include("Flows/FlowSetup_nondim_32domain_64res.jl")
+#include("Flows/FlowSetup_nondim_64domain_128res.jl")
 #include("Flows/FlowSetup_nondim_128domain_256res.jl")
 
 nsubs  = 10            #Set the number of steps the simulation takes at each iteration. This is also the frequency that data is saved at.         

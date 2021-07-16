@@ -457,7 +457,7 @@ function tracer_area_percentile(data::Dict{String, Any}; standard_dev = true, sd
     nlayers = data["params/nlayers"]
     nsteps = data["clock/nsteps"]
     saved_steps = data["save_freq"]
-    grid_area = data["grid/Lx"] * data["grid/Ly"]
+    grid_area = data["grid/nx"] * data["grid/ny"]
     plot_steps = 0:saved_steps:nsteps
     area_percentiles = Array{Float64}(undef, length(plot_steps), nlayers)
     for i ∈ plot_steps
@@ -475,8 +475,8 @@ function tracer_area_percentile(data::Dict{String, Any}; standard_dev = true, sd
         findupper = findall(upperdata .> upperquant)
         findlower = findall(lowerdata .> lowerquant)
 
-        upperarea = sum(length(findupper))
-        lowerarea = sum(length(findlower))
+        upperarea = length(findupper)
+        lowerarea = length(findlower)
 
         j = round(Int, i/saved_steps)
         area_percentiles[j + 1, :] .= [upperarea/grid_area, lowerarea/grid_area]
