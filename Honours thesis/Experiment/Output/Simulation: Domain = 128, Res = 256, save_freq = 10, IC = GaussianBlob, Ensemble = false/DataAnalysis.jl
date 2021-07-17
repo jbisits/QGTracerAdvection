@@ -89,10 +89,10 @@ TracerAnim = tracer_animate(data)
 mp4(TracerAnim, "TracerAnim.mp4", fps = 18)
 
 avg_area = tracer_area_avg(data)
-plot(t, avg_area, yscale = :log10)
+plot(t, avg_area)
 
 area_per = tracer_area_percentile(data; conc_min = 0.05)
-plot(t, log.(area_per), 
+plot(t, area_per, 
     label = ["Upper layer" "Lower layer"],
     title = "Growth of area of tracer patch in both layers layer",
     legend = :topleft

@@ -416,8 +416,8 @@ function tracer_area_avg(data::Dict{String, Any}; number_of_bins = 0)
     AreaVConcentration = Array{Float64}(undef, length(plot_steps), nlayers)
     grid_area = data["grid/nx"] * data["grid/ny"]
     for i ∈ plot_steps
-        upperdata = abs.(reshape(data["snapshots/Concentration/"*string(i)][:, :, 1], :))
-        lowerdata = abs.(reshape(data["snapshots/Concentration/"*string(i)][:, :, 2], :))
+        upperdata = reshape(data["snapshots/Concentration/"*string(i)][:, :, 1], :)
+        lowerdata = reshape(data["snapshots/Concentration/"*string(i)][:, :, 2], :)
         if number_of_bins == 0
             upperhist = fit(Histogram, upperdata)
             lowerhist = fit(Histogram, lowerdata)
@@ -425,11 +425,9 @@ function tracer_area_avg(data::Dict{String, Any}; number_of_bins = 0)
             upperhist = fit(Histogram, upperdata, nbins = number_of_bins)
             lowerhist = fit(Histogram, lowerdata, nbins = number_of_bins)
         end
-        #=
+        
         C_Aupper = Vector(upperhist.edges[1])
-        C_Alower = Vector(lowerhist.edges[1])=#
-        C_Aupper = vcat(0, cumsum(reverse(upperhist.weights)))
-        C_Alower = vcat(0, cumsum(reverse(lowerhist.weights)))
+        C_Alower = Vector(lowerhist.edges[1])
         dAupper = vcat(0, reverse(upperhist.weights))
         dAlower = vcat(0, reverse(lowerhist.weights))
         upperarea = sum(grid_area .* reverse(C_Aupper) .* dAupper)
