@@ -489,43 +489,47 @@ function tracer_area_percentile(data::Dict{String, Any}; conc_min = 0.05, standa
 
 end
 """
-    function exp_fit(data::Dict{String, Any}; conc_min = 0.5)
+    function exp_fit(data::Dict{String, Any}; conc_min = 0.05, tfitfinal = 100, tplot_length = 10)
 Fit an exponential curve via least squares to the second stage of the growth of the area of 
 the tracer patch as calculated from the `tracer_area_percentile` function.
+The data is fitted from 1:tfitfinal which can be specified then the plot is calculated for length tplot_length.
 """
-function exp_fit(data::Dict{String, Any}; conc_min = 0.05, tfinal = 100)
+function exp_fit(data::Dict{String, Any}; conc_min = 0.05, tfitfinal = 100, tplot_length = 10)
 
     area_per = tracer_area_percentile(data; conc_min)
     t = time_vec(data)
-    t = t[1:tfinal]
+    tplot = t[1:tfitfinal + tplot_length]
+    t = t[1:tfitfinal]
     nlayers = data["params/nlayers"]
-    A = Array{Float64}(undef, length(t), 2, nlayers)
+    A = Array{Float64}(undef, length(tplot), 2, nlayers)
     for i in 1:nlayers
         X = [ones(length(t)) t]
-        M = log.(area_per[1:tfinal, i])
+        M = log.(area_per[1:tfitfinal, i])
         fit = inv(X' * X) * (X' * M)
-        @. A[:, :, i] = [t exp(fit[1]) * exp(fit[2] * t)]
+        @. A[:, :, i] = [tplot exp(fit[1]) * exp(fit[2] * tplot)]
     end
 
     return A
 end
 """
-    function linear_fit(data::Dict{String, Any}; conc_min = 0.5, tfinal = 100)
+    function linear_fit(data::Dict{String, Any}; conc_min = 0.05, tfitvals = [100, 250], tplot_length = [10 0])
 Fit a linear curve via least squares to the third stage of the growth of the area of 
-the tracer patch as calculated from the `tracer_area_percentile` function.
+the tracer patch as calculated from the `tracer_area_percentile` function. The data is fitted over the interval
+tfitvals and the length of the out plotting vectors can be specified by extra argument tplot_length.
 """
-function linear_fit(data::Dict{String, Any}; conc_min = 0.05, tvals = [100, 250])
+function linear_fit(data::Dict{String, Any}; conc_min = 0.05, tfitvals = [100, 250], tplot_length = [10 0])
     
     area_per = tracer_area_percentile(data; conc_min)
     t = time_vec(data)
-    t = t[tvals[1] : tvals[2]]
+    tplot = t[tfitvals[1] - tplot_length[1] : tfitvals[2] + tplot_length[2]]
+    t = t[tfitvals[1] : tfitvals[2]]
     nlayers = data["params/nlayers"]
-    A = Array{Float64}(undef, length(t), 2, nlayers)
+    A = Array{Float64}(undef, length(tplot), 2, nlayers)
     for i in 1:nlayers
         X = [ones(length(t)) t]
-        M = area_per[tvals[1] : tvals[2], i]
+        M = area_per[tfitvals[1] : tfitvals[2], i]
         fit = inv(X' * X) * (X' * M)
-        @. A[:, :, i] = [t fit[1] + fit[2] * t]
+        @. A[:, :, i] = [tplot fit[1] + fit[2] * tplot]
     end
 
     return A

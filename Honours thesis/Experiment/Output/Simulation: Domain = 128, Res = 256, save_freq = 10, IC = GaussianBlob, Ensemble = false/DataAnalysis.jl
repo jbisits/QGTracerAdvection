@@ -91,6 +91,7 @@ mp4(TracerAnim, "TracerAnim.mp4", fps = 18)
 avg_area = tracer_area_avg(data)
 plot(t, avg_area)
 
+t = time_vec(data)
 area_per = tracer_area_percentile(data; conc_min = 0.05)
 p1 = plot(t, area_per, 
         label = ["Upper layer" "Lower layer"],
@@ -104,4 +105,27 @@ logp1 = plot(t, log.(area_per),
             )
 plot(p1, logp1, layout = (2, 1), size = (700, 700))
 
-plot(t, area_per[:, 2])
+plot(t, area_per[:, 2], 
+    label = "Lower layer",
+    title = "Growth of area of tracer patch in lower layer",
+    legend = :bottomright,
+    lw =2
+    )
+expfit = exp_fit(data; conc_min = 0.05, tfitfinal = 251, tplot_length = 40)
+plot!(expfit[:, 1, 2], expfit[:, 2, 2],
+    label = "Exponential fit for first 251 data points",
+    line = (:dash, 2),
+    color = :orange
+)  
+linfit = linear_fit(data; conc_min = 0.05, tfitvals = [251 450])
+plot!(linfit[:, 1, 2], linfit[:, 2, 2],
+    label = "Linear fit for data points 250 to 450",
+    line = (:dash, 2),
+    color = :red
+    )
+
+phys_params = nondim2dim(data)
+
+steps = t[450] / data["clock/dt"]
+days = (steps * phys_params["Δt̂"]) / 3600
+years = days / 365
