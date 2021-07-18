@@ -92,31 +92,16 @@ avg_area = tracer_area_avg(data)
 plot(t, avg_area)
 
 area_per = tracer_area_percentile(data; conc_min = 0.05)
-plot(t, area_per, 
-    label = ["Upper layer" "Lower layer"],
-    title = "Growth of area of tracer patch in both layers layer",
-    legend = :topleft
-    )
+p1 = plot(t, area_per, 
+        label = ["Upper layer" "Lower layer"],
+        title = "Growth of area of tracer patch in \n both layers layer",
+        legend = :topleft
+        )
+logp1 = plot(t, log.(area_per), 
+            label = ["Upper layer" "Lower layer"],
+            title = "Growth of log(area of tracer patch) \n in both layers",
+            legend = :bottomright
+            )
+plot(p1, logp1, layout = (2, 1), size = (700, 700))
 
-plot(t, area_per[:, 1],
-     label = "Upper layer",
-     title = "Growth of area of tracer patch in the upper layer",
-     legend = :topleft
-     )
-
-plot(t[300:500], area_per[300:500, 1], legend = :topleft)
-plot(t[480:end], area_per[480:end, 1])
-
-phys_params = nondim2dim(data)
-steps = t[480] / data["clock/dt"]
-days = (steps * phys_params["Δt̂"]) / 3600
-years = days / 365
-
-plot(t, area_per[:, 2],
-     label = "Lower layer",
-     title = "Growth of area of tracer patch in the Lower layer",
-     legend = :topleft,
-     color = :red
-     )
-plot(t[1:480], area_per[1:480, 1], legend = :topleft, color = :red)
-plot(t[480:end], area_per[480:end, 1], color = :red)
+plot(t, area_per[:, 2])

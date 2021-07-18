@@ -19,7 +19,9 @@ export
     tracer_animate,
     time_vec,
     tracer_area_avg,
-    tracer_area_percentile
+    tracer_area_percentile,
+    exp_fit,
+    linear_fit
 
 using Distributions, GeophysicalFlows, StatsBase, LinearAlgebra, JLD2, Plots
 """
@@ -453,7 +455,7 @@ where C₁ is some chosen value of concentration. By default the
 standard deviation of concentration at each time step is used for C₁
 but this can also be set to false and some other quantile can be entered.
 """
-function tracer_area_percentile(data::Dict{String, Any}; conc_min = 0.5, standard_dev = false, sd_multiple = 1)
+function tracer_area_percentile(data::Dict{String, Any}; conc_min = 0.05, standard_dev = false, sd_multiple = 1)
 
     nlayers = data["params/nlayers"]
     nsteps = data["clock/nsteps"]
@@ -485,6 +487,48 @@ function tracer_area_percentile(data::Dict{String, Any}; conc_min = 0.5, standar
 
     return area_percentiles
 
+end
+"""
+    function exp_fit(data::Dict{String, Any}; conc_min = 0.5)
+Fit an exponential curve via least squares to the second stage of the growth of the area of 
+the tracer patch as calculated from the `tracer_area_percentile` function.
+"""
+function exp_fit(data::Dict{String, Any}; conc_min = 0.05, tfinal = 100)
+
+    area_per = tracer_area_percentile(data; conc_min)
+    t = time_vec(data)
+    t = t[1:tfinal]
+    nlayers = data["params/nlayers"]
+    A = Array{Float64}(undef, length(t), 2, nlayers)
+    for i in 1:nlayers
+        X = [ones(length(t)) t]
+        M = log.(area_per[1:tfinal, i])
+        fit = inv(X' * X) * (X' * M)
+        @. A[:, :, i] = [t exp(fit[1]) * exp(fit[2] * t)]
+    end
+
+    return A
+end
+"""
+    function linear_fit(data::Dict{String, Any}; conc_min = 0.5, tfinal = 100)
+Fit a linear curve via least squares to the third stage of the growth of the area of 
+the tracer patch as calculated from the `tracer_area_percentile` function.
+"""
+function linear_fit(data::Dict{String, Any}; conc_min = 0.05, tvals = [100, 250])
+    
+    area_per = tracer_area_percentile(data; conc_min)
+    t = time_vec(data)
+    t = t[tvals[1] : tvals[2]]
+    nlayers = data["params/nlayers"]
+    A = Array{Float64}(undef, length(t), 2, nlayers)
+    for i in 1:nlayers
+        X = [ones(length(t)) t]
+        M = area_per[tvals[1] : tvals[2], i]
+        fit = inv(X' * X) * (X' * M)
+        @. A[:, :, i] = [t fit[1] + fit[2] * t]
+    end
+
+    return A
 end
 
 end #module

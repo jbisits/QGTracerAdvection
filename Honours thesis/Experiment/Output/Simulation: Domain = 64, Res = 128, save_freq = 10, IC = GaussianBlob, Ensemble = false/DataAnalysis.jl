@@ -91,20 +91,26 @@ mp4(TracerAnim, "TracerAnim.mp4", fps = 18)
 AreaVConnc = tracer_area_avg(data)
 
 area_per = tracer_area_percentile(data; conc_min = 0.05)
-plot(t, area_per, 
-    label = ["Upper layer" "Lower layer"],
-    title = "Growth of area of tracer patch in both layers layer",
-    legend = :topleft
-    )
+p1 = plot(t, area_per, 
+        label = ["Upper layer" "Lower layer"],
+        title = "Growth of area of tracer patch in \n both layers layer",
+        legend = :topleft
+        )
+logp1 = plot(t, log.(area_per), 
+            label = ["Upper layer" "Lower layer"],
+            title = "Growth of log(area of tracer patch) \n in both layers",
+            legend = :bottomright
+            )
+plot(p1, logp1, layout = (2, 1), size = (700, 700))
 
 plot(t, area_per[:, 1],
      label = "Upper layer",
      title = "Growth of area of tracer patch in the upper layer",
      legend = :topleft
      )
-scatter!([t[230]], [area_per[230, 1]],
+scatter!([t[150]], [area_per[150, 1]],
         label = "Stage 2 -> stage 3",
-        annotations = (13, area_per[230, 1], Plots.text("Stage three begins after \n approximately 2.6 years", :left, :orange))
+        annotations = ([t[150] + 1], area_per[150, 1], Plots.text("Stage three begins after \n approximately 2.6 years", :left, :orange))
         )
 scatter!([t[315]], [area_per[315, 1]],
         label = "Tracer patch ≈ size of domain",
@@ -113,7 +119,7 @@ scatter!([t[315]], [area_per[315, 1]],
 
 phys_params = nondim2dim(data)
 
-steps = t[100] / data["clock/dt"]
+steps = t[90] / data["clock/dt"]
 days = (steps * phys_params["Δt̂"]) / 3600
 years = days / 365
 
@@ -131,3 +137,104 @@ scatter!([t[315]], [area_per[315, 1]],
         label = "Tracer patch ≈ size of domain",
         annotations = ([t[310]], .85, Plots.text("After approx 3.7 years \n tracer patch is size  \n of domain", :left, :green))
         )
+
+
+#########################################################
+#Calculations that may turn into functions
+
+#Slope of each increment may be too variable with many saves
+slope = [(area_per[i + 1, 1] - area_per[i, 1])/(t[i + 1] - t[i]) for i in 1:(length(area_per[:, 1]) - 1)]
+
+plot(t[2:end], slope) #This is potentially too variable to be of use
+
+##### This exponential and linear fitting are both now functions that will fit curves to top and bottom layer for cpecifed time lengths
+#test = linear_fit(data; tvals = [100 250])
+#test = lexp_fit(data; tfinal = 100)
+#Fit curves via least squares and see what happens as t increases
+
+X = [ones(length(t[1:50])) t[1:50]]
+M = log.(area_per[1:50, 1])
+res50 = inv(X' * X) * (X' * M)
+
+X = [ones(length(t[1:100])) t[1:100]]
+M = log.(area_per[1:100, 1])
+res100 = inv(X' * X) * (X' * M)
+
+X = [ones(length(t[1:125])) t[1:125]]
+M = log.(area_per[1:125, 1])
+res125 = inv(X' * X) * (X' * M)
+
+X = [ones(length(t[1:150])) t[1:150]]
+M = log.(area_per[1:150, 1])
+res150 = inv(X' * X) * (X' * M)
+
+X = [ones(length(t[1:200])) t[1:200]]
+M = log.(area_per[1:200, 1])
+res200 = inv(X' * X) * (X' * M)
+
+#Have fitted ln(A) = ln(α) + tk, so A = exp(α)*exp(tk) ⟹ A = exp(res[1]) * exp(res[2] .* t)
+
+#These are the real data as well as some fitted exponential curves to see if there is a clear indication where it departs from exp growth.
+plot(t, area_per[:, 1],
+     label = "Upper layer",
+     title = "Growth of area of tracer patch in the upper layer",
+     legend = :bottomright,
+     lw = 2
+     )
+plot!(t[1:120], exp(res50[1]) .* exp.(res50[2] .* t[1:120]), label = "Exp fit to first 50 data points")
+plot!(t[1:130], exp(res100[1]) .* exp.(res100[2] .* t[1:130]), label = "Exp fit to first 100 data points")
+plot!(t[1:140], exp(res125[1]) .* exp.(res125[2] .* t[1:140]), label = "Exp fit to first 125 data points")
+plot!(t[1:160], exp(res150[1]) .* exp.(res150[2] .* t[1:160]), label = "Exp fit to first 150 data points")
+plot!(t[1:180], exp(res200[1]) .* exp.(res200[2] .* t[1:180]), label = "Exp fit to first 200 data points")
+
+#On the log scale
+plot(t, log.(area_per[:, 1]),
+     label = "Upper layer",
+     title = "Growth of log(area of tracer patch) in the upper layer",
+     legend = :bottomright,
+     lw = 2
+     )
+plot!(t[1:120], res50[1] .+ res50[2] .* t[1:120], label = "Exp fit to first 50 data points")
+plot!(t[1:130], res100[1] .+ res100[2] .* t[1:130], label = "Exp fit to first 100 data points")
+plot!(t[1:140], res125[1] .+ res125[2] .* t[1:140], label = "Exp fit to first 125 data points")
+plot!(t[1:160], res150[1] .+ res150[2] .* t[1:160], label = "Exp fit to first 150 data points")
+plot!(t[1:180], res200[1] .+ res200[2] .* t[1:180], label = "Exp fit to first 200 data points")
+
+#From the above looks like something in between 100 and 125 fits the first part of the data best.
+#The fit to the 110 steps below looks reasonable
+X = [ones(length(t[1:110])) t[1:110]]
+M = log.(area_per[1:110, 1])
+res110 = inv(X' * X) * (X' * M)
+plot(t, area_per[:, 1],
+     label = "Upper layer tracer area",
+     title = "Growth of area of tracer patch in the upper layer",
+     legend = :bottomright,
+     lw = 2
+     )
+plot!(t[1:130], exp(res110[1]) .* exp.(res110[2] .* t[1:130]), 
+    label = "Exp fit to first 110 data points",
+    line = (:dash, 2))
+
+#Now look at linear fit to the next part of the curve
+X = [ones(length(t[100:250])) t[100:250]]
+M = area_per[100:250, 1]
+reslin = inv(X' * X) * (X' * M)
+
+plot!(t[100:250], reslin[1] .+ reslin[2] .* t[100:250], 
+    label = "Linear fit to data points 100 to 250", 
+    line = (:dash, 2), color = :orange)
+scatter!([t[240]], [area_per[240,1]], color = :orange, label = false)
+scatter!([t[100]], [area_per[100,1]], color = :orange, label = false)
+
+#Calculate the diffusivity from the increase in area over time. Not exactly sure ho to do this
+phys_params = nondim2dim(data)
+
+steps = t[100] / data["clock/dt"]
+days = (steps * phys_params["Δt̂"]) / 3600
+years = days / 365
+
+area_growth = area_per[240,1] - area_per[100,1]
+no_of_steps = t[240] / data["clock/dt"] - t[100] / data["clock/dt"]
+no_of_seconds = (no_of_steps * phys_params["Δt̂"])
+days = (no_of_seconds) / 3600
+years = days / 365
