@@ -1,5 +1,5 @@
 #Change to the current directory
-cd(joinpath(SimPath, "Output/Simulation: Domain = 128, res = 256, save_freq = 10, IC = GaussianBlob, Ensemble = false"))
+cd(joinpath(SimPath, "Output/Simulation: Domain = 256, res = 512, save_freq = 50, IC = GaussianBlob, Ensemble = false"))
 file = joinpath(pwd(), "SimulationData.jld2")
 
 #Load in the data
@@ -108,16 +108,16 @@ plot(p1, logp1, layout = (2, 1), size = (700, 700))
 plot(t, area_per[:, 2], 
     label = "Lower layer",
     title = "Growth of area of tracer patch in lower layer",
-    legend = :bottomright,
+    legend = :topleft,
     lw =2
     )
-expfit = exp_fit(data; conc_min = 0.05, tfitfinal = 251, tplot_length = 40)
+expfit = exp_fit(data; conc_min = 0.05, tfitfinal = 75, tplot_length = 10)
 plot!(expfit[:, 1, 2], expfit[:, 2, 2],
-    label = "Exponential fit for first 251 data points",
+    label = "Exponential fit for first 75 data points",
     line = (:dash, 2),
     color = :orange
 )  
-linfit = linear_fit(data; conc_min = 0.05, tfitvals = [251 450])
+linfit = linear_fit(data; conc_min = 0.05, tfitvals = [90 161])
 plot!(linfit[:, 1, 2], linfit[:, 2, 2],
     label = "Linear fit for data points 250 to 450",
     line = (:dash, 2),

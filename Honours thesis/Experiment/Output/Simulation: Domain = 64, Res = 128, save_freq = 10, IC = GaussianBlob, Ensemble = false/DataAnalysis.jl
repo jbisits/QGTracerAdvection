@@ -142,11 +142,6 @@ scatter!([t[315]], [area_per[315, 1]],
 #########################################################
 #Calculations that may turn into functions
 
-#Slope of each increment may be too variable with many saves
-slope = [(area_per[i + 1, 1] - area_per[i, 1])/(t[i + 1] - t[i]) for i in 1:(length(area_per[:, 1]) - 1)]
-
-plot(t[2:end], slope) #This is potentially too variable to be of use
-
 ##### This exponential and linear fitting are both now functions that will fit curves to top and bottom layer for cpecifed time lengths
 #test = linear_fit(data; tvals = [100 250])
 #test = lexp_fit(data; tfinal = 100)
@@ -238,3 +233,11 @@ no_of_steps = t[240] / data["clock/dt"] - t[100] / data["clock/dt"]
 no_of_seconds = (no_of_steps * phys_params["Δt̂"])
 days = (no_of_seconds) / 3600
 years = days / 365
+
+#Diffusivity calculation though not sure it is correct as yet
+Area = phys_params["Lx̂"] * phys_params["Lŷ"]
+Area_inc = area_per[250, 2] - area_per[100, 2]
+
+no_of_seconds = (t[250] / data["clock/dt"]) * phys_params["Δt̂"] - (t[100] / data["clock/dt"]) * phys_params["Δt̂"]
+
+diffusivity = (Area * Area_inc) / no_of_seconds

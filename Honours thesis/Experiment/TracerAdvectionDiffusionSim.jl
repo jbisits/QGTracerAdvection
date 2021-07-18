@@ -10,10 +10,10 @@ include("PackageSetup.jl")
 #include("Flows/FlowSetup_nondim_32domain_64res.jl")
 #include("Flows/FlowSetup_nondim_64domain_128res.jl")
 #include("Flows/FlowSetup_nondim_128domain_256res.jl")
-include("Flows/FlowSetup_nondim_256domain_512res.jl")
+#include("Flows/FlowSetup_nondim_256domain_512res.jl")
 
-nsubs  = 10            #Set the number of steps the simulation takes at each iteration. This is also the frequency that data is saved at.         
-nsteps = 5000          #Set the total amount of time steps the advection-diffusion simulation should run for
+nsubs  = 50            #Set the number of steps the simulation takes at each iteration. This is also the frequency that data is saved at.         
+nsteps = 12000          #Set the total amount of time steps the advection-diffusion simulation should run for
 
 κ = 0.01
 #Set delay time (that is flow for some length of time, then drop tracer in)
