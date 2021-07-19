@@ -92,7 +92,7 @@ avg_area = tracer_area_avg(data)
 plot(t, avg_area)
 
 t = time_vec(data)
-area_per = tracer_area_percentile(data; conc_min = 0.05)
+area_per = tracer_area_percentile(data; conc_min = 0.25)
 p1 = plot(t, area_per, 
         label = ["Upper layer" "Lower layer"],
         title = "Growth of area of tracer patch in \n both layers layer",
@@ -105,21 +105,22 @@ logp1 = plot(t, log.(area_per),
             )
 plot(p1, logp1, layout = (2, 1), size = (700, 700))
 
-plot(t, area_per[:, 2], 
-    label = "Lower layer",
-    title = "Growth of area of tracer patch in lower layer",
-    legend = :topleft,
-    lw =2
-    )
-expfit = exp_fit(data; conc_min = 0.05, tfitfinal = 75, tplot_length = 10)
-plot!(expfit[:, 1, 2], expfit[:, 2, 2],
-    label = "Exponential fit for first 75 data points",
+expfit = exp_fit(data; conc_min = 0.05, tfitfinal = 81, tplot_length = 10)
+linfit = linear_fit(data; conc_min = 0.05, tfitvals = [101 190], tplot_length = [0 0])
+lower_area = plot(t, area_per[:, 2], 
+                label = "Lower layer",
+                title = "Growth of area of tracer patch in lower layer",
+                legend = :topleft,
+                lw =2,
+                size = (700, 700)
+                )
+plot!(lower_area, expfit[:, 1, 2], expfit[:, 2, 2],
+    label = "Exponential fit for first 81 data points",
     line = (:dash, 2),
     color = :orange
 )  
-linfit = linear_fit(data; conc_min = 0.05, tfitvals = [90 161])
-plot!(linfit[:, 1, 2], linfit[:, 2, 2],
-    label = "Linear fit for data points 250 to 450",
+plot!(lower_area, linfit[:, 1, 2], linfit[:, 2, 2],
+    label = "Linear fit for data points 101 to 200",
     line = (:dash, 2),
     color = :red
     )
@@ -132,8 +133,8 @@ years = days / 365
 
 #Diffusivity calcuation
 Area = phys_params["Lx̂"] * phys_params["Lŷ"]
-Area_inc = area_per[450, 2] - area_per[251, 2]
+Area_inc = area_per[190, 2] - area_per[101, 2]
 
-no_of_seconds = (t[450] / data["clock/dt"]) * phys_params["Δt̂"] - (t[251] / data["clock/dt"]) * phys_params["Δt̂"]
+no_of_seconds = (t[190] / data["clock/dt"]) * phys_params["Δt̂"] - (t[101] / data["clock/dt"]) * phys_params["Δt̂"]
 
 diffusivity = (Area * Area_inc) / no_of_seconds

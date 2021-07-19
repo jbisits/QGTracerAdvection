@@ -165,48 +165,16 @@ function nondim2dim(prob::FourierFlows.Problem;
     Δt̂ = prob.clock.dt
     Δt = (Ld/U) * Δt̂
 
-    return Dict("f̂₀" => f₀,
-                "β̂"  => β,
-                "μ̂"  => μ,
-                "ν̂"  => ν,
-                "Lx̂" => Lx,
-                "Lŷ" => Ly,
-                "Δt̂" => Δt
+    return Dict("f₀" => f₀,
+                "β"  => β,
+                "μ"  => μ,
+                "ν"  => ν,
+                "Lx" => Lx,
+                "Ly" => Ly,
+                "Δt" => Δt
                 )
 
 end
-"""
-Compute the nondimensionalised time and length from the saved data of a advection diffusion simulation
-"""
-function nondim2dim(data::Dict{String, Any};
-                    Ω = 7.29e-5,     # Earth"s rotation
-                    ϕ = π/3,         # Latitude
-                    a = 6378e3,      # Earth's radius
-                    g = 9.81,        # Gravity
-                    H = 1500,        # Total depth (in metres)
-                    ρ₁ = 1034,       # Density of top layer
-                    ρ₂ = 1035,       # Density of bottom layer
-                    )
-    
-    f₀ = 2*Ω*sin(ϕ)             # Coriolis computed from above values
-    gprime = g*((ρ₂ - ρ₁)/ρ₂)   # Reduced gravity
-    
-    Ld = sqrt(gprime*H)/(f₀)    #Rossby deformation radius
-    U = 0.1
 
-    #Domain
-    Lx̂, Lŷ = data["grid/Lx"], data["grid/Ly"]
-    Lx = Ld * Lx̂
-    Ly = Ld * Lŷ
-
-    #Time
-    Δt̂ = data["clock/dt"]
-    Δt = (Ld/U) * Δt̂
-
-    return Dict("Lx̂" => Lx,
-                "Lŷ" => Ly,
-                "Δt̂" => Δt
-                )
-end
 
 end #module

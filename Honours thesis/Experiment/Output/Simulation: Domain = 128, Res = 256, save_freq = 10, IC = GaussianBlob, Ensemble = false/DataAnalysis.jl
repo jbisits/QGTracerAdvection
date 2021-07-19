@@ -92,48 +92,56 @@ avg_area = tracer_area_avg(data)
 plot(t, avg_area)
 
 t = time_vec(data)
-area_per = tracer_area_percentile(data; conc_min = 0.05)
+area_per = tracer_area_percentile(data; conc_min = 0.5)
 p1 = plot(t, area_per, 
         label = ["Upper layer" "Lower layer"],
-        title = "Growth of area of tracer patch in \n both layers layer",
+        title = "Growth of 50% area of tracer patch in \n both layers layer",
         legend = :topleft
         )
 logp1 = plot(t, log.(area_per), 
             label = ["Upper layer" "Lower layer"],
-            title = "Growth of log(area of tracer patch) \n in both layers",
+            title = "Growth of 50% of log(area of tracer patch) \n in both layers",
             legend = :bottomright
             )
 plot(p1, logp1, layout = (2, 1), size = (700, 700))
 
-plot(t, area_per[:, 2], 
-    label = "Lower layer",
-    title = "Growth of area of tracer patch in lower layer",
-    legend = :bottomright,
-    lw =2
-    )
-expfit = exp_fit(data; conc_min = 0.05, tfitfinal = 251, tplot_length = 40)
-plot!(expfit[:, 1, 2], expfit[:, 2, 2],
-    label = "Exponential fit for first 251 data points",
+expfit = exp_fit(data; conc_min = 0.5, tfitfinal = 380, tplot_length = 40)
+linfit = linear_fit(data; conc_min = 0.5, tfitvals = [470 620], tplot_length = [0 0])
+lower_area = plot(t, area_per[:, 2], 
+                label = "Lower layer",
+                title = "Growth of area of 50% tracer patch in lower layer",
+                legend = :topleft,
+                lw =2,
+                size = (700, 700)
+                )
+plot!(lower_area, expfit[:, 1, 2], expfit[:, 2, 2],
+    label = "Exponential fit for first 380 data points",
     line = (:dash, 2),
     color = :orange
-)  
-linfit = linear_fit(data; conc_min = 0.05, tfitvals = [251 450])
-plot!(linfit[:, 1, 2], linfit[:, 2, 2],
-    label = "Linear fit for data points 250 to 450",
+) 
+scatter!(lower_area, [t[360]], [area_per[380, 2]],
+    label = "Departs from fitted exponential",
+    color = :orange
+) 
+plot!(lower_area, linfit[:, 1, 2], linfit[:, 2, 2],
+    label = "Linear fit for data points 470 to 620",
     line = (:dash, 2),
     color = :red
     )
 
+annotate!((t[100], 0.25, text("Exponential growth lasts \n for ≈ 4 years", 10, :left, :orange)))
+annotate!((t[1], 0.75, text("Linear growth lasts for ≈ 1.8 years. \n In this time the growth of 50% of the area is 75%. \n This gives diffusivity of 4.9e6m²/s.", 10, :left, :red)))
+
 phys_params = nondim2dim(data)
 
-steps = t[450] / data["clock/dt"]
+steps = t[360] / data["clock/dt"]
 days = (steps * phys_params["Δt̂"]) / 3600
 years = days / 365
 
 #Diffusivity calcuation
 Area = phys_params["Lx̂"] * phys_params["Lŷ"]
-Area_inc = area_per[450, 2] - area_per[251, 2]
+Area_inc = area_per[620, 2] - area_per[470, 2]
 
-no_of_seconds = (t[450] / data["clock/dt"]) * phys_params["Δt̂"] - (t[251] / data["clock/dt"]) * phys_params["Δt̂"]
+no_of_seconds = (t[620] / data["clock/dt"]) * phys_params["Δt̂"] - (t[470] / data["clock/dt"]) * phys_params["Δt̂"]
 
 diffusivity = (Area * Area_inc) / no_of_seconds
