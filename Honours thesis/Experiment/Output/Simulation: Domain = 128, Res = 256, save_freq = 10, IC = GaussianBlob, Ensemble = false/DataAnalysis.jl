@@ -95,12 +95,12 @@ t = time_vec(data)
 area_per = tracer_area_percentile(data; conc_min = 0.5)
 p1 = plot(t, area_per, 
         label = ["Upper layer" "Lower layer"],
-        title = "Growth of 50% area of tracer patch in \n both layers layer",
+        title = "Growth of 50% area of tracer patch in \n both layers; domain = 128, res = 256",
         legend = :topleft
         )
 logp1 = plot(t, log.(area_per), 
             label = ["Upper layer" "Lower layer"],
-            title = "Growth of 50% of log(area of tracer patch) \n in both layers",
+            title = "Growth of 50% of log(area of tracer patch) \n in both layers; domain = 128, res = 256",
             legend = :bottomright
             )
 plot(p1, logp1, layout = (2, 1), size = (700, 700))
@@ -135,13 +135,13 @@ annotate!((t[1], 0.75, text("Linear growth lasts for ≈ 1.8 years. \n In this t
 phys_params = nondim2dim(data)
 
 steps = t[360] / data["clock/dt"]
-days = (steps * phys_params["Δt̂"]) / 3600
+days = (steps * phys_params["Δt"]) / 3600
 years = days / 365
 
 #Diffusivity calcuation
-Area = phys_params["Lx̂"] * phys_params["Lŷ"]
+Area = phys_params["Lx"] * phys_params["Ly"]
 Area_inc = area_per[620, 2] - area_per[470, 2]
 
-no_of_seconds = (t[620] / data["clock/dt"]) * phys_params["Δt̂"] - (t[470] / data["clock/dt"]) * phys_params["Δt̂"]
+no_of_seconds = (t[620] / data["clock/dt"]) * phys_params["Δt"] - (t[470] / data["clock/dt"]) * phys_params["Δt"]
 
 diffusivity = (Area * Area_inc) / no_of_seconds

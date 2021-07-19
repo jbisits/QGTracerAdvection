@@ -22,6 +22,7 @@ export
     tracer_area_percentile,
     exp_fit,
     linear_fit,
+    diffusivity,
     nondim2dim
 
 using Distributions, GeophysicalFlows, StatsBase, LinearAlgebra, JLD2, Plots
@@ -534,6 +535,27 @@ function linear_fit(data::Dict{String, Any}; conc_min = 0.05, tfitvals = [100, 2
     end
 
     return A
+end
+"""
+    function diffusivity(data::Dict{String, Any})
+Calculate the diffusivity in physical space using the growth of area of tracer patch
+"""
+function diffusivity(data::Dict{String, Any}, time_vals::Matrix{Int64}; conc_min = 0.05)
+
+    t = time_vec(data)
+    area_per = tracer_area_percentile(data; conc_min)
+    phys_params = nondim2dim(data)
+    nlayers = data["params/nlayers"]
+    diff = Array{Float64}(undef, 1, nlayers)
+
+    Area = phys_params["Lx"] * phys_params["Ly"]
+    for i ∈ 1:nlayers
+        Area_inc = area_per[time_vals[i, 2], i] - area_per[time_vals[i, 1], i]
+        no_of_seconds = (t[time_vals[i, 2]] / data["clock/dt"]) * phys_params["Δt"] - (t[time_vals[i, 1]] / data["clock/dt"]) * phys_params["Δt"]
+        diff[i] = (Area * Area_inc) / no_of_seconds
+    end
+
+    return diff
 end
 
 """

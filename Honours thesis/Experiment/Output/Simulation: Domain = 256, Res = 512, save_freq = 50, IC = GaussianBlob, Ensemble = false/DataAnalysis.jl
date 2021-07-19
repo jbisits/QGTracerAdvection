@@ -92,7 +92,7 @@ avg_area = tracer_area_avg(data)
 plot(t, avg_area)
 
 t = time_vec(data)
-area_per = tracer_area_percentile(data; conc_min = 0.25)
+area_per = tracer_area_percentile(data; conc_min = 0.2)
 p1 = plot(t, area_per, 
         label = ["Upper layer" "Lower layer"],
         title = "Growth of area of tracer patch in \n both layers layer",
