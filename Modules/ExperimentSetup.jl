@@ -5,8 +5,7 @@ export
     GaussianStripIC,
     PointSourceIC,
     CreateFile, 
-    GetConcentration,
-    nondim2dim
+    GetConcentration
 
 using GeophysicalFlows, Distributions, StatsBase, LinearAlgebra, JLD2
 """
@@ -128,53 +127,5 @@ function GetConcentration(ADProb)
     Concentration = @. ADProb.vars.c
     return Concentration
 end
-"""
-    function nondim2dim(prob)
-Translates parameters that have been set in the non-dimensional space (as I use in my thesis) for a QG problem
-to the phsyical space based off mid-latitude values in metres and seconds. The values have defaults set.
-"""
-function nondim2dim(prob::FourierFlows.Problem;
-                    Ω = 7.29e-5,     # Earth"s rotation
-                    ϕ = π/3,         # Latitude
-                    a = 6378e3,      # Earth's radius
-                    g = 9.81,        # Gravity
-                    H = 1500,        # Total depth (in metres)
-                    ρ₁ = 1034,       # Density of top layer
-                    ρ₂ = 1035,       # Density of bottom layer
-                    )
-
-    f₀ = 2*Ω*sin(ϕ)             # Coriolis computed from above values
-    gprime = g*((ρ₂ - ρ₁)/ρ₂)   # Reduced gravity
-    
-    Ld = sqrt(gprime*H)/(f₀)    #Rossby deformation radius
-    U = 0.1
-
-    #Domain
-    Lx̂, Lŷ = prob.grid.Lx, prob.grid.Ly
-    Lx = Ld * Lx̂
-    Ly = Ld * Lŷ
-
-    #Parameters
-    f̂₀, β̂, μ̂, ν̂ = prob.params.f₀, prob.params.β, prob.params.μ, prob.params.ν'
-    f₀ = (U/Ld) * f̂₀
-    β = (U/Ld^2) * β̂
-    μ = (U/Ld) * μ̂
-    ν = (U*Ld) * ν̂
-
-    #Time
-    Δt̂ = prob.clock.dt
-    Δt = (Ld/U) * Δt̂
-
-    return Dict("f₀" => f₀,
-                "β"  => β,
-                "μ"  => μ,
-                "ν"  => ν,
-                "Lx" => Lx,
-                "Ly" => Ly,
-                "Δt" => Δt
-                )
-
-end
-
 
 end #module
