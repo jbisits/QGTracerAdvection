@@ -632,9 +632,14 @@ function nondim2dim(data::Dict{String, Any};
     Δt̂ = data["clock/dt"]
     Δt = (Ld/U) * Δt̂
 
+    #Diffusivity
+    κ̂ = data["params/κ"]
+    κ = (U * Ld) * κ̂
+
     return Dict("Lx" => Lx,
                 "Ly" => Ly,
-                "Δt" => Δt
+                "Δt" => Δt,
+                "κ"  => κ
                 )
 end
 
