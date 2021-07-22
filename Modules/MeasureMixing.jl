@@ -430,12 +430,12 @@ function tracer_area_avg(data::Dict{String, Any}; number_of_bins = 0)
             lowerhist = fit(Histogram, lowerdata, nbins = number_of_bins)
         end
         
-        C_Aupper = Vector(upperhist.edges[1])
-        C_Alower = Vector(lowerhist.edges[1])
+        Cupper = Vector(upperhist.edges[1])
+        Clower = Vector(lowerhist.edges[1])
         dAupper = vcat(0, reverse(upperhist.weights))
         dAlower = vcat(0, reverse(lowerhist.weights))
-        upperarea = sum(grid_area .* reverse(C_Aupper) .* dAupper)
-        lowerarea = sum(grid_area .* reverse(C_Alower) .* dAlower)
+        upperarea = sum(grid_area .* reverse(Cupper) .* dAupper)
+        lowerarea = sum(grid_area .* reverse(Clower) .* dAlower)
 
         uppertraceramount = sum(upperdata)
         lowertraceramount = sum(upperdata)
