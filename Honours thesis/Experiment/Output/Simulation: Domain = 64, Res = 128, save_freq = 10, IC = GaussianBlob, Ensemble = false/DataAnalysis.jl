@@ -91,15 +91,15 @@ mp4(TracerAnim, "TracerAnim.mp4", fps = 18)
 AreaVConnc = tracer_area_avg(data)
 
 t = time_vec(data)
-area_per = tracer_area_percentile(data; conc_min = 0.5)
+area_per = tracer_area_percentile(data; conc_min = 0.1)
 p1 = plot(t, area_per, 
         label = ["Upper layer" "Lower layer"],
-        title = "Growth of 50% of area of tracer patch in \n both layers layer; domain = 64, res = 128",
+        title = "Growth of 90% of area of tracer patch in \n both layers layer; domain = 64, res = 128",
         legend = :topleft
         )
 logp1 = plot(t, log.(area_per), 
             label = ["Upper layer" "Lower layer"],
-            title = "Growth of 50% of log(area of tracer patch) \n in both layers; domain = 64, res = 128",
+            title = "Growth of log(90% of log area of tracer patch) \n in both layers; domain = 64, res = 128",
             legend = :bottomright
             )
 plot(p1, logp1, layout = (2, 1), size = (700, 700))
@@ -109,42 +109,41 @@ plot(t, area_per[:, 2],
      title = "Growth of area of tracer patch in the upper layer",
      legend = :topleft
      )
-scatter!([t[150]], [area_per[150, 1]],
-        label = "Stage 2 -> stage 3",
-        annotations = ([t[150] + 1], area_per[150, 1], Plots.text("Stage three begins after \n approximately 2.6 years", :left, :orange))
-        )
-scatter!([t[315]], [area_per[315, 1]],
-        label = "Tracer patch ≈ size of domain",
-        annotations = ([t[310]], .85, Plots.text("After approx 3.7 years \n tracer patch is size  \n of domain", :left, :green))
-        )
 
-phys_params = nondim2dim(data)
-
-steps = t[90] / data["clock/dt"]
-days = (steps * phys_params["Δt̂"]) / 3600
-years = days / 365
-
-expfit = exp_fit(data; conc_min = 0.5, tfitfinal = 250, tplot_length = 40)
-linfit = linear_fit(data; conc_min = 0.5, tfitvals = [275 345], tplot_length = [0 0])
+expfit = exp_fit(data; conc_min = 0.1, tfitfinal = 160, tplot_length = 10)
+linfit = linear_fit(data; conc_min = 0.1, tfitvals = [160 270], tplot_length = [0 0])
 lower_area = plot(t, area_per[:, 2], 
                 label = "Lower layer",
-                title = "Growth of area of 50% tracer patch in lower layer",
+                title = "Growth of area of 90% tracer patch in lower layer",
                 legend = :topleft,
                 lw =2,
                 size = (700, 700)
                 )
 plot!(lower_area, expfit[:, 1, 2], expfit[:, 2, 2],
-    label = "Exponential fit for first 250 data points",
+    label = "Exponential fit for first 160 data points",
     line = (:dash, 2),
     color = :orange
 ) 
 plot!(lower_area, linfit[:, 1, 2], linfit[:, 2, 2],
-    label = "Linear fit for data points 275 to 345",
+    label = "Linear fit for data points 160 to 270",
     line = (:dash, 2),
     color = :red
     )
+annotate!((t[1], 0.25, text("Exponential growth lasts \n for ≈ 1.8 years", 10, :left, :orange)))
+annotate!((t[end], 0.25, text("Linear growth first phase \n lasts for ≈ 1.25 years. In this \n time the growth of 90% of \n the area is 73%. \n This gives diffusivity of 1.6e6m²/s.", 10, :right, :red)))
 
-diff = diffusivity(data, [1 1; 275 345]; conc_min = 0.5)
+phys_params = nondim2dim(data)
+steps = t[160] / data["clock/dt"]
+days = (steps * phys_params["Δt"]) / 3600
+years = days / 365
+
+linphase1 = ((t[270] / data["clock/dt"]) * phys_params["Δt"] - (t[160] / data["clock/dt"]) * phys_params["Δt"])/ (3600 * 365)
+
+area_per[270, 2] - area_per[160, 2]
+d1 = diffusivity(data, [1 2; 160 270]; conc_min = 0.1)
+
+tracer_growth = plot(p1, logp1, lower_area, layout = @layout([a b; c]), size = (1200, 1200))
+save("tracer_growth_90_dom64.png", tracer_growth)
 
 #########################################################
 #Calculations that may turn into functions
