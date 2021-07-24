@@ -418,7 +418,6 @@ function tracer_area_avg(data::Dict{String, Any}; number_of_bins = 0)
     saved_steps = data["save_freq"]
     plot_steps = 0:saved_steps:nsteps
     AreaVConcentration = Array{Float64}(undef, length(plot_steps), nlayers)
-    grid_area = data["grid/nx"] * data["grid/ny"]
     for i ∈ plot_steps
         upperdata = reshape(data["snapshots/Concentration/"*string(i)][:, :, 1], :)
         lowerdata = reshape(data["snapshots/Concentration/"*string(i)][:, :, 2], :)
@@ -430,15 +429,17 @@ function tracer_area_avg(data::Dict{String, Any}; number_of_bins = 0)
             lowerhist = fit(Histogram, lowerdata, nbins = number_of_bins)
         end
         
-        Cupper = Vector(upperhist.edges[1])
-        Clower = Vector(lowerhist.edges[1])
+        Cupper = reverse(Vector(upperhist.edges[1]))
+        Clower = reverse(Vector(lowerhist.edges[1]))
+        Aupper = vcat(0, cumsum(reverse(upperhist.weights)))
+        Alower = vcat(0, cumsum(reverse(lowerhist.weights)))
         dAupper = vcat(0, reverse(upperhist.weights))
         dAlower = vcat(0, reverse(lowerhist.weights))
-        upperarea = sum(grid_area .* reverse(Cupper) .* dAupper)
-        lowerarea = sum(grid_area .* reverse(Clower) .* dAlower)
+        upperarea = sum(Aupper .* Cupper .* dAupper)
+        lowerarea = sum(Alower .* Clower .* dAlower)
 
         uppertraceramount = sum(upperdata)
-        lowertraceramount = sum(upperdata)
+        lowertraceramount = sum(lowerdata)
 
         j = round(Int, i/saved_steps)
         AreaVConcentration[j + 1, :] .= [upperarea/uppertraceramount, 

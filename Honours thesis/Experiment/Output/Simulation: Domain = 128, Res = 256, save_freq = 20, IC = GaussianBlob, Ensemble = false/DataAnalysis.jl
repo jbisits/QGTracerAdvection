@@ -1,5 +1,5 @@
 #Change to the current directory
-cd(joinpath(SimPath, "Output/Simulation: Domain = 128, res = 256, save_freq = 10, IC = GaussianBlob, Ensemble = false"))
+cd(joinpath(SimPath, "Output/Simulation: Domain = 128, res = 256, save_freq = 20, IC = GaussianBlob, Ensemble = false"))
 file = joinpath(pwd(), "SimulationData.jld2")
 
 #Load in the data
@@ -89,18 +89,18 @@ TracerAnim = tracer_animate(data)
 mp4(TracerAnim, "TracerAnim.mp4", fps = 18)
 
 avg_area = tracer_area_avg(data)
-plot(t[1:100], avg_area[1:100, :])
+plot(t, avg_area)
 
 t = time_vec(data)
-area_per = tracer_area_percentile(data; conc_min = 0.5)
+area_per = tracer_area_percentile(data; conc_min = 0.05)
 p1 = plot(t, area_per, 
         label = ["Upper layer" "Lower layer"],
-        title = "Growth of 50% area of tracer patch in \n both layers; domain = 128, res = 256",
+        title = "Growth of 90% area of tracer patch in \n both layers; domain = 128, res = 256",
         legend = :topleft
         )
 logp1 = plot(t, log.(area_per), 
             label = ["Upper layer" "Lower layer"],
-            title = "Growth of 50% of log(area of tracer patch) \n in both layers; domain = 128, res = 256",
+            title = "Growth of 90% of log(area of tracer patch) \n in both layers; domain = 128, res = 256",
             legend = :bottomright
             )
 plot(p1, logp1, layout = (2, 1), size = (700, 700))
