@@ -431,15 +431,15 @@ function tracer_area_avg(data::Dict{String, Any}; number_of_bins = 0)
         
         Cupper = reverse(Vector(upperhist.edges[1]))
         Clower = reverse(Vector(lowerhist.edges[1]))
-        Aupper = vcat(0, cumsum(reverse(upperhist.weights)))
-        Alower = vcat(0, cumsum(reverse(lowerhist.weights)))
-        dAupper = vcat(0, reverse(upperhist.weights))
-        dAlower = vcat(0, reverse(lowerhist.weights))
-        upperarea = sum(Aupper .* Cupper .* dAupper)
-        lowerarea = sum(Alower .* Clower .* dAlower)
+        Aupper = cumsum(reverse(upperhist.weights))
+        Alower = cumsum(reverse(lowerhist.weights))
+        dAupper = reverse(upperhist.weights)
+        dAlower = reverse(lowerhist.weights)
+        upperarea = sum( [Aupper[i] * 0.5 * (Cupper[i+1] + Cupper[i]) * dAupper[i] for i in 1:length(Aupper) ] )
+        lowerarea = sum( [Alower[i] * 0.5 * (Clower[i+1] + Clower[i]) * dAlower[i] for i in 1:length(Alower) ] )
 
-        uppertraceramount = sum(upperdata)
-        lowertraceramount = sum(lowerdata)
+        uppertraceramount = sum( [0.5 * (Cupper[i+1] + Cupper[i]) * dAupper[i] for i in 1:length(Aupper) ])
+        lowertraceramount = sum( [0.5 * (Clower[i+1] + Clower[i]) * dAlower[i] for i in 1:length(Alower) ])
 
         j = round(Int, i/saved_steps)
         AreaVConcentration[j + 1, :] .= [upperarea/uppertraceramount, 

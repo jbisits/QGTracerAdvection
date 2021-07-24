@@ -89,7 +89,7 @@ TracerAnim = tracer_animate(data)
 mp4(TracerAnim, "TracerAnim.mp4", fps = 18)
 
 avg_area = tracer_area_avg(data)
-plot(t[1:100], avg_area[1:100, :])
+plot(t, avg_area)
 
 t = time_vec(data)
 area_per = tracer_area_percentile(data; conc_min = 0.5)
