@@ -423,10 +423,14 @@ function tracer_area_avg(data::Dict{String, Any}; number_of_bins = 0)
         lowerdata = reshape(data["snapshots/Concentration/"*string(i)][:, :, 2], :)
         if number_of_bins == 0
             upperhist = fit(Histogram, upperdata)
+            upperhist = normalize(upperhist; mode = :pdf)
             lowerhist = fit(Histogram, lowerdata)
+            lowerhist = normalize(lowerhist; mode = :pdf)
         else
             upperhist = fit(Histogram, upperdata, nbins = number_of_bins)
+            upperhist = normalize(upperhist; mode = :pdf)
             lowerhist = fit(Histogram, lowerdata, nbins = number_of_bins)
+            lowerhist = normalize(lowerhist; mode = :pdf)
         end
         
         Cupper = reverse(Vector(upperhist.edges[1]))
@@ -435,22 +439,25 @@ function tracer_area_avg(data::Dict{String, Any}; number_of_bins = 0)
         Alower = cumsum(reverse(lowerhist.weights))
         dAupper = reverse(upperhist.weights)
         dAlower = reverse(lowerhist.weights)
-        upperarea = sum( [Aupper[i] * 0.5 * (Cupper[i+1] + Cupper[i]) * dAupper[i] for i in 1:length(Aupper) ] )
-        lowerarea = sum( [Alower[i] * 0.5 * (Clower[i+1] + Clower[i]) * dAlower[i] for i in 1:length(Alower) ] )
-
+        upperarea = sum( [ Aupper[i] * 0.5 * (Cupper[i+1] + Cupper[i]) * dAupper[i] for i in 1:length(Aupper) ] )
+        lowerarea = sum( [ Alower[i] * 0.5 * (Clower[i+1] + Clower[i]) * dAlower[i] for i in 1:length(Alower) ] )
+        
+        #=
         uppertraceramount = sum( [0.5 * (Cupper[i+1] + Cupper[i]) * dAupper[i] for i in 1:length(Aupper) ])
         lowertraceramount = sum( [0.5 * (Clower[i+1] + Clower[i]) * dAlower[i] for i in 1:length(Alower) ])
-
+        =#
         j = round(Int, i/saved_steps)
-        AreaVConcentration[j + 1, :] .= [upperarea/uppertraceramount, 
-                                         lowerarea/lowertraceramount]
+        #=AreaVConcentration[j + 1, :] .= [upperarea/uppertraceramount, 
+                                         lowerarea/lowertraceramount]=#
+        AreaVConcentration[j + 1, :] .= [upperarea, 
+                                         lowerarea]
 
     end
 
     return AreaVConcentration
 
 end
-"""
+ """
     function tracer_area_percentile(data::Dict{String, Any})
 Compute the percentile of area from a concentration field using 
         ∫A(C)dC over interval (Cmax, C₁)
