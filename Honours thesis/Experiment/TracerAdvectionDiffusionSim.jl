@@ -9,7 +9,7 @@ include("PackageSetup.jl")
 #Import a flow that has already been set up from the Flows folder
 #include("Flows/FlowSetup_nondim_32domain_64res.jl")
 #include("Flows/FlowSetup_nondim_64domain_128res.jl")
-#include("Flows/FlowSetup_nondim_128domain_256res.jl")
+include("Flows/FlowSetup_nondim_128domain_256res.jl")
 #include("Flows/FlowSetup_nondim_256domain_512res.jl")
 
 nsubs  = 1            #Set the number of steps the simulation takes at each iteration. This is also the frequency that data is saved at.         
@@ -23,10 +23,12 @@ ADProb = TracerAdvDiff_QG.Problem(;prob = QGProb, delay_time = delay_time, nsubs
 ADSol, ADClock, ADVars, ADParams, ADGrid = ADProb.sol, ADProb.clock, ADProb.vars, ADProb.params, ADProb.grid
 
 #Set the Gaussian blob initial condition
-μIC = [0, 0]
-Σ = [1 0; 0 1]
-IC = GaussianBlobIC(μIC, Σ, ADGrid)
-#IC = GaussianStripIC(μIc, σ², ADGrid)
+#μIC = [0, 0]
+#Σ = [1 0; 0 1]
+#IC = GaussianBlobIC(μIC, Σ, ADGrid)
+μIC = 0
+σ² = 1
+IC = GaussianStripIC(μIC, σ², ADGrid)
 #IC = PointSourceIC([64, 64], 1, ADGrid)
 
 QGset_c!(ADProb, IC.C₀)

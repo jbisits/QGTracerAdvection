@@ -321,12 +321,12 @@ function tracer_plot(data::Dict{String, Any}; plot_freq = 1000)
     UpperTracerPlots = Plots.Plot{Plots.GRBackend}[]
     LowerTracerPlots = Plots.Plot{Plots.GRBackend}[]
     for i ∈ plot_steps
-        uppertracer = heatmap(x, y, data["snapshots/Concentration/"*string(i)][:, :, 1]',
+        uppertracer = heatmap(x, y, data["snapshots/Concentration/"*string(i)][:, :, 1],
                                 title = "C(x,y,t) step = "*string(i); 
                                 plotargs...
                             )
         push!(UpperTracerPlots, uppertracer)
-        lowertracer = heatmap(x, y, data["snapshots/Concentration/"*string(i)][:, :, 2]',
+        lowertracer = heatmap(x, y, data["snapshots/Concentration/"*string(i)][:, :, 2],
                                 title = "C(x,y,t) step = "*string(i); 
                                 plotargs...
                             )
