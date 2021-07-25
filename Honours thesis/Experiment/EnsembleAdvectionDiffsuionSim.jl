@@ -20,7 +20,14 @@ nsteps = 5000           #Set the total amount of time steps the advection-diffus
 delay_time = Δt̂ * 3000
 #Define number of tracer advection simulations
 ADSims = 10
+#Set the frequency at which to save data
 save_freq = 50
+#Initial condition
+μIC = 0
+σ² = 1
+IC = GaussianStripIC(μIC, σ², ADGrid)
+#File name for saving, FourierFlows creates a new file each time with _i appended
+filename = CreateFile(ADProb, IC, save_freq, SimPath; Ensemble = true)
 
 #This runs a non-parallel simulation where an array of advection-diffusion problems is defined then stepped forward separately with the flow reset each time
 for i ∈ 1:ADSims
@@ -28,12 +35,6 @@ for i ∈ 1:ADSims
     if i == 1
         ADProb = TracerAdvDiff_QG.Problem(;prob = QGProb, delay_time = delay_time, nsubs = nsubs, κ = κ)
         ADSol, ADClock, ADVars, ADParams, ADGrid = ADProb.sol, ADProb.clock, ADProb.vars, ADProb.params, ADProb.grid
-        #Initial condition
-        μIC = 0
-        σ² = 1
-        IC = GaussianStripIC(μIC, σ², ADGrid)
-        #File name for saving
-        global filename = CreateFile(ADProb, IC, save_freq, SimPath; Ensemble = true)
     else
         #Reset the QG flow
         global QGProb = MultiLayerQG.Problem(nlayers, dev; nx=nx, Lx=Lx̂, f₀=f̂₀, g=ĝ, H=Ĥ, ρ=ρ̂, U=Û, dt=Δt̂, stepper=stepper, μ=μ̂, β=β̂, ν=ν̂)
@@ -64,7 +65,7 @@ for i ∈ 1:ADSims
 
     end
 
-    #Save the number of steps in the simulation
+    #Save the number of steps and other info from the simulation
     jldopen(ADOutput.path, "a+") do path
         path["clock/nsteps"] = ADClock.step - 1
         path["save_freq"] = save_freq
