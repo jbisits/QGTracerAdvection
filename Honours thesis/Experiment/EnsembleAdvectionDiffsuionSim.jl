@@ -58,7 +58,6 @@ for i ∈ 1:ADSims
             saveoutput(ADOutput)
             println("Step number: ", round(Int, ADClock.step), ", saved data")
         end
-        saveoutput(ADOutput)
         stepforward!(ADProb, nsubs)
         QGupdatevars!(ADProb)
         vel_field_update!(ADProb, QGProb, nsubs)
