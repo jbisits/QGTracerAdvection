@@ -33,12 +33,12 @@ for i ∈ 1:ADSims
         σ² = 1
         IC = GaussianStripIC(μIC, σ², ADGrid)
         #File name for saving
-        global filename = CreateFile(ADProb, IC, save_freq = 20, SimPath; Ensemble = true)
+        global filename = CreateFile(ADProb, IC, save_freq, SimPath; Ensemble = true)
     else
         #Reset the QG flow
         global QGProb = MultiLayerQG.Problem(nlayers, dev; nx=nx, Lx=Lx̂, f₀=f̂₀, g=ĝ, H=Ĥ, ρ=ρ̂, U=Û, dt=Δt̂, stepper=stepper, μ=μ̂, β=β̂, ν=ν̂)
         global QGSol, QGClock, QGParams, QGVars, QGrid = QGProb.sol, QGProb.clock, QGProb.params, QGProb.vars, QGProb.grid
-        seed!(1234) # reset of the random number generator for reproducibility
+        seed!( parse(Int64, join([1, 2, 3, i])) ) # reset of the random number generator for reproducibility
         local q₀  = 1e-2 * ArrayType(dev)(randn((QGrid.nx, QGrid.ny, nlayers)))
         local q₀h = QGProb.timestepper.filter .* rfft(q₀, (1, 2)) # only apply rfft in dims=1, 2
         q₀  = irfft(q₀h, QGrid.nx, (1, 2)) # only apply irfft in dims=1, 2
