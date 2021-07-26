@@ -1,25 +1,26 @@
-#Ensemble tracer advection diffusion experiment
-
+#Ensemble tracer advection diffusion experiment, trying to get one to wrok in parallel.
+using Distributed
+addprocs(2)
 #Change to the correct directory (if it was not already correct for some reason)
-SimPath = joinpath("/Users/Joey/Desktop/ThesisCode/QG_tracer_advection", "Honours thesis/Experiment")
-cd(SimPath)
-#Load in all the required packages for the simulation
-include("PackageSetup.jl")
+begin @everywhere SimPath = joinpath("/Users/Joey/Desktop/ThesisCode/QG_tracer_advection", "Honours thesis/Experiment")
+    cd(SimPath)
+    #Load in all the required packages for the simulation
+    include("PackageSetup.jl")
 
-#Define number of tracer advection simulations
-ADSims = 2
-#Import a flow that has already been set up from the Flows folder. For an ensemble use an array of flows
-@everywhere include("Flows/EnsembleFlow_128domain_256res.jl")
+    #Define number of tracer advection simulations
+    ADSims = 2
+    #Import a flow that has already been set up from the Flows folder. For an ensemble use an array of flows
+    include("Flows/EnsembleFlow_128domain_256res.jl")
 
-nsubs  = 1           #Set the number of steps the simulation takes at each iteration. This is also the frequency that data is saved at.         
-nsteps = 1000         #Set the total amount of time steps the advection-diffusion simulation should run for
+    nsubs  = 1           #Set the number of steps the simulation takes at each iteration. This is also the frequency that data is saved at.         
+    nsteps = 1000         #Set the total amount of time steps the advection-diffusion simulation should run for
 
-κ = 0.01
-#Set delay times (that is flow for some length of time, then drop tracer in)
-delay_time = Δt̂ * 3000
-#Set the frequency at which to save data
-save_freq = 100
-
+    κ = 0.01
+    #Set delay times (that is flow for some length of time, then drop tracer in)
+    delay_time = Δt̂ * 3000
+    #Set the frequency at which to save data
+    save_freq = 100
+end
 #This a parallel simulation where an array of QG Problems are defined then step forward different AD Problems using these flows
 Threads.@threads for i ∈ 1:ADSims
 
