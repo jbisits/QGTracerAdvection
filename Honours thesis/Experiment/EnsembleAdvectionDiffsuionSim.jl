@@ -23,7 +23,7 @@ ADSims = 10
 #Set the frequency at which to save data
 save_freq = 50
 
-#This runs a non-parallel simulation where an array of advection-diffusion problems is defined then stepped forward separately with the flow reset each time
+#This runs a non-parallel simulation where an by resetting the flow each time. Works but is quite slow.
 for i ∈ 1:ADSims
 
     if i == 1
@@ -57,7 +57,7 @@ for i ∈ 1:ADSims
 
         if ADClock.step % save_freq == 0
             saveoutput(ADOutput)
-            println("Step number: ", round(Int, ADClock.step), ", saved data")
+            println("Advection problem: ", i, ", step number: ", round(Int, ADClock.step), ", saved data")
         end
         stepforward!(ADProb, nsubs)
         QGupdatevars!(ADProb)

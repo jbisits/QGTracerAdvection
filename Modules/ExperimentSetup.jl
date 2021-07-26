@@ -111,7 +111,9 @@ function CreateFile(ADProb::FourierFlows.Problem, IC::InitialCondition, save_fre
         mkdir(filepath)
     end
     filename = joinpath(filepath, "SimulationData.jld2")
-    if isfile(filename)
+    if Ensemble == true & isfile(filename)
+        filename = FourierFlows.uniquepath(filename)
+    elseif isfile(filename)
         rm(filename)
     end
 
