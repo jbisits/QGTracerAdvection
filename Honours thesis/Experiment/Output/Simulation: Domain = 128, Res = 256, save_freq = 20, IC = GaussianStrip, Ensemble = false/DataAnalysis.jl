@@ -128,8 +128,6 @@ steps = t[35] / data["clock/dt"]
 days = (steps * phys_params["Δt"]) / 3600
 years = days / 365
 
-area_per[180, 1] - area_per[35, 1]
-
 diff = diffusivity(data, [35 180; 52 201]; conc_min = 0.1)
 tracer_growth = plot(p1, logp1, upper_area, layout = @layout([a b; c]), size = (1200, 1200))
 save("tracer_growth_90_dom128_stripIC.png", tracer_growth)
