@@ -8,7 +8,10 @@ include("PackageSetup.jl")
 
 ADSims = 5
 #Import a an ensemble of flows
+#include("Flows/EnsembleFlow_32domain_64res.jl")
+#include("Flows/EnsembleFlow_64domain_128res.jl")
 include("Flows/EnsembleFlow_128domain_256res.jl")
+#include("Flows/EnsembleFlow_256domain_512res.jl")
 
 nsubs  = 1           #Set the number of steps the simulation takes at each iteration. This is also the frequency that data is saved at.         
 nsteps = 5000           #Set the total amount of time steps the advection-diffusion simulation should run for
