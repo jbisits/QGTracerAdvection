@@ -1,36 +1,45 @@
 cd(joinpath(SimPath, "Output/Simulation: Domain = 128, res = 256, save_freq = 50, IC = GaussianStrip, Ensemble = true"))
 file = joinpath(pwd(), "SimulationData.jld2")
 
-#Load in the data
-data = load(file)
+#Load in the data. This is an ensemble simulation so now have an array of dictionaries.
+data = Array{Dict{String, Any}}(undef, 10)
+for i ∈ 1:length(data)
+    if i == 1
+        file = joinpath(pwd(), "SimulationData.jld2")
+        data[i] = load(file)
+    else
+        file = joinpath(pwd(), "SimulationData_"*string(i - 1)*".jld2")
+        data[i] = load(file)
+    end
+end
 
-t = time_vec(data)
+t = time_vec(data[1])
 area_per = tracer_area_percentile(data; conc_min = 0.1)
-p1 = plot(t, area_per, 
-        label = ["Upper layer" "Lower layer"],
-        title = "Growth of 90% area of tracer patch in \n both layers; domain = 128, res = 256. \n Gaussian strip IC",
-        legend = :topleft
-        )
-logp1 = plot(t, log.(area_per), 
-            label = ["Upper layer" "Lower layer"],
-            title = "Growth of 90% of log(area of tracer patch) \n in both layers; domain = 128, res = 256. \n Gaussian strip IC",
-            legend = :bottomright
-            )
-plot(p1, logp1, layout = (2, 1), size = (700, 700))
+avg_area_per = avg_ensemble_tracer_area(data; conc_min = 0.1)
 
-file1 = joinpath(pwd(), "SimulationData_1.jld2")
-data1 = load(file1)
-
-t1 = time_vec(data1)
-area_per1 = tracer_area_percentile(data1; conc_min = 0.1)
-p11 = plot(t, area_per1, 
-        label = ["Upper layer" "Lower layer"],
-        title = "Growth of 90% area of tracer patch in \n both layers; domain = 128, res = 256. \n Gaussian strip IC",
-        legend = :topleft
+upper_area = plot(t, area_per[:, 1, 1], 
+                label = "Ensemble member 1", 
+                title = "Growth of 90% of area of tracer patch (upper layer) \n from ensemble simulation with 10 memebers",
+                legend = :topleft)
+for i ∈ 2:length(data)
+    plot!(upper_area, t, area_per[:, 1, i], 
+        label = "Ensemble member "*string(i)
         )
-logp11 = plot(t1, log.(area_per1), 
-            label = ["Upper layer" "Lower layer"],
-            title = "Growth of 90% of log(area of tracer patch) \n in both layers; domain = 128, res = 256. \n Gaussian strip IC",
-            legend = :bottomright
-            )
-plot(p11, logp11, layout = (2, 1), size = (700, 700))
+end
+plot!(upper_area, t, avg_area_per[:, 1], line = (:dash, 2, :black), label = "Average")
+
+lower_area = plot(t, area_per[:, 2, 1], 
+                label = "Ensemble member 1", 
+                title = "Growth of 90% of area of tracer patch (lower layer) \n from ensemble simulation with 10 memebers",
+                legend = :topleft)
+for i ∈ 2:length(data)
+    plot!(lower_area, t, area_per[:, 2, i], 
+        label = "Ensemble member "*string(i)
+        )
+end  
+plot!(lower_area, t, avg_area_per[:, 2], line = (:dash, 2, :black), label = "Average")
+
+diff = diffusivity(data, [21 70; 21 70]; conc_min = 0.1)
+
+ensemble_area_per = plot(upper_area, lower_area, layout = (2, 1), size = (1200, 1200))
+save("tenensemble_area_per.png", ensemble_area_per)

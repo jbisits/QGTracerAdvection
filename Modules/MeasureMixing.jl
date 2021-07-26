@@ -20,6 +20,7 @@ export
     time_vec,
     tracer_area_avg,
     tracer_area_percentile,
+    avg_ensemble_tracer_area,
     exp_fit,
     linear_fit,
     diffusivity,
@@ -499,6 +500,40 @@ function tracer_area_percentile(data::Dict{String, Any}; conc_min = 0.05, standa
 
 end
 """
+Calculate the average tracer_area_percentile from an ensemble simulation. Here the saved data is an array of dictionaries.
+"""
+function tracer_area_percentile(data::Array{Dict{String, Any}}; conc_min = 0.05, standard_dev = false, sd_multiple = 1)
+
+    nlayers = data[1]["params/nlayers"] #These are the same value over all simuations
+    nsteps = data[1]["clock/nsteps"]
+    saved_steps = data[1]["save_freq"]
+    plot_steps = 0:saved_steps:nsteps
+    no_of_sims = length(data)
+    area_percentiles = Array{Float64}(undef, length(plot_steps), nlayers, no_of_sims)
+    for i ∈ 1:no_of_sims
+        temp = tracer_area_percentile(data[i]; conc_min)
+        @. area_percentiles[:, :, i] = temp
+    end
+    return area_percentiles
+
+end
+"""
+    function avg_ensemble_tracer_area(data::Array{Dict{String, Any}}; conc_min = 0.05) 
+Calculate average growth of tracer area patch from an enemble simulation using `tracer_area_percentile`.
+"""
+function avg_ensemble_tracer_area(data::Array{Dict{String, Any}}; conc_min = 0.05)
+
+    area_per = tracer_area_percentile(data; conc_min)
+    no_of_sims = length(data)
+    avg_area = area_per[:, :, 1]
+    for i ∈ 2:no_of_sims
+        @. avg_area += area_per[:, :, i]
+    end
+    @. avg_area /= no_of_sims
+    return avg_area
+
+end
+"""
     function exp_fit(data::Dict{String, Any}; conc_min = 0.05, tfitfinal = 100, tplot_length = 10)
 Fit an exponential curve via least squares to the second stage of the growth of the area of 
 the tracer patch as calculated from the `tracer_area_percentile` function.
@@ -560,6 +595,26 @@ function diffusivity(data::Dict{String, Any}, time_vals::Matrix{Int64}; conc_min
     for i ∈ 1:nlayers
         Area_inc = area_per[time_vals[i, 2], i] - area_per[time_vals[i, 1], i]
         no_of_seconds = (t[time_vals[i, 2]] / data["clock/dt"]) * phys_params["Δt"] - (t[time_vals[i, 1]] / data["clock/dt"]) * phys_params["Δt"]
+        diff[i] = (Area * Area_inc) / no_of_seconds
+    end
+
+    return diff
+end
+"""
+Cacluate diffusivity from average of ensemble simulation.
+"""
+function diffusivity(data::Array{Dict{String, Any}}, time_vals::Matrix{Int64}; conc_min = 0.05)
+
+    t = time_vec(data[1])
+    avg_area = avg_ensemble_tracer_area(data; conc_min)
+    phys_params = nondim2dim(data[1])
+    nlayers = data[1]["params/nlayers"]
+    diff = Array{Float64}(undef, 1, nlayers)
+
+    Area = phys_params["Lx"] * phys_params["Ly"]
+    for i ∈ 1:nlayers
+        Area_inc = avg_area[time_vals[i, 2], i] - avg_area[time_vals[i, 1], i]
+        no_of_seconds = (t[time_vals[i, 2]] / data[1]["clock/dt"]) * phys_params["Δt"] - (t[time_vals[i, 1]] / data[1]["clock/dt"]) * phys_params["Δt"]
         diff[i] = (Area * Area_inc) / no_of_seconds
     end
 
