@@ -21,6 +21,7 @@ export
     tracer_area_avg,
     tracer_area_percentile,
     avg_ensemble_tracer_area,
+    ensemble_average_area,
     exp_fit,
     linear_fit,
     diffusivity,
@@ -539,12 +540,20 @@ Calculate average tracer field then find growth of this ensemble average.
 """
 function ensemble_average_area(data::Array{Dict{String, Any}}; conc_min = 0.1)
 
-    ensemble_average = data[:, :, 1]
+    saved_vals = 0:data[1]["save_freq"]:data[1]["clock/nsteps"]
+    ensemble_average = data[1]
     no_of_sims = length(data)
     for i ∈ 2:no_of_sims
-        @. ensemble_average += data[:, :, i]
+        for j ∈ saved_vals
+        @. ensemble_average["snapshots/Concentration/"*string(j)]  += data[i]["snapshots/Concentration/"*string(j)] 
+        end
+        if i == no_of_sims
+            for j ∈ saved_vals
+            @. ensemble_average["snapshots/Concentration/"*string(j)]  / no_of_sims
+            end
+        end
     end
-    @. ensemble_average /= no_of_sims
+    
     ensemble_average_area = tracer_area_percentile(ensemble_average; conc_min)
 
     return ensemble_average_area
