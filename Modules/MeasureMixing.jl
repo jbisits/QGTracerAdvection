@@ -466,7 +466,7 @@ where C₁ is some chosen value of concentration. By default the
 standard deviation of concentration at each time step is used for C₁
 but this can also be set to false and some other quantile can be entered.
 """
-function tracer_area_percentile(data::Dict{String, Any}; conc_min = 0.05, standard_dev = false, sd_multiple = 1)
+function tracer_area_percentile(data::Dict{String, Any}; conc_min = 0.1, standard_dev = false, sd_multiple = 1)
 
     nlayers = data["params/nlayers"]
     nsteps = data["clock/nsteps"]
@@ -502,7 +502,7 @@ end
 """
 Calculate the average tracer_area_percentile from an ensemble simulation. Here the saved data is an array of dictionaries.
 """
-function tracer_area_percentile(data::Array{Dict{String, Any}}; conc_min = 0.05, standard_dev = false, sd_multiple = 1)
+function tracer_area_percentile(data::Array{Dict{String, Any}}; conc_min = 0.1, standard_dev = false, sd_multiple = 1)
 
     nlayers = data[1]["params/nlayers"] #These are the same value over all simuations
     nsteps = data[1]["clock/nsteps"]
@@ -518,10 +518,10 @@ function tracer_area_percentile(data::Array{Dict{String, Any}}; conc_min = 0.05,
 
 end
 """
-    function avg_ensemble_tracer_area(data::Array{Dict{String, Any}}; conc_min = 0.05) 
+    function avg_ensemble_tracer_area(data::Array{Dict{String, Any}}; conc_min = 0.1) 
 Calculate average growth of tracer area patch from an enemble simulation using `tracer_area_percentile`.
 """
-function avg_ensemble_tracer_area(data::Array{Dict{String, Any}}; conc_min = 0.05)
+function avg_ensemble_tracer_area(data::Array{Dict{String, Any}}; conc_min = 0.1)
 
     area_per = tracer_area_percentile(data; conc_min)
     no_of_sims = length(data)
@@ -534,12 +534,29 @@ function avg_ensemble_tracer_area(data::Array{Dict{String, Any}}; conc_min = 0.0
 
 end
 """
-    function exp_fit(data::Dict{String, Any}; conc_min = 0.05, tfitfinal = 100, tplot_length = 10)
+    function ensemble_average(data::Array{Dict{String, Any}}; conc_min = 0.1)
+Calculate average tracer field then find growth of this ensemble average.
+"""
+function ensemble_average_area(data::Array{Dict{String, Any}}; conc_min = 0.1)
+
+    ensemble_average = data[:, :, 1]
+    no_of_sims = length(data)
+    for i ∈ 2:no_of_sims
+        @. ensemble_average += data[:, :, i]
+    end
+    @. ensemble_average /= no_of_sims
+    ensemble_average_area = tracer_area_percentile(ensemble_average; conc_min)
+
+    return ensemble_average_area
+
+end
+"""
+    function exp_fit(data::Dict{String, Any}; conc_min = 0.1, tfitfinal = 100, tplot_length = 10)
 Fit an exponential curve via least squares to the second stage of the growth of the area of 
 the tracer patch as calculated from the `tracer_area_percentile` function.
 The data is fitted from 1:tfitfinal which can be specified then the plot is calculated for length tplot_length.
 """
-function exp_fit(data::Dict{String, Any}; conc_min = 0.05, tfitfinal = 100, tplot_length = 10)
+function exp_fit(data::Dict{String, Any}; conc_min = 0.1, tfitfinal = 100, tplot_length = 10)
 
     area_per = tracer_area_percentile(data; conc_min)
     t = time_vec(data)
@@ -557,12 +574,12 @@ function exp_fit(data::Dict{String, Any}; conc_min = 0.05, tfitfinal = 100, tplo
     return A
 end
 """
-    function linear_fit(data::Dict{String, Any}; conc_min = 0.05, tfitvals = [100, 250], tplot_length = [10 0])
+    function linear_fit(data::Dict{String, Any}; conc_min = 0.1, tfitvals = [100, 250], tplot_length = [10 0])
 Fit a linear curve via least squares to the third stage of the growth of the area of 
 the tracer patch as calculated from the `tracer_area_percentile` function. The data is fitted over the interval
 tfitvals and the length of the out plotting vectors can be specified by extra argument tplot_length.
 """
-function linear_fit(data::Dict{String, Any}; conc_min = 0.05, tfitvals = [100, 250], tplot_length = [10 0])
+function linear_fit(data::Dict{String, Any}; conc_min = 0.1, tfitvals = [100, 250], tplot_length = [10 0])
     
     area_per = tracer_area_percentile(data; conc_min)
     t = time_vec(data)
@@ -583,7 +600,7 @@ end
     function diffusivity(data::Dict{String, Any})
 Calculate the diffusivity in physical space using the growth of area of tracer patch
 """
-function diffusivity(data::Dict{String, Any}, time_vals::Matrix{Int64}; conc_min = 0.05)
+function diffusivity(data::Dict{String, Any}, time_vals::Matrix{Int64}; conc_min = 0.1)
 
     t = time_vec(data)
     area_per = tracer_area_percentile(data; conc_min)
@@ -603,7 +620,7 @@ end
 """
 Cacluate diffusivity from average of ensemble simulation.
 """
-function diffusivity(data::Array{Dict{String, Any}}, time_vals::Matrix{Int64}; conc_min = 0.05)
+function diffusivity(data::Array{Dict{String, Any}}, time_vals::Matrix{Int64}; conc_min = 0.1)
 
     t = time_vec(data[1])
     avg_area = avg_ensemble_tracer_area(data; conc_min)
