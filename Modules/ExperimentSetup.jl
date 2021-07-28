@@ -44,21 +44,13 @@ Create a Gaussian blob initial condition on a advection diffusion problem grid f
 """
 function GaussianBlobIC(μ::Vector, Σ::Matrix, grid)
 
-    x, y = grid.x, grid.y
     xgrid, ygrid = gridpoints(grid)
     nx, ny = grid.nx, grid.ny
     C₀ = Array{Float64}(undef, nx, ny)
     blob = MvNormal(μ, Σ)
     blob_IC(x, y) = pdf(blob, [x,y])
-    if nx != ny
-        resdiff = nx/ny
-        setgrid = Int(resdiff * nx) + 1: 3 * Int(resdiff * nx)
-        xgrid = xgrid[:, setgrid]
-        ygrid = ygrid[:, setgrid]
-        @. C₀[:, setgrid] = blob_IC(xgrid, ygrid)
-    else
-        @. C₀ = blob_IC(xgrid, ygrid)
-    end
+   
+    @. C₀ = blob_IC(xgrid, ygrid)
 
     return GaussianBlob(μ, Σ, C₀)
 end
@@ -74,17 +66,8 @@ function GaussianStripIC(μ::Union{Int, Float64}, σ²::Union{Int, Float64}, gri
     strip_IC(x) = pdf(strip, x)
     nx, ny = grid.nx, grid.ny
     C₀ = Array{Float64}(undef, nx, ny)
-    if nx != ny
-        resdiff = nx/ny
-        setgrid = Int(resdiff * nx) + 1: 3 * Int(resdiff * nx)
-        y = y[setgrid]
-        for i ∈ 1:ny
-            C₀[:, i] = strip_IC(y)
-        end
-    else
-        for i in 1:ny
-            C₀[:, i] = strip_IC(y)
-        end
+    for i in 1:nx
+        C₀[i, :] = strip_IC(y)
     end
 
     return GaussianStrip(μ, σ², C₀)
