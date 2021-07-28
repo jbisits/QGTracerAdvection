@@ -25,7 +25,7 @@ Û = [U₀, -U₀]
 f̂₀ = 30
 ĝ = 10
 
-QGProb = MultiLayerQG.Problem(nlayers, dev; nx=nx, Lx=Lx̂, Ly=Lŷ, f₀=f̂₀, g=ĝ, H=Ĥ, ρ=ρ̂, U=Û, dt=Δt̂, stepper=stepper, μ=μ̂, β=β̂, ν=ν̂)
+QGProb = MultiLayerQG.Problem(nlayers, dev; nx=nx, ny=ny, Lx=Lx̂, Ly=Lŷ, f₀=f̂₀, g=ĝ, H=Ĥ, ρ=ρ̂, U=Û, dt=Δt̂, stepper=stepper, μ=μ̂, β=β̂, ν=ν̂)
 QGSol, QGClock, QGParams, QGVars, QGrid = QGProb.sol, QGProb.clock, QGProb.params, QGProb.vars, QGProb.grid
 
 seed!(1230) # reset of the random number generator for reproducibility

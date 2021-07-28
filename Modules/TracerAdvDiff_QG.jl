@@ -55,9 +55,9 @@ function Problem(;
   if isnothing(prob) == false
     nlayers = prob.params.nlayers
     nx = prob.grid.nx
-    ny = nx
+    ny = prob.grid.ny
     Lx = prob.grid.Lx
-    Ly = Lx
+    Ly = prob.grid.Ly
     grid = prob.grid
     dt = prob.clock.dt
     stepper = "FilteredRK4"

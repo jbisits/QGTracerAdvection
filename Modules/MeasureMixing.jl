@@ -292,12 +292,14 @@ function tracer_plot(data::Dict{String, Any}; plot_freq = 1000)
     nsteps = data["clock/nsteps"]
     Lx, Ly = data["grid/Lx"], data["grid/Ly"]
     plotargs = (
+            aspectratio = Lx/Ly,
                 color = :deep,
                 xlabel = "x",
                 ylabel = "y",
                 colorbar = true,
                 xlims = (-Lx/2, Lx/2),
-                ylims = (-Ly/2, Ly/2)
+                ylims = (-Ly/2, Ly/2),
+                framestyle = :rectangle
                 ) 
     
     plot_steps = 0:plot_freq:nsteps
