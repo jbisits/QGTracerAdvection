@@ -15,14 +15,14 @@ include("PackageSetup.jl")
 #include("Flows/Square/FlowSetup_nondim_256domain_512res.jl")
 
 # Rectangular domain flows (longer in meridional direction)
-include("Flows/Rectangle/FlowSetup_nondim_32_64domain.jl")
+#include("Flows/Rectangle/FlowSetup_nondim_32_64domain.jl")
 #include("Flows/Rectangle/FlowSetup_nondim_32_128domain.jl")
-#include("Flows/Rectangle/FlowSetup_nondim_32_256domain.jl")
+include("Flows/Rectangle/FlowSetup_nondim_32_256domain.jl")
 #include("Flows/Rectangle/FlowSetup_nondim_64_128domain.jl")
 #include("Flows/Rectangle/FlowSetup_nondim_64_256domain.jl")
 
 nsubs  = 1            #Set the number of steps the simulation takes at each iteration. This is also the frequency that data is saved at.         
-nsteps = 5000          #Set the total amount of time steps the advection-diffusion simulation should run for
+nsteps = 10000          #Set the total amount of time steps the advection-diffusion simulation should run for
 
 κ = 0.01
 #Set delay time (that is flow for some length of time, then drop tracer in)
