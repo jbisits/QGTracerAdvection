@@ -102,10 +102,17 @@ function CreateFile(ADProb::FourierFlows.Problem, IC::InitialCondition, save_fre
     first = length("Main.ExperimentSetup.")
     last = findfirst('{', IC)
     IC = IC[(first + 1):(last - 1)]
-    Lx, nx = ADProb.grid.Lx, ADProb.grid.nx
-    filepath = joinpath(SimPath, 
-                        "Output/Simulation: Domain = "*string(round(Int, Lx))*", Res = "*string(nx)*", save_freq = "*string(save_freq)*", IC = "*IC*", Ensemble = "*string(Ensemble)
-                        )
+    Lx, Ly = ADProb.grid.Lx, ADProb.grid.Ly
+    nx = ADProb.grid.nx
+    if Lx == Ly
+        filepath = joinpath(SimPath, 
+                            "Output/Simulation: Lx̂ = Lŷ = "*string(round(Int, Lx))*", nx = "*string(nx)*", save_freq = "*string(save_freq)*", IC = "*IC*", Ensemble = "*string(Ensemble)
+                            )
+    else
+        filepath = joinpath(SimPath, 
+        "Output/Simulation: Lx̂ = "*string(round(Int, Lx))*", Lŷ = "*string(round(Int, Ly))*", save_freq = "*string(save_freq)*", IC = "*IC*", Ensemble = "*string(Ensemble)
+        )
+    end
 
     if !isdir(filepath)
         mkdir(filepath)

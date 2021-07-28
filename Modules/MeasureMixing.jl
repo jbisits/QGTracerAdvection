@@ -291,32 +291,14 @@ function tracer_plot(data::Dict{String, Any}; plot_freq = 1000)
 
     nsteps = data["clock/nsteps"]
     Lx, Ly = data["grid/Lx"], data["grid/Ly"]
-    if Lx >= 500e3
-        #This just makes the domain a little easier to read if a really large domain is being used
-        set_xticks = (-Lx/2:round(Int, Lx/6):Lx/2, string.(-Int(Lx/2e3):round(Int, Lx/6e3):Int(Lx/2e3)))
-        set_yticks = (-Ly/2:round(Int, Ly/6):Ly/2, string.(-Int(Ly/2e3):round(Int, Ly/6e3):Int(Ly/2e3)))
-        plotargs = (
-                    aspectratio = 1,
-                    color = :deep,
-                    xlabel = "x",
-                    ylabel = "y",
-                    colorbar = true,
-                    xlims = (-Lx/2, Lx/2),
-                    ylims = (-Ly/2, Ly/2),
-                    xticks = set_xticks,
-                    yticks = set_yticks
-                    )  
-    else
-        plotargs = (
-                    aspectratio = 1,
-                    color = :deep,
-                    xlabel = "x",
-                    ylabel = "y",
-                    colorbar = true,
-                    xlims = (-Lx/2, Lx/2),
-                    ylims = (-Ly/2, Ly/2)
-                    ) 
-    end
+    plotargs = (
+                color = :deep,
+                xlabel = "x",
+                ylabel = "y",
+                colorbar = true,
+                xlims = (-Lx/2, Lx/2),
+                ylims = (-Ly/2, Ly/2)
+                ) 
     
     plot_steps = 0:plot_freq:nsteps
     x, y = data["grid/x"], data["grid/y"]
@@ -345,33 +327,15 @@ function tracer_animate(data::Dict{String, Any})
 
     nsteps = data["clock/nsteps"]
     Lx, Ly = data["grid/Lx"], data["grid/Ly"]
-    x, y = data["grid/x"], data["grid/y"]
-    if Lx >= 500e3
-        #This just makes the domain a little easier to read if a really large domain is being used
-        set_xticks = (-Lx/2:round(Int, Lx/6):Lx/2, string.(-Int(Lx/2e3):round(Int, Lx/6e3):Int(Lx/2e3)))
-        set_yticks = (-Ly/2:round(Int, Ly/6):Ly/2, string.(-Int(Ly/2e3):round(Int, Ly/6e3):Int(Ly/2e3)))
-        plotargs = (
-                    aspectratio = 1,
-                    color = :deep,
-                    xlabel = "x",
-                    ylabel = "y",
-                    colorbar = true,
-                    xlims = (-Lx/2, Lx/2),
-                    ylims = (-Ly/2, Ly/2),
-                    xticks = set_xticks,
-                    yticks = set_yticks
-                    )  
-    else
-        plotargs = (
-                    aspectratio = 1,
-                    color = :deep,
-                    xlabel = "x",
-                    ylabel = "y",
-                    colorbar = true,
-                    xlims = (-Lx/2, Lx/2),
-                    ylims = (-Ly/2, Ly/2)
-                    ) 
-    end
+    x, y = data["grid/x"], data["grid/y"]=
+    plotargs = (
+                color = :deep,
+                xlabel = "x",
+                ylabel = "y",
+                colorbar = true,
+                xlims = (-Lx/2, Lx/2),
+                ylims = (-Ly/2, Ly/2)
+                ) 
 
     save_freq = data["save_freq"]
     if save_freq <=  10
