@@ -35,9 +35,9 @@ ADSol, ADClock, ADVars, ADParams, ADGrid = ADProb.sol, ADProb.clock, ADProb.vars
 μIC = [0, 0]
 Σ = [1 0; 0 1]
 IC = GaussianBlobIC(μIC, Σ, ADGrid)
-#μIC = 0
-#σ² = 1
-#IC = GaussianStripIC(μIC, σ², ADGrid)
+μIC = 0
+σ² = 1
+IC = GaussianStripIC(μIC, σ², ADGrid)
 #IC = PointSourceIC([64, 64], 1, ADGrid)
 
 QGset_c!(ADProb, IC.C₀)

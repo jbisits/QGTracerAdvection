@@ -46,11 +46,21 @@ function GaussianBlobIC(μ::Vector, Σ::Matrix, grid)
 
     x, y = grid.x, grid.y
     xgrid, ygrid = gridpoints(grid)
+    nx, ny = grid.nx, grid.ny
+    C₀ = Array{Float64}(undef, nx, ny)
     blob = MvNormal(μ, Σ)
-    blob_IC(x, y) = pdf(blob, [x, y])
-    C₀ = @. blob_IC(xgrid, ygrid)
+    blob_IC(x, y) = pdf(blob, [x,y])
+    if nx != ny
+        resdiff = nx/ny
+        setgrid = Int(resdiff * nx) + 1: 3 * Int(resdiff * nx)
+        xgrid = xgrid[:, setgrid]
+        ygrid = ygrid[:, setgrid]
+        @. C₀[:, setgrid] = blob_IC(xgrid, ygrid)
+    else
+        @. C₀ = blob_IC(xgrid, ygrid)
+    end
 
-    return GaussianBlob(μ, Σ, C₀')
+    return GaussianBlob(μ, Σ, C₀)
 end
 """
     function GaussianStripIC(μ, σ², grid)
@@ -59,7 +69,7 @@ Create a Gaussian strip initial condition on a advection diffusion problem grid 
 """
 function GaussianStripIC(μ::Union{Int, Float64}, σ²::Union{Int, Float64}, grid)
 
-    x = grid.x
+    x, y = grid.x, grid.y
     strip = Normal(μ, σ²)
     strip_IC(x) = pdf(strip, x)
     nx, ny = grid.nx, grid.ny
@@ -67,15 +77,13 @@ function GaussianStripIC(μ::Union{Int, Float64}, σ²::Union{Int, Float64}, gri
     if nx != ny
         resdiff = nx/ny
         setgrid = Int(resdiff * nx) + 1: 3 * Int(resdiff * nx)
-        xgrid, ygrid = gridpoints(grid)
-        ygrid = ygrid[:, setgrid]
-        for i ∈ setgrid, j ∈ 1:nx
-            C₀[:, i] = strip_IC(ygrid[j, :])
+        y = y[setgrid]
+        for i ∈ 1:ny
+            C₀[:, i] = strip_IC(y)
         end
     else
-        xgrid, ygrid = gridpoints(grid)
-        for i in 1:nx
-            C₀[i, :] = strip_IC(ygrid[i, :])
+        for i in 1:ny
+            C₀[:, i] = strip_IC(y)
         end
     end
 
