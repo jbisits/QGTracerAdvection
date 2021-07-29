@@ -21,3 +21,6 @@ plot(p1, logp1, layout = (2, 1), size = (700, 700))
 
 plot!(upperarea256, t, area_per[:, 1] .* 2, label = "32 x 64")
 plot!(lowerarea256, t, area_per[:, 2] .* 2, label = "32 x 64")
+
+avg_area = tracer_avg_area(data)
+plot(t, avg_area)
