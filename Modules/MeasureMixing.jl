@@ -503,7 +503,7 @@ function avg_ensemble_tracer_area(data::Array{Dict{String, Any}}; conc_min = 0.1
 end
 """
     function ensemble_concentration(data::Array{Dict{String, Any}}; conc_min = 0.1)
-Calculate average tracer field then find growth of this ensemble average.
+Calculate average concentration from the tracer field of the ensemble simulation.
 """
 function ensemble_concentration(data::Array{Dict{String, Any}}; conc_min = 0.1)
 
