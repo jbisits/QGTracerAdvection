@@ -18,7 +18,7 @@ export
     tracer_plot,
     tracer_animate,
     time_vec,
-    tracer_area_avg,
+    tracer_avg_area,
     tracer_area_percentile,
     avg_ensemble_tracer_area,
     ensemble_average_area,
@@ -374,19 +374,19 @@ function  time_vec(data::Dict{String, Any})
     return t
 end
 """
-    function tracer_area_avg(data::Dict{String, Any})
+    function tracer_avg_area(data::Dict{String, Any})
 Calculate the average area of the tracer patch. This is done by transfroming the 
 concentration into a function of area then computing 
-    A = (∫Ad * C(Ad) dAd)/∫∫C dAd.
+    Avg_area = (∫A * C(A) dA) / ∫∫C dA.
 This may change but for now I will work with this and see where I get to.
 """
-function tracer_area_avg(data::Dict{String, Any}; number_of_bins = 0)
+function tracer_avg_area(data::Dict{String, Any}; number_of_bins = 0)
 
     nlayers = data["params/nlayers"]
     nsteps = data["clock/nsteps"]
     saved_steps = data["save_freq"]
     plot_steps = 0:saved_steps:nsteps
-    AreaVConcentration = Array{Float64}(undef, length(plot_steps), nlayers)
+    Avg_area = Array{Float64}(undef, length(plot_steps), nlayers)
     for i ∈ plot_steps
         upperdata = reshape(data["snapshots/Concentration/"*string(i)][:, :, 1], :)
         lowerdata = reshape(data["snapshots/Concentration/"*string(i)][:, :, 2], :)
@@ -408,22 +408,22 @@ function tracer_area_avg(data::Dict{String, Any}; number_of_bins = 0)
         Alower = cumsum(reverse(lowerhist.weights))
         dAupper = reverse(upperhist.weights)
         dAlower = reverse(lowerhist.weights)
-        upperarea = sum( [ Aupper[i] * 0.5 * (Cupper[i+1] + Cupper[i]) * dAupper[i] for i in 1:length(Aupper) ] )
-        lowerarea = sum( [ Alower[i] * 0.5 * (Clower[i+1] + Clower[i]) * dAlower[i] for i in 1:length(Alower) ] )
+        upperarea = sum( [ Aupper[i] * 0.5 * (Cupper[i] + Cupper[i+1]) * dAupper[i] for i in 1:length(Aupper) ] )
+        lowerarea = sum( [ Alower[i] * 0.5 * (Clower[i] + Clower[i+1]) * dAlower[i] for i in 1:length(Alower) ] )
         
         #=
-        uppertraceramount = sum( [0.5 * (Cupper[i+1] + Cupper[i]) * dAupper[i] for i in 1:length(Aupper) ])
-        lowertraceramount = sum( [0.5 * (Clower[i+1] + Clower[i]) * dAlower[i] for i in 1:length(Alower) ])
+        uppertraceramount = sum( [0.5 * (Cupper[i] + Cupper[i+1]) * dAupper[i] for i in 1:length(Aupper) ])
+        lowertraceramount = sum( [0.5 * (Clower[i] + Clower[i+1]) * dAlower[i] for i in 1:length(Alower) ])
         =#
         j = round(Int, i/saved_steps)
-        #=AreaVConcentration[j + 1, :] .= [upperarea/uppertraceramount, 
-                                         lowerarea/lowertraceramount]=#
-        AreaVConcentration[j + 1, :] .= [upperarea, 
-                                         lowerarea]
+        #=Avg_area[j + 1, :] .= [upperarea/uppertraceramount, 
+                                lowerarea/lowertraceramount]=#
+        Avg_area[j + 1, :] .= [upperarea, 
+                                lowerarea]
 
     end
 
-    return AreaVConcentration
+    return Avg_area
 
 end
  """

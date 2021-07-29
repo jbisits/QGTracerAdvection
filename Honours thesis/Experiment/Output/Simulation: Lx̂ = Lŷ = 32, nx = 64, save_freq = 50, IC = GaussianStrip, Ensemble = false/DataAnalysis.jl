@@ -19,5 +19,5 @@ logp1 = plot(t, log.(area_per),
             )
 plot(p1, logp1, layout = (2, 1), size = (700, 700))
 
-plot!(upperarea256, t[1:85], area_per[1:85, 1], label = "32 x 32")
-plot!(lowerarea256, t[1:85], area_per[1:85, 2], label = "32 x 32")
+plot!(upperarea256, t, area_per[:, 1], label = "32 x 32")
+plot!(lowerarea256, t, area_per[:, 2], label = "32 x 32")

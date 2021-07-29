@@ -20,17 +20,17 @@ logp1 = plot(t, log.(area_per),
 plot(p1, logp1, layout = (2, 1), size = (700, 700))
 
 ## These are plots to compare over the different domain sizes and require code from the other sims, but the plots are saved
-upperarea256 = plot(t[1:85], area_per[1:85, 1] .* 2^3,
+upperarea256 = plot(t, area_per[:, 1] .* 2^3,
                     title = "Growth of 90% of tracer area over four domains in \n upper layer where only meriodional length changes",
                     label = "32 x 256",
                     legend = :bottomright
                     )
 
-lowerarea256 = plot(t[1:85], area_per[1:85, 2] .* 2^3,
+lowerarea256 = plot(t, area_per[:, 2] .* 2^3,
                     title = "Growth of 90% of tracer area over four domains in \n lower layer where only meriodional length changes",
                     label = "32 x 256",
                     legend = :bottomright
                     )
 
-save("upper_area4domains_to20.png", upperarea256)
-save("lower_area4domains_to20.png", lowerarea256)
+save("upper_area4domains.png", upperarea256)
+save("lower_area4domains.png", lowerarea256)
