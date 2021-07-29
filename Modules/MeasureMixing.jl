@@ -22,6 +22,7 @@ export
     tracer_area_percentile,
     avg_ensemble_tracer_area,
     ensemble_average_area,
+    ensemble_concentration,
     exp_fit,
     linear_fit,
     diffusivity,
@@ -501,28 +502,26 @@ function avg_ensemble_tracer_area(data::Array{Dict{String, Any}}; conc_min = 0.1
 
 end
 """
-    function ensemble_average(data::Array{Dict{String, Any}}; conc_min = 0.1)
+    function ensemble_concentration(data::Array{Dict{String, Any}}; conc_min = 0.1)
 Calculate average tracer field then find growth of this ensemble average.
 """
-function ensemble_average_area(data::Array{Dict{String, Any}}; conc_min = 0.1)
+function ensemble_concentration(data::Array{Dict{String, Any}}; conc_min = 0.1)
 
     saved_vals = 0:data[1]["save_freq"]:data[1]["clock/nsteps"]
-    ensemble_average = data[1]
+    ensemble_conc = data[1]
     no_of_sims = length(data)
     for i ∈ 2:no_of_sims
         for j ∈ saved_vals
-        @. ensemble_average["snapshots/Concentration/"*string(j)]  += data[i]["snapshots/Concentration/"*string(j)] 
+        @. ensemble_conc["snapshots/Concentration/"*string(j)]  += data[i]["snapshots/Concentration/"*string(j)] 
         end
         if i == no_of_sims
             for j ∈ saved_vals
-            @. ensemble_average["snapshots/Concentration/"*string(j)]  / no_of_sims
+            @. ensemble_conc["snapshots/Concentration/"*string(j)]  / no_of_sims
             end
         end
     end
-    
-    ensemble_average_area = tracer_area_percentile(ensemble_average; conc_min)
 
-    return ensemble_average_area
+    return ensemble_conc
 
 end
 """
@@ -593,19 +592,21 @@ function diffusivity(data::Dict{String, Any}, time_vals::Matrix{Int64}; conc_min
     return diff
 end
 """
-Cacluate diffusivity from average of ensemble simulation.
+Cacluate diffusivity from average of ensemble simulation. First calls `ensemble_concentration`
+to calcuate the ensemble concentration from an array of saved data, then calls `tracer_area_percentile`.
 """
 function diffusivity(data::Array{Dict{String, Any}}, time_vals::Matrix{Int64}; conc_min = 0.1)
 
     t = time_vec(data[1])
-    avg_area = avg_ensemble_tracer_area(data; conc_min)
+    ensemble_conc = ensemble_concentration(data)
+    ensemble_area_per = tracer_area_percentile(ensemble_conc; conc_min)
     phys_params = nondim2dim(data[1])
     nlayers = data[1]["params/nlayers"]
     diff = Array{Float64}(undef, 1, nlayers)
 
     Area = phys_params["Lx"] * phys_params["Ly"]
     for i ∈ 1:nlayers
-        Area_inc = avg_area[time_vals[i, 2], i] - avg_area[time_vals[i, 1], i]
+        Area_inc = ensemble_area_per[time_vals[i, 2], i] - ensemble_area_per[time_vals[i, 1], i]
         no_of_seconds = (t[time_vals[i, 2]] / data[1]["clock/dt"]) * phys_params["Δt"] - (t[time_vals[i, 1]] / data[1]["clock/dt"]) * phys_params["Δt"]
         diff[i] = (Area * Area_inc) / no_of_seconds
     end
