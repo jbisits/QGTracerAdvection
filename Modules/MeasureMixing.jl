@@ -625,7 +625,7 @@ function nondim2dim(prob::FourierFlows.Problem;
                     g = 9.81,        # Gravity
                     H = 1500,        # Total depth (in metres)
                     ρ₁ = 1034,       # Density of top layer
-                    ρ₂ = 1035,       # Density of bottom layer
+                    ρ₂ = 1035        # Density of bottom layer
                     )
 
     f₀ = 2*Ω*sin(ϕ)             # Coriolis computed from above values
@@ -670,7 +670,7 @@ function nondim2dim(data::Dict{String, Any};
                     g = 9.81,        # Gravity
                     H = 1500,        # Total depth (in metres)
                     ρ₁ = 1034,       # Density of top layer
-                    ρ₂ = 1035,       # Density of bottom layer
+                    ρ₂ = 1035        # Density of bottom layer
                     )
     
     f₀ = 2*Ω*sin(ϕ)             # Coriolis computed from above values
