@@ -5,8 +5,7 @@ export
     GaussianStripIC,
     PointSourceIC,
     CreateFile, 
-    GetConcentration,
-    nondim2dim
+    GetConcentration
 
 using GeophysicalFlows, Distributions, StatsBase, LinearAlgebra, JLD2
 """
@@ -45,11 +44,13 @@ Create a Gaussian blob initial condition on a advection diffusion problem grid f
 """
 function GaussianBlobIC(μ::Vector, Σ::Matrix, grid)
 
-    x, y = grid.x, grid.y
     xgrid, ygrid = gridpoints(grid)
+    nx, ny = grid.nx, grid.ny
+    C₀ = Array{Float64}(undef, nx, ny)
     blob = MvNormal(μ, Σ)
-    blob_IC(x, y) = pdf(blob, [x, y])
-    C₀ = @. blob_IC(xgrid, ygrid)
+    blob_IC(x, y) = pdf(blob, [x,y])
+   
+    @. C₀ = blob_IC(xgrid, ygrid)
 
     return GaussianBlob(μ, Σ, C₀)
 end
@@ -60,13 +61,13 @@ Create a Gaussian strip initial condition on a advection diffusion problem grid 
 """
 function GaussianStripIC(μ::Union{Int, Float64}, σ²::Union{Int, Float64}, grid)
 
-    x = grid.x
-    xgrid, ygrid = gridpoints(grid)
+    x, y = grid.x, grid.y
     strip = Normal(μ, σ²)
     strip_IC(x) = pdf(strip, x)
-    C₀ = Array{Float64}(undef, grid.nx, grid.ny)
-    for i in 1:grid.nx
-        C₀[i, :] = strip_IC(ygrid[i, :])
+    nx, ny = grid.nx, grid.ny
+    C₀ = Array{Float64}(undef, nx, ny)
+    for i in 1:nx
+        C₀[i, :] = strip_IC(y)
     end
 
     return GaussianStrip(μ, σ², C₀)
@@ -103,16 +104,25 @@ function CreateFile(ADProb::FourierFlows.Problem, IC::InitialCondition, save_fre
     first = length("Main.ExperimentSetup.")
     last = findfirst('{', IC)
     IC = IC[(first + 1):(last - 1)]
-    Lx, nx = ADProb.grid.Lx, ADProb.grid.nx
-    filepath = joinpath(SimPath, 
-                        "Output/Simulation: Domain = "*string(round(Int, Lx))*", Res = "*string(nx)*", save_freq = "*string(save_freq)*", IC = "*IC*", Ensemble = "*string(Ensemble)
-                        )
+    Lx, Ly = ADProb.grid.Lx, ADProb.grid.Ly
+    nx = ADProb.grid.nx
+    if Lx == Ly
+        filepath = joinpath(SimPath, 
+                            "Output/Simulation: Lx̂ = Lŷ = "*string(round(Int, Lx))*", nx = "*string(nx)*", save_freq = "*string(save_freq)*", IC = "*IC*", Ensemble = "*string(Ensemble)
+                            )
+    else
+        filepath = joinpath(SimPath, 
+        "Output/Simulation: Lx̂ = "*string(round(Int, Lx))*", Lŷ = "*string(round(Int, Ly))*", save_freq = "*string(save_freq)*", IC = "*IC*", Ensemble = "*string(Ensemble)
+        )
+    end
 
     if !isdir(filepath)
         mkdir(filepath)
     end
     filename = joinpath(filepath, "SimulationData.jld2")
-    if isfile(filename)
+    if Ensemble == true & isfile(filename)
+        filename = FourierFlows.uniquepath(filename)
+    elseif isfile(filename)
         rm(filename)
     end
 
@@ -127,53 +137,6 @@ function GetConcentration(ADProb)
     
     Concentration = @. ADProb.vars.c
     return Concentration
-end
-"""
-    function nondim2dim(prob)
-Translates parameters that have been set in the non-dimensional space (as I use in my thesis) for a QG problem
-to the phsyical space based off mid-latitude values in metres and seconds. The values have defaults set.
-"""
-function nondim2dim(prob;
-                    Ω = 7.29e-5,     # Earth"s rotation
-                    ϕ = π/3,         # Latitude
-                    a = 6378e3,      # Earth's radius
-                    g = 9.81,        # Gravity
-                    H = 1500,        # Total depth (in metres)
-                    ρ₁ = 1034,       # Density of top layer
-                    ρ₂ = 1035,       # Density of bottom layer
-                    )
-
-    f₀ = 2*Ω*sin(ϕ)             # Coriolis computed from above values
-    gprime = g*((ρ₂ - ρ₁)/ρ₂)   # Reduced gravity
-    
-    Ld = sqrt(gprime*H)/(f₀)    #Rossby deformation radius
-    U = 0.1
-
-    #Domain
-    Lx̂, Lŷ = prob.grid.Lx, prob.grid.Ly
-    Lx = Ld * Lx̂
-    Ly = Ld * Lŷ
-
-    #Parameters
-    f̂₀, β̂, μ̂, ν̂ = prob.params.f₀, prob.params.β, prob.params.μ, prob.params.ν'
-    f₀ = (U/Ld) * f̂₀
-    β = (U/Ld^2) * β̂
-    μ = (U/Ld) * μ̂
-    ν = (U*Ld) * ν̂
-
-    #Time
-    Δt̂ = prob.clock.dt
-    Δt = (Ld/U) * Δt̂
-
-    return Dict("f̂₀" => f₀,
-                "β̂"  => β,
-                "μ̂"  => μ,
-                "ν̂"  => ν,
-                "Lx̂" => Lx,
-                "Lŷ" => Ly,
-                "Δt̂" => Δt
-                )
-
 end
 
 end #module

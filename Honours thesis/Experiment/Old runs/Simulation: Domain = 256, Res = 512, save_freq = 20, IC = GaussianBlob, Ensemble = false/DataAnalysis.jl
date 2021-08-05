@@ -1,15 +1,15 @@
 #Change to the current directory
-cd(joinpath(SimPath, "Output/Simulation: Domain = 128, res = 256, save_freq = 200, IC = GaussianBlob, Ensemble = false"))
+cd(joinpath(SimPath, "Output/Simulation: Domain = 256, res = 512, save_freq = 20, IC = GaussianBlob, Ensemble = false"))
 file = joinpath(pwd(), "SimulationData.jld2")
 
 #Load in the data
 data = load(file)
 
 #Produce histogram plots from the saved concentration data
-histplots = hist_plot(data; plot_freq = 3000)
+histplots = hist_plot(data; plot_freq = 1000, xlims_same = false)
 
 #Produce heatmaps of tacer concentration from the saved concentration data
-tracerplots = tracer_plot(data; plot_freq = 3000)
+tracerplots = tracer_plot(data; plot_freq = 1000)
 
 #Plot heatmaps and histograms togehter.
 uppertacer = plot(tracerplots[1]...)
@@ -65,8 +65,8 @@ conc_int = Garrett_int(data)
 plot(t, conc_int, 
         label = ["Upper layer" "Lower layer"], 
         xlabel = "t", 
-        ylabel = "∫C²dA",
-        title = "Concentration per unit area \n calculated at each time step"
+        ylabel = "∑C²",
+        title = "Sum of squared concentration over \n grid calculated at each time step"
     )
 plot!(t, ConcentrationMean,
         label = ["Upper Layer" "Lower layer"],
@@ -77,53 +77,63 @@ plot!(t, ConcentrationMean,
 plot(t, 1 ./ conc_int, 
         label = ["Upper layer" "Lower layer"],
         xlabel = "t", 
-        ylabel = "(∫C²dA)⁻¹",
-        title = "Inverse concentration per unit area \n squared calculated at each time step", 
+        ylabel = "(∑C²)⁻¹",
+        title = "Inverse sum of squared concentration \n over the grid calculated at each time step", 
         legend = :bottomright
     )
 
-ConcVsArea = concarea_animate(data)
+ConcVsArea = concarea_animate(data; number_of_bins = 30)
 mp4(ConcVsArea, "ConcVsArea.mp4", fps=18)
 
-area_per = tracer_area_percentile(data; sd_multiple = 2)
-plot(t, area_per, 
-    label = ["Upper layer" "Lower layer"],
-    title = "Growth of area of tracer patch in both layers layer",
-    legend = :topleft
+TracerAnim = tracer_animate(data)
+mp4(TracerAnim, "TracerAnim.mp4", fps = 18)
+
+avg_area = tracer_area_avg(data)
+plot(t, avg_area)
+
+t = time_vec(data)
+area_per = tracer_area_percentile(data; conc_min = 0.05)
+p1 = plot(t, area_per, 
+        label = ["Upper layer" "Lower layer"],
+        title = "Growth of area of tracer patch in \n both layers layer",
+        legend = :topleft
+        )
+logp1 = plot(t, log.(area_per), 
+            label = ["Upper layer" "Lower layer"],
+            title = "Growth of log(area of tracer patch) \n in both layers",
+            legend = :bottomright
+            )
+plot(p1, logp1, layout = (2, 1), size = (700, 700))
+
+plot(t, area_per[:, 2], 
+    label = "Lower layer",
+    title = "Growth of area of tracer patch in lower layer",
+    legend = :topleft,
+    lw =2
     )
-
-plot(t, area_per[:, 1],
-     label = "Upper layer",
-     title = "Growth of area of tracer patch in the upper layer",
-     legend = :topleft
-     )
-scatter!([t[230]], [area_per[230, 1]],
-        label = "Stage 2 -> stage 3",
-        annotations = (13, area_per[230, 1], Plots.text("Stage three begins after \n approximately 2.6 years", :left, :orange))
-        )
-scatter!([t[315]], [area_per[315, 1]],
-        label = "Tracer patch ≈ size of domain",
-        annotations = ([t[310]], 3.5, Plots.text("After approx 3.7 years \n tracer patch is size  \n of domain", :left, :green))
-        )
-
+expfit = exp_fit(data; conc_min = 0.05, tfitfinal = 150, tplot_length = 20)
+plot!(expfit[:, 1, 2], expfit[:, 2, 2],
+    label = "Exponential fit for first 150 data points",
+    line = (:dash, 2),
+    color = :orange
+)  
+linfit = linear_fit(data; conc_min = 0.05, tfitvals = [251 450])
+plot!(linfit[:, 1, 2], linfit[:, 2, 2],
+    label = "Linear fit for data points 250 to 450",
+    line = (:dash, 2),
+    color = :red
+    )
 
 phys_params = nondim2dim(data)
 
-steps = t[251] / data["clock/dt"]
+steps = t[450] / data["clock/dt"]
 days = (steps * phys_params["Δt̂"]) / 3600
 years = days / 365
 
-plot(t, area_per[:, 2],
-     label = "Lower layer",
-     title = "Growth of area of tracer patch in the Lower layer",
-     legend = :topleft,
-     color = :red
-     )
-scatter!([t[251]], [area_per[251, 2]],
-        label = "Stage 2 -> stage 3",
-        annotations = (13, area_per[230, 1], Plots.text("Stage three begins after \n approximately 2.8 years", :left, :orange))
-        )
-scatter!([t[315]], [area_per[315, 1]],
-        label = "Tracer patch ≈ size of domain",
-        annotations = ([t[310]], 3.5, Plots.text("After approx 3.7 years \n tracer patch is size  \n of domain", :left, :green))
-        )
+#Diffusivity calcuation
+Area = phys_params["Lx̂"] * phys_params["Lŷ"]
+Area_inc = area_per[450, 2] - area_per[251, 2]
+
+no_of_seconds = (t[450] / data["clock/dt"]) * phys_params["Δt̂"] - (t[251] / data["clock/dt"]) * phys_params["Δt̂"]
+
+diffusivity = (Area * Area_inc) / no_of_seconds
