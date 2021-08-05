@@ -362,14 +362,21 @@ function tracer_animate(data::Dict{String, Any})
     return TracerAnimation
 end
 """
-    function time_vec(data::Dict{String, Any})
+    function time_vec(data::Dict{String, Any}; days = false)
 Create a time vector for plotting from the saved .jld2 output.
+To return the time vector as days (in real time) use argrument days = true.
 """
-function  time_vec(data::Dict{String, Any})
+function  time_vec(data::Dict{String, Any}; days = false)
 
     nsteps = data["clock/nsteps"]
     save_freq = data["save_freq"]
     t = [data["snapshots/t/"*string(i)] for i in 0:save_freq:nsteps]
+
+    if days == true
+        phys_params = nondim2dim(data)
+        days = 3600 * 24
+        t = ((t ./ data["clock/dt"]) .* phys_params["Δt"]) ./ days
+    end
 
     return t
 end
@@ -530,10 +537,10 @@ Fit an exponential curve via least squares to the second stage of the growth of 
 the tracer patch as calculated from the `tracer_area_percentile` function.
 The data is fitted from 1:tfitfinal which can be specified then the plot is calculated for length tplot_length.
 """
-function exp_fit(data::Dict{String, Any}; conc_min = 0.1, tfitfinal = 100, tplot_length = 10)
+function exp_fit(data::Dict{String, Any}; conc_min = 0.1, tfitfinal = 100, tplot_length = 10, days = false)
 
     area_per = tracer_area_percentile(data; conc_min)
-    t = time_vec(data)
+    t = time_vec(data; days = days)
     tplot = t[1:tfitfinal + tplot_length]
     t = t[1:tfitfinal]
     nlayers = data["params/nlayers"]
@@ -553,10 +560,10 @@ Fit a linear curve via least squares to the third stage of the growth of the are
 the tracer patch as calculated from the `tracer_area_percentile` function. The data is fitted over the interval
 tfitvals and the length of the out plotting vectors can be specified by extra argument tplot_length.
 """
-function linear_fit(data::Dict{String, Any}; conc_min = 0.1, tfitvals = [100, 250], tplot_length = [10 0])
+function linear_fit(data::Dict{String, Any}; conc_min = 0.1, tfitvals = [100, 250], tplot_length = [10 0], days = false)
     
     area_per = tracer_area_percentile(data; conc_min)
-    t = time_vec(data)
+    t = time_vec(data; days = days)
     tplot = t[tfitvals[1] - tplot_length[1] : tfitvals[2] + tplot_length[2]]
     t = t[tfitvals[1] : tfitvals[2]]
     nlayers = data["params/nlayers"]

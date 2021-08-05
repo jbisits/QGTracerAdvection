@@ -91,23 +91,25 @@ mp4(TracerAnim, "TracerAnim.mp4", fps = 18)
 avg_area = tracer_area_avg(data)
 plot(t, avg_area)
 
-t = time_vec(data)
+t = time_vec(data; days = true)
 area_per = tracer_area_percentile(data; conc_min = 0.1)
 p1 = plot(t, area_per, 
+        xlabel = "Days",
         label = ["Upper layer" "Lower layer"],
         title = "Growth of 90% area of tracer patch in \n both layers layers \n domain = 256, res = 512",
         legend = :topleft
         )
-logp1 = plot(t, log.(area_per), 
+logp1 = plot(t, log.(area_per),
+            xlabel = "Days",
             label = ["Upper layer" "Lower layer"],
             title = "Growth of log(90% area of tracer patch) \n in both layers \n domain = 256, res = 512",
             legend = :bottomright
             )
 plot(p1, logp1, layout = (2, 1), size = (700, 700))
 
-expfit = exp_fit(data; conc_min = 0.1, tfitfinal = 40, tplot_length = 20)
-linfit1 = linear_fit(data; conc_min = 0.1, tfitvals = [40 100], tplot_length = [0 0])
-linfit2 = linear_fit(data; conc_min = 0.1, tfitvals = [100 170], tplot_length = [0 0])
+expfit = exp_fit(data; conc_min = 0.1, tfitfinal = 40, tplot_length = 20, days = true)
+linfit1 = linear_fit(data; conc_min = 0.1, tfitvals = [40 100], tplot_length = [0 0], days = true)
+linfit2 = linear_fit(data; conc_min = 0.1, tfitvals = [100 170], tplot_length = [0 0], days = true)
 lower_area = plot(t, area_per[:, 2], 
                 label = "Lower layer",
                 title = "Growth of area of tracer patch in lower layer",
@@ -131,16 +133,17 @@ plot!(lower_area, linfit2[:, 1, 2], linfit2[:, 2, 2],
     color = :green
     )
 
-annotate!((t[1], 0.25, text("Exponential growth lasts \n for ≈ 2.2 years", 10, :left, :orange)))
-annotate!((t[241], 0.25, text("Linear growth first phase \n lasts for ≈ 3.4 years. In this \n time the growth of 90% of \n the area is 16%. \n This gives diffusivity of 2.1e6m²/s.", 10, :right, :red)))
-annotate!((t[1], 0.5, text("Linear growth second phase \n lasts for ≈ 1.65 years. \n In this time the growth \n of 90% of the area is 42%. \n This gives diffusivity of 4.7e6m²/s.", 10, :left, :green)))
+annotate!((t[1], 0.25, text("Exponential growth lasts \n for ≈ 33 days", 10, :left, :orange)))
+annotate!((t[241], 0.25, text("Linear growth first phase \n lasts for ≈ 52 days. In this \n time the growth of 90% of \n the area is 16%. \n This gives diffusivity of 2.1e6m²/s.", 10, :right, :red)))
+annotate!((t[1], 0.5, text("Linear growth second phase \n lasts for ≈ 60 days. \n In this time the growth \n of 90% of the area is 42%. \n This gives diffusivity of 4.7e6m²/s.", 10, :left, :green)))
 
 phys_params = nondim2dim(data)
 steps = t[40] / data["clock/dt"]
-days = (steps * phys_params["Δt"]) / 3600
+hours = (steps * phys_params["Δt"]) / 3600
+days = hours / 24
 years = days / 365
 
-linphase1 = ((t[100] / data["clock/dt"]) * phys_params["Δt"] - (t[40] / data["clock/dt"]) * phys_params["Δt"])/ (3600 * 365)
+linphase1 = ((t[170] / data["clock/dt"]) * phys_params["Δt"] - (t[100] / data["clock/dt"]) * phys_params["Δt"])/ (3600 * 365)
 
 area_per[170, 2] - area_per[100, 2]
 d1 = diffusivity(data, [1 2; 40 100]; conc_min = 0.1)

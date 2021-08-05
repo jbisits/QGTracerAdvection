@@ -5,7 +5,7 @@ file = joinpath(pwd(), "SimulationData.jld2")
 #Load in the data
 data = load(file)
 
-t = time_vec(data)
+t = time_vec(data; days = true)
 area_per = tracer_area_percentile(data; conc_min = 0.1)
 p1 = plot(t, area_per, 
         label = ["Upper layer" "Lower layer"],

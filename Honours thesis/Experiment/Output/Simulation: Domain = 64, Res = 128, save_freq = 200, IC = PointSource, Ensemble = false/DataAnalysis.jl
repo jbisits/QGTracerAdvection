@@ -9,7 +9,7 @@ data = load(file)
 histplots = hist_plot(data; plot_freq = 3000)
 
 #Produce heatmaps of tacer concentration from the saved concentration data
-tracerplots = tracer_plot(data; plot_freq = 200)
+tracerplots = tracer_plot(data; plot_freq = 3000)
 
 #Plot heatmaps and histograms togehter.
 uppertacer = plot(tracerplots[1]...)
@@ -88,3 +88,7 @@ mp4(ConcVsArea, "ConcVsArea.mp4", fps=18)
 
 TracerAnim = tracer_animate(data)
 mp4(TracerAnim, "TracerAnim.mp4", fps = 18)
+
+t = time_vec(data)
+area_per = tracer_area_percentile(data; conc_min = 0.1)
+plot(t, area_per)
