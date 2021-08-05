@@ -45,43 +45,6 @@ varplot = plot(t, ConcentrationVaricance,
                 )
 plot(meanplot, varplot, size = (1000, 600))
 
-plot(t, SecondMoment, 
-        label = ["Upper Layer" "Lower layer"],
-        title = "Inverse of variance of concentration \n over the lower layer grid",
-        xlabel = "t",
-        legend = :bottomright 
-    )
-
-plot(t, 1 ./ SecondMoment, 
-        label = ["Upper Layer" "Lower layer"],
-        title = "Inverse of variance of concentration \n over the upper layer grid",
-        xlabel = "t",
-        legend = :bottomright
-    )
-
-#Instead consider the integral ∫C²dA which is the concentration per unit area as Garrett defines
-conc_int = Garrett_int(data)
-
-plot(t, conc_int, 
-        label = ["Upper layer" "Lower layer"], 
-        xlabel = "t", 
-        ylabel = "∑C²",
-        title = "Sum of squared concentration over \n grid calculated at each time step"
-    )
-plot!(t, ConcentrationMean,
-        label = ["Upper Layer" "Lower layer"],
-        title = "Variance of concentration \n over the grid",
-        xlabel = "t",
-        ylabel = "Concentration"    
-    )
-plot(t, 1 ./ conc_int, 
-        label = ["Upper layer" "Lower layer"],
-        xlabel = "t", 
-        ylabel = "(∑C²)⁻¹",
-        title = "Inverse sum of squared concentration \n over the grid calculated at each time step", 
-        legend = :bottomright
-    )
-
 ConcVsArea = concarea_animate(data; number_of_bins = 30)
 mp4(ConcVsArea, "ConcVsArea.mp4", fps=18)
 
@@ -89,10 +52,10 @@ TracerAnim = tracer_animate(data)
 mp4(TracerAnim, "TracerAnim.mp4", fps = 18)
 
 avg_area = tracer_avg_area(data)
-plot(t, avg_area)
+plot(t, avg_area, legend = :bottomright)
 
 t = time_vec(data; days = true)
-area_per = tracer_area_percentile(data; conc_min = 0.1)
+area_per = tracer_area_percentile(data; Cₚ = 0.5)
 p1 = plot(t, area_per, 
         xlabel = "Days",
         label = ["Upper layer" "Lower layer"],

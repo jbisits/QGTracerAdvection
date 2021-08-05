@@ -6,12 +6,7 @@ module MeasureMixing
 
 export
     conc_mean,
-    conc_var!,
     conc_var,
-    Garrett_int,
-    area_tracer_patch!,
-    fit_normal!, 
-    fit_hist!,
     hist_plot,
     concarea_plot,
     concarea_animate,
@@ -47,20 +42,6 @@ function conc_mean(data::Dict{String, Any})
     return concentration_mean
 end
 """
-    function conc_var!(concentration_variance, AD_prob)
-Calculate the variance of the tracer concentration in each layer for advection-diffusion problem `prob` and store the
-result at each timestep where the data was saved in the array concentration_variance. 
-"""
-function conc_var!(concentration_variance::Array, AD_prob::FourierFlows.Problem) 
-
-    nlayers = AD_prob.params.nlayers
-    step = AD_prob.clock.step + 1
-    for i in 1:nlayers
-        concentration_variance[step, i] = var(AD_prob.vars.c[:, :, i])
-    end
-
-end
-"""
     function conc_var(data::Dict{String, Any})
 Compute the concentration variance from saved output for an advection-diffusion problem.
 """
@@ -76,66 +57,6 @@ function conc_var(data::Dict{String, Any})
     end
 
     return concentration_variance
-end
-"""
-    function Garrett_int(data::Dict{String, Any})
-Compute the diagnostic for tracer concentration ∫C²dA at each saved data timestep (Garrett 1983).
-"""
-function Garrett_int(data::Dict{String, Any})
-
-    nlayers = data["params/nlayers"]
-    nsteps = data["clock/nsteps"]
-    save_freq = data["save_freq"]
-    saved_steps = length(0:save_freq:nsteps)
-    conc_int = Array{Float64}(undef, saved_steps, nlayers)
-    for i in 1:saved_steps
-        conc_int[i, :] = [sum(data["snapshots/Concentration/"*string( (i-1) * save_freq )][:, :, j].^2) for j ∈ 1:nlayers]
-    end
-
-    return conc_int
-end
-"""
-    function fit_normal!(σ², AD_prob)
-Fit a normal distribution to the concentration of tracer at each time step to look at how σ² changes.
-"""
-function fit_normal!(σ², AD_prob)
-
-    nlayers = AD_prob.params.nlayers
-    step = AD_prob.clock.step + 1
-    for i in 1:nlayers
-        conc_data = reshape(AD_prob.vars.c[:, :, i], :, 1) 
-        fit_norm = fit_mle(Normal, conc_data)
-        σ = params(fit_norm)[2]
-        σ²[step, i] = σ^2
-    end
-
-end
-"""
-    function fit_hist!(filename, AD_prob, max_conc)
-Fits a histogram to the concentration data at each time step. From the histogram the concentration data 
-and area data can be extracted. This is for use in a simulation like in `QG_hist.jl`.
-"""
-function fit_hist!(filename, AD_prob; number_of_bins = 0)
-
-    nlayers, C = AD_prob.params.nlayers, AD_prob.vars.c
-    hist_layer = Array{Histogram}(undef, nlayers)
-    conc_data = []
-
-    for i in 1:nlayers
-        if number_of_bins == 0
-            temp_fit = fit(Histogram, reshape(C[:, :, i], :))
-        else
-            temp_fit = fit(Histogram, reshape(C[:, :, i], :), nbins = number_of_bins)
-        end
-        hist_layer[i] = normalize(temp_fit, mode = :probability)
-        temp_conc_data = cumsum(reverse(hist_layer[i].weights))
-        push!(conc_data, reverse!(vcat(0, temp_conc_data)))
-    end
-    jldopen(filename, "a+") do file
-        file["Histograms/step"*string(AD_prob.clock.step)] = hist_layer
-        file["ConcentrationData/step"*string(AD_prob.clock.step)] = conc_data
-    end
-
 end
 """
     function hist_plot(data)
@@ -385,9 +306,8 @@ end
 Calculate the average area of the tracer patch. This is done by transfroming the 
 concentration into a function of area then computing 
     Avg_area = (∫A * C(A) dA) / ∫∫C dA.
-This may change but for now I will work with this and see where I get to.
 """
-function tracer_avg_area(data::Dict{String, Any}; number_of_bins = 0)
+function tracer_avg_area(data::Dict{String, Any})
 
 
     nlayers = data["params/nlayers"]
@@ -395,26 +315,20 @@ function tracer_avg_area(data::Dict{String, Any}; number_of_bins = 0)
     saved_steps = data["save_freq"]
     plot_steps = 0:saved_steps:nsteps
     Avg_area = Array{Float64}(undef, length(plot_steps), nlayers)
-    cumsum_upperdata = Array{Float64}(undef, data["grid/nx"] * data["grid/ny"])
-    cumsum_lowerdata = Array{Float64}(undef, data["grid/nx"] * data["grid/ny"])
  
     for i ∈ plot_steps
 
-        upperdata = reshape(data["snapshots/Concentration/"*string(i)][:, :, 1], :)
-        sort!(upperdata, rev = true)
-        cumsum!(cumsum_upperdata, upperdata)
-        lowerdata = reshape(data["snapshots/Concentration/"*string(i)][:, :, 2], :)
-        sort!(lowerdata, rev = true)
-        cumsum!(cumsum_lowerdata, lowerdata)
+        for j ∈ 1:nlayers
 
-        ΣiCi_upper = sum([j * cumsum_upperdata[j] for j ∈ 1:length(cumsum_upperdata)])
-        ΣiCi_lower = sum([j * cumsum_lowerdata[j] for j ∈ 1:length(cumsum_lowerdata)])
+            C = reshape(data["snapshots/Concentration/"*string(i)][:, :, j], :)
+            sort!(C, rev = true)
+            #cumsum_C = cumsum(C)
+            ΣkCₖ =  sum( [k * C[k] for k ∈ 1:length(C)] )
+            ΣCₖ = sum(C)
+            l = round(Int, i/saved_steps) + 1
+            Avg_area[l, j] = ΣkCₖ / ΣCₖ
 
-        ΣCi_upper = sum(upperdata)
-        ΣCi_lower = sum(lowerdata)
-        
-        k = round(Int, i/saved_steps)
-        Avg_area[k + 1, :] .= [ΣiCi_upper / ΣCi_upper, ΣiCi_lower/ΣCi_lower]
+        end
                     
     end
 
@@ -424,48 +338,39 @@ end
  """
     function tracer_area_percentile(data::Dict{String, Any})
 Compute the percentile of area from a concentration field using 
-        ∫A(C)dC over interval (Cmax, C₁)
-where C₁ is some chosen value of concentration. By default the 
-standard deviation of concentration at each time step is used for C₁
-but this can also be set to false and some other quantile can be entered.
+        ∫A(C)dC over interval (Cmax, Cₚ)
+where Cₚ is some chosen value of concentration.
 """
-function tracer_area_percentile(data::Dict{String, Any}; conc_min = 0.1, standard_dev = false, sd_multiple = 1)
+function tracer_area_percentile(data::Dict{String, Any}; Cₚ = 0.5)
 
     nlayers = data["params/nlayers"]
     nsteps = data["clock/nsteps"]
     saved_steps = data["save_freq"]
-    grid_area = data["grid/nx"] * data["grid/ny"]
     plot_steps = 0:saved_steps:nsteps
     area_percentiles = Array{Float64}(undef, length(plot_steps), nlayers)
     for i ∈ plot_steps
-        upperdata = reshape(data["snapshots/Concentration/"*string(i)][:, :, 1], :)
-        sort!(upperdata, rev = true)
-        lowerdata = reshape(data["snapshots/Concentration/"*string(i)][:, :, 2], :)
-        sort!(lowerdata, rev = true)
-        max_conc = [findmax(data["snapshots/Concentration/"*string(i)][:, :, j])[1] for j ∈ 1:nlayers]
-        
-        if standard_dev == true && sd_multiple == 1
-            upperarea = findlast(upperdata .> std(upperdata))
-            lowerarea = findlast(lowerdata .> std(lowerdata))
-        elseif standard_dev == true && sd_multiple != 1
-            upperarea = findlast(upperdata .> std(upperdata) * sd_multiple)
-            lowerarea = findlast(lowerdata .> std(lowerdata) * sd_multiple)
-        else
-            upperarea = findlast(upperdata .> conc_min * max_conc[1])
-            lowerarea = findlast(lowerdata .> conc_min * max_conc[2])
-        end
 
-        k = round(Int, i/saved_steps)
-        area_percentiles[k + 1, :] .= [upperarea/grid_area, lowerarea/grid_area]
+        for j ∈ 1:nlayers
+            
+            C = reshape(data["snapshots/Concentration/"*string(i)][:, :, j], :)
+            sort!(C, rev = true)
+            cumsum_C = cumsum(C)
+            C_total = sum(C)
+            Nₚ = findfirst(cumsum_C .> Cₚ * C_total)
+            l = round(Int, i/saved_steps) + 1
+            area_percentiles[l, j] = Nₚ
+            
+        end
+        
     end
 
     return area_percentiles
 
 end
 """
-Calculate the average tracer_area_percentile from an ensemble simulation. Here the saved data is an array of dictionaries.
+Calculate the tracer_area_percentile for each member of an ensemble simulation. Here the saved data is an array of dictionaries.
 """
-function tracer_area_percentile(data::Array{Dict{String, Any}}; conc_min = 0.1, standard_dev = false, sd_multiple = 1)
+function tracer_area_percentile(data::Array{Dict{String, Any}}; Cₚ = 0.5)
 
     nlayers = data[1]["params/nlayers"] #These are the same value over all simuations
     nsteps = data[1]["clock/nsteps"]
@@ -474,19 +379,19 @@ function tracer_area_percentile(data::Array{Dict{String, Any}}; conc_min = 0.1, 
     no_of_sims = length(data)
     area_percentiles = Array{Float64}(undef, length(plot_steps), nlayers, no_of_sims)
     for i ∈ 1:no_of_sims
-        temp = tracer_area_percentile(data[i]; conc_min)
+        temp = tracer_area_percentile(data[i]; Cₚ)
         @. area_percentiles[:, :, i] = temp
     end
     return area_percentiles
 
 end
 """
-    function avg_ensemble_tracer_area(data::Array{Dict{String, Any}}; conc_min = 0.1) 
+    function avg_ensemble_tracer_area(data::Array{Dict{String, Any}}; Cₚ = 0.5) 
 Calculate average growth of tracer area patch from an enemble simulation using `tracer_area_percentile`.
 """
-function avg_ensemble_tracer_area(data::Array{Dict{String, Any}}; conc_min = 0.1)
+function avg_ensemble_tracer_area(data::Array{Dict{String, Any}}; Cₚ = 0.5)
 
-    area_per = tracer_area_percentile(data; conc_min)
+    area_per = tracer_area_percentile(data; Cₚ)
     no_of_sims = length(data)
     avg_area = area_per[:, :, 1]
     for i ∈ 2:no_of_sims
@@ -497,10 +402,10 @@ function avg_ensemble_tracer_area(data::Array{Dict{String, Any}}; conc_min = 0.1
 
 end
 """
-    function ensemble_concentration(data::Array{Dict{String, Any}}; conc_min = 0.1)
+    function ensemble_concentration(data::Array{Dict{String, Any}})
 Calculate average concentration from the tracer field of the ensemble simulation.
 """
-function ensemble_concentration(data::Array{Dict{String, Any}}; conc_min = 0.1)
+function ensemble_concentration(data::Array{Dict{String, Any}})
 
     saved_vals = 0:data[1]["save_freq"]:data[1]["clock/nsteps"]
     ensemble_conc = data[1]
@@ -520,14 +425,14 @@ function ensemble_concentration(data::Array{Dict{String, Any}}; conc_min = 0.1)
 
 end
 """
-    function exp_fit(data::Dict{String, Any}; conc_min = 0.1, tfitfinal = 100, tplot_length = 10)
+    function exp_fit(data::Dict{String, Any}; Cₚ = 0.5, tfitfinal = 100, tplot_length = 10)
 Fit an exponential curve via least squares to the second stage of the growth of the area of 
 the tracer patch as calculated from the `tracer_area_percentile` function.
 The data is fitted from 1:tfitfinal which can be specified then the plot is calculated for length tplot_length.
 """
-function exp_fit(data::Dict{String, Any}; conc_min = 0.1, tfitfinal = 100, tplot_length = 10, days = false)
+function exp_fit(data::Dict{String, Any}; Cₚ = 0.5, tfitfinal = 100, tplot_length = 10, days = false)
 
-    area_per = tracer_area_percentile(data; conc_min)
+    area_per = tracer_area_percentile(data; Cₚ = 0.5)
     t = time_vec(data; days = days)
     tplot = t[1:tfitfinal + tplot_length]
     t = t[1:tfitfinal]
@@ -543,14 +448,14 @@ function exp_fit(data::Dict{String, Any}; conc_min = 0.1, tfitfinal = 100, tplot
     return A
 end
 """
-    function linear_fit(data::Dict{String, Any}; conc_min = 0.1, tfitvals = [100, 250], tplot_length = [10 0])
+    function linear_fit(data::Dict{String, Any}; Cₚ = 0.5, tfitvals = [100, 250], tplot_length = [10 0])
 Fit a linear curve via least squares to the third stage of the growth of the area of 
 the tracer patch as calculated from the `tracer_area_percentile` function. The data is fitted over the interval
 tfitvals and the length of the out plotting vectors can be specified by extra argument tplot_length.
 """
-function linear_fit(data::Dict{String, Any}; conc_min = 0.1, tfitvals = [100, 250], tplot_length = [10 0], days = false)
+function linear_fit(data::Dict{String, Any}; Cₚ = 0.5, tfitvals = [100, 250], tplot_length = [10 0], days = false)
     
-    area_per = tracer_area_percentile(data; conc_min)
+    area_per = tracer_area_percentile(data; Cₚ)
     t = time_vec(data; days = days)
     tplot = t[tfitvals[1] - tplot_length[1] : tfitvals[2] + tplot_length[2]]
     t = t[tfitvals[1] : tfitvals[2]]
@@ -569,10 +474,10 @@ end
     function diffusivity(data::Dict{String, Any})
 Calculate the diffusivity in physical space using the growth of area of tracer patch
 """
-function diffusivity(data::Dict{String, Any}, time_vals::Matrix{Int64}; conc_min = 0.1)
+function diffusivity(data::Dict{String, Any}, time_vals::Matrix{Int64}; Cₚ = 0.5)
 
     t = time_vec(data)
-    area_per = tracer_area_percentile(data; conc_min)
+    area_per = tracer_area_percentile(data; Cₚ)
     phys_params = nondim2dim(data)
     nlayers = data["params/nlayers"]
     diff = Array{Float64}(undef, 1, nlayers)
@@ -590,11 +495,11 @@ end
 Cacluate diffusivity from average of ensemble simulation. First calls `ensemble_concentration`
 to calcuate the ensemble concentration from an array of saved data, then calls `tracer_area_percentile`.
 """
-function diffusivity(data::Array{Dict{String, Any}}, time_vals::Matrix{Int64}; conc_min = 0.1)
+function diffusivity(data::Array{Dict{String, Any}}, time_vals::Matrix{Int64}; Cₚ = 0.5)
 
     t = time_vec(data[1])
     ensemble_conc = ensemble_concentration(data)
-    ensemble_area_per = tracer_area_percentile(ensemble_conc; conc_min)
+    ensemble_area_per = tracer_area_percentile(ensemble_conc; Cₚ)
     phys_params = nondim2dim(data[1])
     nlayers = data[1]["params/nlayers"]
     diff = Array{Float64}(undef, 1, nlayers)
