@@ -88,7 +88,7 @@ mp4(ConcVsArea, "ConcVsArea.mp4", fps=18)
 TracerAnim = tracer_animate(data)
 mp4(TracerAnim, "TracerAnim.mp4", fps = 18)
 
-avg_area = tracer_area_avg(data)
+avg_area = tracer_avg_area(data)
 plot(t, avg_area)
 
 t = time_vec(data; days = true)

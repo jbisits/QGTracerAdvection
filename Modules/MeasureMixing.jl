@@ -389,45 +389,33 @@ This may change but for now I will work with this and see where I get to.
 """
 function tracer_avg_area(data::Dict{String, Any}; number_of_bins = 0)
 
+
     nlayers = data["params/nlayers"]
     nsteps = data["clock/nsteps"]
     saved_steps = data["save_freq"]
     plot_steps = 0:saved_steps:nsteps
     Avg_area = Array{Float64}(undef, length(plot_steps), nlayers)
+    cumsum_upperdata = Array{Float64}(undef, data["grid/nx"] * data["grid/ny"])
+    cumsum_lowerdata = Array{Float64}(undef, data["grid/nx"] * data["grid/ny"])
+ 
     for i ∈ plot_steps
-        upperdata = reshape(data["snapshots/Concentration/"*string(i)][:, :, 1], :)
-        lowerdata = reshape(data["snapshots/Concentration/"*string(i)][:, :, 2], :)
-        if number_of_bins == 0
-            upperhist = fit(Histogram, upperdata)
-            upperhist = normalize(upperhist; mode = :pdf)
-            lowerhist = fit(Histogram, lowerdata)
-            lowerhist = normalize(lowerhist; mode = :pdf)
-        else
-            upperhist = fit(Histogram, upperdata, nbins = number_of_bins)
-            upperhist = normalize(upperhist; mode = :pdf)
-            lowerhist = fit(Histogram, lowerdata, nbins = number_of_bins)
-            lowerhist = normalize(lowerhist; mode = :pdf)
-        end
-        
-        Cupper = reverse(Vector(upperhist.edges[1]))
-        Clower = reverse(Vector(lowerhist.edges[1]))
-        Aupper = cumsum(reverse(upperhist.weights))
-        Alower = cumsum(reverse(lowerhist.weights))
-        dAupper = reverse(upperhist.weights)
-        dAlower = reverse(lowerhist.weights)
-        upperarea = sum( [ Aupper[i] * 0.5 * (Cupper[i] + Cupper[i+1]) * dAupper[i] for i in 1:length(Aupper) ] )
-        lowerarea = sum( [ Alower[i] * 0.5 * (Clower[i] + Clower[i+1]) * dAlower[i] for i in 1:length(Alower) ] )
-        
-        #=
-        uppertraceramount = sum( [0.5 * (Cupper[i] + Cupper[i+1]) * dAupper[i] for i in 1:length(Aupper) ])
-        lowertraceramount = sum( [0.5 * (Clower[i] + Clower[i+1]) * dAlower[i] for i in 1:length(Alower) ])
-        =#
-        j = round(Int, i/saved_steps)
-        #=Avg_area[j + 1, :] .= [upperarea/uppertraceramount, 
-                                lowerarea/lowertraceramount]=#
-        Avg_area[j + 1, :] .= [upperarea, 
-                                lowerarea]
 
+        upperdata = reshape(data["snapshots/Concentration/"*string(i)][:, :, 1], :)
+        sort!(upperdata, rev = true)
+        cumsum!(cumsum_upperdata, upperdata)
+        lowerdata = reshape(data["snapshots/Concentration/"*string(i)][:, :, 2], :)
+        sort!(lowerdata, rev = true)
+        cumsum!(cumsum_lowerdata, lowerdata)
+
+        ΣiCi_upper = sum([j * cumsum_upperdata[j] for j ∈ 1:length(cumsum_upperdata)])
+        ΣiCi_lower = sum([j * cumsum_lowerdata[j] for j ∈ 1:length(cumsum_lowerdata)])
+
+        ΣCi_upper = sum(upperdata)
+        ΣCi_lower = sum(lowerdata)
+        
+        k = round(Int, i/saved_steps)
+        Avg_area[k + 1, :] .= [ΣiCi_upper / ΣCi_upper, ΣiCi_lower/ΣCi_lower]
+                    
     end
 
     return Avg_area
