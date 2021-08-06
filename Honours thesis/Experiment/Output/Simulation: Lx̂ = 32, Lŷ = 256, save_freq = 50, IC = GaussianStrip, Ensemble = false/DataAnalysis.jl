@@ -6,7 +6,7 @@ file = joinpath(pwd(), "SimulationData.jld2")
 data = load(file)
 
 t = time_vec(data; days = true)
-area_per = tracer_area_percentile(data; conc_min = 0.1)
+area_per = tracer_area_percentile(data; Cₚ = 0.5)
 p1 = plot(t, area_per, 
         label = ["Upper layer" "Lower layer"],
         title = "Growth of 90% area of tracer patch in \n both layers; domain = 32 x 256. \n Gaussian strip IC",

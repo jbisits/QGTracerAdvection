@@ -15,8 +15,8 @@ end
 
 t = time_vec(data[1])
 ## Average of area percentage growth
-area_per = tracer_area_percentile(data; conc_min = 0.1)
-avg_area_per = avg_ensemble_tracer_area(data; conc_min = 0.1)
+area_per = tracer_area_percentile(data; Cₚ = 0.5)
+avg_area_per = avg_ensemble_tracer_area(data; Cₚ = 0.5)
 
 upper_area = plot(t, area_per[:, 1, 1], 
                 label = "Ensemble member 1", 
@@ -48,9 +48,9 @@ save("tenensemble_area_per.png", ensemble_area_per)
 
 ## Ensemble area (Growth of average of concentration field)
 t = time_vec(data[1])
-area_per = tracer_area_percentile(data; conc_min = 0.1)
+area_per = tracer_area_percentile(data; Cₚ = 0.5)
 ensemble_conc = ensemble_concentration(data)
-ensemble_area = tracer_area_percentile(ensemble_conc; conc_min = 0.1)
+ensemble_area = tracer_area_percentile(ensemble_conc; Cₚ = 0.5)
 
 ensemble_upper = plot(t, ensemble_area[:, 1], 
                     title = "Growth of 90% of ensemble area of tracer patch in upper layer",
