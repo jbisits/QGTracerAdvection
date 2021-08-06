@@ -7,6 +7,7 @@ data = load(file)
 
 t = time_vec(data; days = true)
 area_per = tracer_area_percentile(data; Cₚ = 0.5)
+
 p1 = plot(t, area_per, 
         label = ["Upper layer" "Lower layer"],
         title = "Growth of 90% area of tracer patch in \n both layers; domain = 32 x 256. \n Gaussian strip IC",
@@ -34,3 +35,6 @@ lowerarea256 = plot(t, area_per[:, 2] .* 2^3,
 
 save("upper_area4domains.png", upperarea256)
 save("lower_area4domains.png", lowerarea256)
+
+avg_area = tracer_avg_area(data)
+plot(t, avg_area)
