@@ -15,8 +15,8 @@ end
 
 t = time_vec(data[1])
 ## Average of area percentage growth
-area_per = tracer_area_percentile(data; conc_min = 0.1)
-avg_area_per = avg_ensemble_tracer_area(data; conc_min = 0.1)
+area_per = tracer_area_percentile(data; Cₚ = 0.5)
+avg_area_per = avg_ensemble_tracer_area(data; Cₚ = 0.5)
 
 upper_area = plot(t, area_per[:, 1, 1], 
                 label = "Ensemble member 1", 
@@ -40,7 +40,7 @@ for i ∈ 2:length(data)
 end  
 plot!(lower_area, t, avg_area_per[:, 2], line = (:dash, 2, :black), label = "Average")
 
-diff = diffusivity(data, [21 70; 21 70]; conc_min = 0.1)
+diff = diffusivity(data, [21 70; 21 70]; Cₚ = 0.5)
 
 ensemble_area_per = plot(upper_area, lower_area, layout = (2, 1), size = (1200, 1200))
 save("tenensemble_area_per.png", ensemble_area_per)
@@ -48,12 +48,12 @@ save("tenensemble_area_per.png", ensemble_area_per)
 
 ## Ensemble area (Growth of average of concentration field)
 t = time_vec(data[1])
-area_per = tracer_area_percentile(data; conc_min = 0.1)
+area_per = tracer_area_percentile(data; Cₚ = 0.05)
 ensemble_conc = ensemble_concentration(data)
-ensemble_area = tracer_area_percentile(ensemble_conc; conc_min = 0.1)
+ensemble_area = tracer_area_percentile(ensemble_conc; Cₚ = 0.05)
 
 ensemble_upper = plot(t, ensemble_area[:, 1], 
-                    title = "Growth of 90% of ensemble area of tracer patch in upper layer",
+                    title = "Growth of 50% of ensemble area of tracer patch in upper layer",
                     legend = :topleft,
                     label = "Ensemble area",
                     line = (:dash, 2, :black)
@@ -64,7 +64,7 @@ for i ∈ 1:length(data)
         )
 end
 ensemble_lower = plot(t, ensemble_area[:, 2], 
-                    title = "Growth of 90% of ensemble area of tracer patch in lower layer",
+                    title = "Growth of 50% of ensemble area of tracer patch in lower layer",
                     legend = :topleft,
                     label = "Ensemble area",
                     line = (:dash, 2, :black)
@@ -76,3 +76,5 @@ for i ∈ 1:length(data)
 end
 ens_plot = plot(ensemble_upper, ensemble_lower, layout = (2,1), size = (1200, 1200))
 save("ensembleavg.png", ens_plot)
+
+ens_diff = diffusivity(data, [101 1; 101 1]; Cₚ = 0.05)
