@@ -308,7 +308,7 @@ function tracer_avg_area(data::Dict{String, Any})
 
             C = abs.(reshape(data["snapshots/Concentration/"*string(i)][:, :, j], :)) #Absolute value avoids the negative values
             sort!(C, rev = true)
-            ΣkCₖ =  sum( [k^2 * C[k] for k ∈ 1:length(C)] ) #This might be the second moment and looks to behave as would expect
+            ΣkCₖ =  sum( [k * C[k] for k ∈ 1:length(C)] ) #This might be the second moment if instead of k it is k²?
             ΣCₖ = sum(C)
             l = round(Int, i/saved_steps) + 1
             Avg_area[l, j] = ΣkCₖ / ΣCₖ

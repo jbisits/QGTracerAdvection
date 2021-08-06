@@ -5,6 +5,9 @@ file = joinpath(pwd(), "SimulationData.jld2")
 #Load in the data
 data = load(file)
 
+tracerplots = tracer_plot(data; plot_freq = 2000)
+plot(tracerplots[:, 1]..., layout = (2, 3), size = (1200, 1200))
+
 t = time_vec(data; days = true)
 area_per = tracer_area_percentile(data; Cₚ = 0.5)
 
@@ -36,5 +39,7 @@ lowerarea256 = plot(t, area_per[:, 2] .* 2^3,
 save("upper_area4domains.png", upperarea256)
 save("lower_area4domains.png", lowerarea256)
 
+## Look at average area 
 avg_area = tracer_avg_area(data)
-plot(t, avg_area)
+plot(t, avg_area, label = false)
+K = [(avg_area[i + 1, 1] - avg_area[i , 1]) / (2 * (t[i + 1] - t[i])) for i in 1:length(avg_area[:, 1]) - 1]

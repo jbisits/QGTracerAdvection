@@ -5,8 +5,8 @@ file = joinpath(pwd(), "SimulationData.jld2")
 #Load in the data
 data = load(file)
 
-t = time_vec(data)
-area_per = tracer_area_percentile(data; conc_min = 0.1)
+t = time_vec(data; days = true)
+area_per = tracer_area_percentile(data; Cₚ = 0.1)
 p1 = plot(t, area_per, 
         label = ["Upper layer" "Lower layer"],
         title = "Growth of 90% area of tracer patch in \n both layers; domain = 32 x 128. \n Gaussian strip IC",
@@ -21,3 +21,9 @@ plot(p1, logp1, layout = (2, 1), size = (700, 700))
 
 plot!(upperarea256, t, area_per[:, 1] .* 2^2, label = "32 x 128")
 plot!(lowerarea256, t, area_per[:, 2] .* 2^2, label = "32 x 128")
+
+## Look at average area 
+avg_area = tracer_avg_area(data)
+plot(t, avg_area, label = false)
+K = [(avg_area[i + 1, 1] - avg_area[i , 1]) / (2 * (t[i + 1] - t[i])) for i in 1:length(avg_area[:, 1]) - 1]
+K[40]

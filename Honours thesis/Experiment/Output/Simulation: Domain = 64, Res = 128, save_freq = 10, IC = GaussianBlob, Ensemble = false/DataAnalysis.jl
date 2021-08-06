@@ -54,7 +54,7 @@ mp4(TracerAnim, "TracerAnim.mp4", fps = 18)
 avg_area = tracer_avg_area(data)
 plot(t, avg_area)
 
-t = time_vec(data)
+t = time_vec(data; days = true)
 area_per = tracer_area_percentile(data; Cₚ = 0.1)
 p1 = plot(t, area_per, 
         label = ["Upper layer" "Lower layer"],
@@ -211,3 +211,7 @@ Area_inc = area_per[250, 2] - area_per[100, 2]
 no_of_seconds = (t[250] / data["clock/dt"]) * phys_params["Δt̂"] - (t[100] / data["clock/dt"]) * phys_params["Δt̂"]
 
 diffusivity = (Area * Area_inc) / no_of_seconds
+
+## Look at average area 
+avg_area = tracer_avg_area(data)
+plot(t, avg_area, label = false)
