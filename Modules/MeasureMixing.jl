@@ -358,7 +358,7 @@ function tracer_area_percentile(data::Dict{String, Any}; Cₚ = 0.5)
             C_total = sum(C)
             Nₚ = findfirst(cumsum_C .> Cₚ * C_total)
             l = round(Int, i/saved_steps) + 1
-            area_percentiles[l, j] = Nₚ / ( data["grid/nx"] * data["grid/ny"])
+            area_percentiles[l, j] = Nₚ / ( data["grid/nx"] * data["grid/ny"] )
             
         end
         
