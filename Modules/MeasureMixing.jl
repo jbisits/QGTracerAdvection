@@ -69,8 +69,8 @@ function hist_plot(data::Dict{String, Any}; plot_freq = 1000, number_of_bins = 0
     nsteps = data["clock/nsteps"]
     plot_steps = 0:plot_freq:nsteps
     max_conc = [findmax(data["snapshots/Concentration/0"][:, :, i])[1] for i ∈ 1:nlayers]
-    UpperConcentrationHistograms = Plots.Plot{Plots.GRBackend}[]
-    LowerConcentrationHistograms = Plots.Plot{Plots.GRBackend}[]
+    histograms = Array{Plots.Plot{Plots.GRBackend}}(undef, length(plot_steps), nlayers)
+
     if xlims_same == true
         upperxlims = (0, max_conc[1])
         lowerxlims = (0, max_conc[2])
@@ -79,34 +79,25 @@ function hist_plot(data::Dict{String, Any}; plot_freq = 1000, number_of_bins = 0
         lowerxlims = nothing
     end
     for i ∈ plot_steps
-        upperdata = reshape(data["snapshots/Concentration/"*string(i)][:, :, 1], :)
-        lowerdata = reshape(data["snapshots/Concentration/"*string(i)][:, :, 2], :)
-        if number_of_bins == 0
-            upperhist = fit(Histogram, upperdata)
-            lowerhist = fit(Histogram, lowerdata)
-        else
-            upperhist = fit(Histogram, upperdata, nbins = number_of_bins)
-            lowerhist = fit(Histogram, lowerdata, nbins = number_of_bins)
+
+        for j ∈ 1:nlayers
+            concentration = reshape(data["snapshots/Concentration/"*string(i)][:, :, j], :) 
+            if number_of_bins == 0
+                hist = fit(Histogram, concentration)
+            else
+                hist = fit(Histogram, concentration, nbins = number_of_bins)
+            end
+        hist = normalize(hist, mode = :probability)
+        k = round(Int, i / plot_freq) + 1
+        histograms[k, j] = plot(hist,
+                            label = false, 
+                            xlabel = "Concentration", 
+                            ylabel = "Normalised area",
+                            xlims = upperxlims)
         end
-        upperhist = normalize(upperhist, mode = :probability)
-        lowerhist = normalize(lowerhist, mode = :probability)
-        push!(UpperConcentrationHistograms, plot(upperhist,
-                                                    label = false, 
-                                                    xlabel = "Concentration", 
-                                                    ylabel = "Normalised area",
-                                                    xlims = upperxlims
-                                                )
-            )
-        push!(LowerConcentrationHistograms, plot(lowerhist,
-                                                    label = false, 
-                                                    xlabel = "Concentration", 
-                                                    ylabel = "Normalised area",
-                                                    xlims = lowerxlims
-                                                )
-            )
     end
 
-    return [UpperConcentrationHistograms, LowerConcentrationHistograms]
+    return histograms
 end
 """
     function concarea_plot(data)
@@ -119,40 +110,31 @@ function concarea_plot(data::Dict{String, Any}; plot_freq = 1000, number_of_bins
     nsteps = data["clock/nsteps"]
     plot_steps = 0:plot_freq:nsteps
     max_conc = [findmax(data["snapshots/Concentration/0"][:, :, i])[1] for i ∈ 1:nlayers]
-    UpperConcentrationArea = Plots.Plot{Plots.GRBackend}[]
-    LowerConcentrationArea = Plots.Plot{Plots.GRBackend}[]
+    ConcentrationArea =  Array{Plots.Plot{Plots.GRBackend}}(undef, length(plot_steps), nlayers)
+
     for i ∈ plot_steps
-        upperdata = reshape(data["snapshots/Concentration/"*string(i)][:, :, 1], :)
-        lowerdata = reshape(data["snapshots/Concentration/"*string(i)][:, :, 2], :)
-        if number_of_bins == 0
-            upperhist = fit(Histogram, upperdata)
-            lowerhist = fit(Histogram, lowerdata)
-        else
-            upperhist = fit(Histogram, upperdata, nbins = number_of_bins)
-            lowerhist = fit(Histogram, lowerdata, nbins = number_of_bins)
+        
+        for j ∈ 1:nlayers
+
+            concentration = reshape(data["snapshots/Concentration/"*string(i)][:, :, j], :)
+                if number_of_bins == 0
+                    concentration_hist = fit(Histogram, concentration)
+                else
+                    concentration_hist = fit(Histogram, concentration, nbins = number_of_bins)
+                end
+            norm_concentration_hist = normalize(concentration_hist, mode = :probability)
+            cumulative_area = vcat(0, cumsum(reverse(norm_concentration_hist.weights)))
+            conc_edges = reverse(Vector(norm_concentration_hist.edges[1]))
+            k = round(Int, i / plot_freq) + 1
+            ConcentrationArea[k, j] = plot(cumulative_area , conc_edges,
+                                                label = false,
+                                                xlabel = "Normalised area",
+                                                ylabel = "Concentration",
+                                                ylims = (0, max_conc[j]),
+                                                title = "Layer "*string(j))
         end
-        upperhist = normalize(upperhist, mode = :probability)
-        lowerhist = normalize(lowerhist, mode = :probability)
-        upperarea = vcat(0, cumsum(reverse(upperhist.weights)))
-        lowerarea = vcat(0, cumsum(reverse(lowerhist.weights)))
-        upperconc = reverse(Vector(upperhist.edges[1]))
-        lowerconc = reverse(Vector(lowerhist.edges[1]))
-        push!(UpperConcentrationArea, plot(upperarea, upperconc,
-                                                label = false,
-                                                xlabel = "Normalised area",
-                                                ylabel = "Concentration",
-                                                ylims = (0, max_conc[1])
-                                            )
-                )
-        push!(LowerConcentrationArea, plot(lowerarea, lowerconc,
-                                                label = false,
-                                                xlabel = "Normalised area",
-                                                ylabel = "Concentration",
-                                                ylims = (0, max_conc[2])
-                                            )
-            )
     end
-    return [UpperConcentrationArea, LowerConcentrationArea]
+    return ConcentrationArea 
 end
 """
     function concarea_animate(data)
@@ -169,37 +151,35 @@ function concarea_animate(data::Dict{String, Any}; number_of_bins = 0)
     nlayers = data["params/nlayers"]
     nsteps = data["clock/nsteps"]
     max_conc = [findmax(data["snapshots/Concentration/0"][:, :, i])[1] for i ∈ 1:nlayers]
+    cum_area_plot = Array{Plots.Plot{Plots.GRBackend}}(undef, nlayers)
+
     ConcVsArea = @animate for i in 0:plot_freq:nsteps
-        upperdata = reshape(data["snapshots/Concentration/"*string(i)][:, :, 1], :)
-        lowerdata = reshape(data["snapshots/Concentration/"*string(i)][:, :, 2], :)
-        if number_of_bins == 0
-            upperhist = fit(Histogram, upperdata)
-            lowerhist = fit(Histogram, lowerdata)
-        else
-            upperhist = fit(Histogram, upperdata, nbins = number_of_bins)
-            lowerhist = fit(Histogram, lowerdata, nbins = number_of_bins)
+
+        for j ∈ 1:nlayers
+            concentration = reshape(data["snapshots/Concentration/"*string(i)][:, :, j], :)
+                if number_of_bins == 0
+                    concentration_hist = fit(Histogram, concentration)
+                else
+                    concentration_hist = fit(Histogram, concentration, nbins = number_of_bins)
+                end
+            norm_concentration_hist = normalize(concentration_hist, mode = :probability)
+            cumulative_area = vcat(0, cumsum(reverse(norm_concentration_hist.weights)))
+            conc_edges = reverse(Vector(norm_concentration_hist.edges[1]))
+            cum_area_plot[j] = plot(cumulative_area , conc_edges,
+                                label = false,
+                                xlabel = "Normalised area",
+                                ylabel = "Concentration",
+                                ylims = (0, max_conc[j]),
+                                title = "Layer "*string(j))
         end
-        upperhist = normalize(upperhist, mode = :probability)
-        lowerhist = normalize(lowerhist, mode = :probability)
-        upperarea = vcat(0, cumsum(reverse(upperhist.weights)))
-        lowerarea = vcat(0, cumsum(reverse(lowerhist.weights)))
-        upperconc = reverse(Vector(upperhist.edges[1]))
-        lowerconc = reverse(Vector(lowerhist.edges[1]))
-        p1 = plot(upperarea , upperconc,
-                    label = false,
-                    xlabel = "Normalised area",
-                    ylabel = "Concentration",
-                    ylims = (0, max_conc[1]),
-                    title = "Upper layer"
-                )
-        p2 = plot(lowerarea, lowerconc,
-                    label = false,
-                    xlabel = "Normalised area",
-                    ylabel = "Concentration",
-                    ylims = (0, max_conc[2]),
-                    title = "Lower layer"
-                )
-    plot(p1, p2)
+        if nlayers % 2 == 0
+            plot_layout = (Int(nlayers / 2), 2)
+        else
+            plot_layout = (nlayers, 3)
+        end
+
+        plot(cum_area_plot..., layout = plot_layout)
+        
     end
 
     return ConcVsArea
@@ -211,6 +191,7 @@ diffusion simulation. The input is a loaded .jld2 output file.
 """
 function tracer_plot(data::Dict{String, Any}; plot_freq = 1000)
 
+    nlayers = data["params/nlayers"]
     nsteps = data["clock/nsteps"]
     Lx, Ly = data["grid/Lx"], data["grid/Ly"]
     plotargs = (
@@ -226,22 +207,20 @@ function tracer_plot(data::Dict{String, Any}; plot_freq = 1000)
     
     plot_steps = 0:plot_freq:nsteps
     x, y = data["grid/x"], data["grid/y"]
-    UpperTracerPlots = Plots.Plot{Plots.GRBackend}[]
-    LowerTracerPlots = Plots.Plot{Plots.GRBackend}[]
+    tracer_plots = Array{Plots.Plot{Plots.GRBackend}}(undef, length(plot_steps), nlayers)
+
     for i ∈ plot_steps
-        uppertracer = heatmap(x, y, data["snapshots/Concentration/"*string(i)][:, :, 1]',
-                                title = "C(x,y,t) step = "*string(i); 
-                                plotargs...
-                            )
-        push!(UpperTracerPlots, uppertracer)
-        lowertracer = heatmap(x, y, data["snapshots/Concentration/"*string(i)][:, :, 2]',
-                                title = "C(x,y,t) step = "*string(i); 
-                                plotargs...
-                            )
-        push!(LowerTracerPlots, lowertracer)
+
+        for j ∈ 1:nlayers
+            k = round(Int, i / plot_freq) + 1
+            tracer_plots[k, j] = heatmap(x, y, data["snapshots/Concentration/"*string(i)][:, :, j]',
+                                        title = "C(x,y,t) step = "*string(i); 
+                                        plotargs...)
+        end
+
     end
 
-    return [UpperTracerPlots, LowerTracerPlots]                   
+    return tracer_plots                  
 end
 """
     function tracer_animate(data)
@@ -262,22 +241,29 @@ function tracer_animate(data::Dict{String, Any})
                 ) 
 
     save_freq = data["save_freq"]
+
     if save_freq <=  10
         plot_freq = 10 * save_freq
     else
         plot_freq = save_freq
     end
-    TracerAnimation = @animate for i ∈ 0:plot_freq:nsteps
-        uppertracer = heatmap(x, y, data["snapshots/Concentration/"*string(i)][:, :, 1]',
-                                title = "Upper layer, C(x,y,t) step = "*string(i); 
-                                plotargs...
-                            )
-        lowertracer = heatmap(x, y, data["snapshots/Concentration/"*string(i)][:, :, 2]',
-                                title = "Lower layer, C(x,y,t) step = "*string(i); 
-                                plotargs...
-                            )   
+    tracer_plot = Array{Plots.Plot{Plots.GRBackend}}(undef, nlayers)
 
-        plot(uppertracer, lowertracer, size = (900, 600))
+    TracerAnimation = @animate for i ∈ 0:plot_freq:nsteps
+
+        for j ∈ 1:nlayers
+            tracer_plot[j] = heatmap(x, y, data["snapshots/Concentration/"*string(i)][:, :, j]',
+                                title = "Upper layer, C(x,y,t) step = "*string(i); 
+                                plotargs...)
+        end 
+
+        if nlayers % 2 == 0
+            plot_layout = (Int(nlayers / 2), 2)
+        else
+            plot_layout = (nlayers, 3)
+        end
+
+        plot(tracer_plot..., layout = plot_layout)
     end
 
     return TracerAnimation

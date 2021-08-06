@@ -12,14 +12,14 @@ histplots = hist_plot(data; plot_freq = 1000, xlims_same = false)
 tracerplots = tracer_plot(data; plot_freq = 1000)
 
 #Plot heatmaps and histograms togehter.
-uppertacer = plot(tracerplots[1]...)
+uppertacer = plot(tracerplots[:, 1]...)
 
-upperhist = plot(histplots[1]...)
+upperhist = plot(histplots[:, 1]...)
 plot(uppertacer, upperhist, layout=(2, 1), size = (1200, 1200))
 
-lowertracer = plot(tracerplots[2]...)
+lowertracer = plot(tracerplots[:, 2]...)
 
-lowerhist = plot(histplots[2]...)
+lowerhist = plot(histplots[:, 2]...)
 plot(lowertracer, lowerhist, layout=(2, 1), size = (1200, 1200))
 
 #Time vector for plotting
