@@ -272,18 +272,23 @@ end
 """
     function time_vec(data::Dict{String, Any}; days = false)
 Create a time vector for plotting from the saved .jld2 output.
-To return the time vector as days (in real time) use argrument days = true.
+By defualt the simulation time is what is used for this time vector.
+To return the time vector as seconds use argument time_measure = secs
+To return the time vector as days (in real time) use argrument time_measure = days.
 """
-function  time_vec(data::Dict{String, Any}; days = false)
+function  time_vec(data::Dict{String, Any}; time_measure = nothing)
 
     nsteps = data["clock/nsteps"]
     save_freq = data["save_freq"]
     t = [data["snapshots/t/"*string(i)] for i in 0:save_freq:nsteps]
 
-    if days == true
+    if time_measure == "days"
         phys_params = nondim2dim(data)
         days = 3600 * 24
         t = ((t ./ data["clock/dt"]) .* phys_params["Δt"]) ./ days
+    elseif time_measure == "secs"
+        phys_params = nondim2dim(data)
+        t = (t ./ data["clock/dt"]) .* phys_params["Δt"]
     end
 
     return t
@@ -308,7 +313,7 @@ function tracer_avg_area(data::Dict{String, Any})
 
             C = abs.(reshape(data["snapshots/Concentration/"*string(i)][:, :, j], :)) #Absolute value avoids the negative values
             sort!(C, rev = true)
-            ΣkCₖ =  sum( [k * C[k] for k ∈ 1:length(C)] ) #This might be the second moment if instead of k it is k²?
+            ΣkCₖ =  sum( [k * C[k] for k ∈ 1:length(C)] )
             ΣCₖ = sum(C)
             l = round(Int, i/saved_steps) + 1
             Avg_area[l, j] = ΣkCₖ / ΣCₖ
@@ -332,7 +337,7 @@ function tracer_second_mom(data::Dict{String, Any})
     nsteps = data["clock/nsteps"]
     saved_steps = data["save_freq"]
     plot_steps = 0:saved_steps:nsteps
-    Aₖ = tracer_avg_area(data)
+    A₀ = tracer_avg_area(data)
     second_mom = Array{Float64}(undef, length(plot_steps), nlayers)
 
     for i ∈ plot_steps
@@ -341,9 +346,9 @@ function tracer_second_mom(data::Dict{String, Any})
 
             C = abs.(reshape(data["snapshots/Concentration/"*string(i)][:, :, j], :))
             sort!(C, rev = true)
-            ΣkAₖ²Cₖ = sum( [ (k - A[k])^2 * C[k] for k ∈ 1:length(C) ] )
-            ΣCₖ = sum(C)
             l = round(Int, i/saved_steps) + 1
+            ΣkAₖ²Cₖ = sum( [ (k - A₀[l, j])^2 * C[k] for k ∈ 1:length(C) ] )
+            ΣCₖ = sum(C)
             second_mom[l, j] = ΣkAₖ²Cₖ / ΣCₖ
 
         end

@@ -39,7 +39,16 @@ lowerarea256 = plot(t, area_per[:, 2] .* 2^3,
 save("upper_area4domains.png", upperarea256)
 save("lower_area4domains.png", lowerarea256)
 
-## Look at average area 
+## Look at average area and second moment
+
+t = time_vec(data)
+tsecs = time_vec(data; time_measure = "secs")
+tdays = time_vec(data; time_measure = "days")
 avg_area = tracer_avg_area(data)
-plot(t, avg_area, label = false)
-K = [(avg_area[i + 1, 1] - avg_area[i , 1]) / (2 * (t[i + 1] - t[i])) for i in 1:length(avg_area[:, 1]) - 1]
+second_moments = tracer_second_mom(data)
+
+plot(tdays, avg_area, label = false)
+plot(tdays, second_moments, label = false)
+
+K = second_moments[2:end, :] ./ (2 .* tsecs[2:end])
+plot(tdays[2:end], K, label = false)

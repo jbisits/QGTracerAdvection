@@ -12,14 +12,14 @@ histplots = hist_plot(data; plot_freq = 3000)
 tracerplots = tracer_plot(data; plot_freq = 3000)
 
 #Plot heatmaps and histograms togehter.
-uppertacer = plot(tracerplots[1]...)
+uppertacer = plot(tracerplots[:, 1]...)
 
-upperhist = plot(histplots[1]...)
+upperhist = plot(histplots[:, 1]...)
 plot(uppertacer, upperhist, layout=(2, 1), size = (1200, 1200))
 
-lowertracer = plot(tracerplots[2]...)
+lowertracer = plot(tracerplots[:, 2]...)
 
-lowerhist = plot(histplots[2]...)
+lowerhist = plot(histplots[:, 2]...)
 plot(lowertracer, lowerhist, layout=(2, 1), size = (1200, 1200))
 
 #Time vector for plotting
@@ -28,7 +28,6 @@ t = time_vec(data)
 #Create some plots of concentration diagnostics.
 ConcentrationVaricance = conc_var(data)
 ConcentrationMean = conc_mean(data)
-SecondMoment = ConcentrationVaricance .+ ConcentrationMean.^2
 
 meanplot = plot(t, ConcentrationMean, 
                     label = ["Upper Layer" "Lower layer"],
@@ -45,47 +44,10 @@ varplot = plot(t, ConcentrationVaricance,
                 )
 plot(meanplot, varplot, size = (1000, 600))
 
-plot(t, SecondMoment, 
-        label = ["Upper Layer" "Lower layer"],
-        title = "Inverse of variance of concentration \n over the lower layer grid",
-        xlabel = "t",
-        legend = :bottomright 
-    )
-
-plot(t, 1 ./ SecondMoment, 
-        label = ["Upper Layer" "Lower layer"],
-        title = "Inverse of variance of concentration \n over the upper layer grid",
-        xlabel = "t",
-        legend = :bottomright
-    )
-
-#Instead consider the integral ∫C²dA which is the concentration per unit area as Garrett defines
-conc_int = Garrett_int(data)
-
-plot(t, conc_int, 
-        label = ["Upper layer" "Lower layer"], 
-        xlabel = "t", 
-        ylabel = "∫C²dA",
-        title = "Concentration per unit area \n calculated at each time step"
-    )
-plot!(t, ConcentrationMean,
-        label = ["Upper Layer" "Lower layer"],
-        title = "Variance of concentration \n over the grid",
-        xlabel = "t",
-        ylabel = "Concentration"    
-    )
-plot(t, 1 ./ conc_int, 
-        label = ["Upper layer" "Lower layer"],
-        xlabel = "t", 
-        ylabel = "(∫C²dA)⁻¹",
-        title = "Inverse concentration per unit area \n squared calculated at each time step", 
-        legend = :bottomright
-    )
-
 ConcVsArea = concarea_animate(data)
 mp4(ConcVsArea, "ConcVsArea.mp4", fps=18)
 
-area_per = tracer_area_percentile(data; sd_multiple = 2)
+area_per = tracer_area_percentile(data; Cₚ = 0.5)
 plot(t, area_per, 
     label = ["Upper layer" "Lower layer"],
     title = "Growth of area of tracer patch in both layers layer",
@@ -127,3 +89,17 @@ scatter!([t[315]], [area_per[315, 1]],
         label = "Tracer patch ≈ size of domain",
         annotations = ([t[310]], 3.5, Plots.text("After approx 3.7 years \n tracer patch is size  \n of domain", :left, :green))
         )
+
+## Look at whether the second_mom function produces reasonable output and diffusivity
+
+tsecs = time_vec(data; time_measure = "secs")
+tdays = time_vec(data; time_measure = "days")
+avg_area = tracer_avg_area(data)
+second_moments = tracer_second_mom(data)
+
+plot(t, avg_area)
+plot(t, second_moments)
+
+K = [ (second_moments[i + 1, 2] - second_moments[i, 2]) ./ (2 * (t[i + 1] - t[i])) for i ∈ 1:length(t) - 1]
+K = second_moments ./ (2 .* t)
+plot(tdays, K)
