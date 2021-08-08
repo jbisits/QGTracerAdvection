@@ -78,3 +78,18 @@ ens_plot = plot(ensemble_upper, ensemble_lower, layout = (2,1), size = (1200, 12
 save("ensembleavg.png", ens_plot)
 
 ens_diff = diffusivity(data, [101 1; 101 1]; Cₚ = 0.05)
+
+## Look at average area and second moment
+
+tsecs = time_vec(data[1]; time_measure = "secs")
+tdays = time_vec(data[1]; time_measure = "days")
+
+ensemble_conc = ensemble_concentration(data)
+avg_area = tracer_avg_area(ensemble_conc)
+second_moments = tracer_second_mom(ensemble_conc)
+
+plot(tdays, avg_area, label = false)
+plot(tdays, second_moments ,label = false)
+
+K = second_moments[2:end, :] ./ (2 .* tsecs[2:end])
+plot(tdays[2:end], K, label = false)

@@ -5,7 +5,7 @@ file = joinpath(pwd(), "SimulationData.jld2")
 #Load in the data
 data = load(file)
 
-t = time_vec(data; days = true)
+t = time_vec(data)
 area_per = tracer_area_percentile(data; Cₚ = 0.1)
 p1 = plot(t, area_per, 
         label = ["Upper layer" "Lower layer"],
@@ -22,8 +22,15 @@ plot(p1, logp1, layout = (2, 1), size = (700, 700))
 plot!(upperarea256, t, area_per[:, 1] .* 2^2, label = "32 x 128")
 plot!(lowerarea256, t, area_per[:, 2] .* 2^2, label = "32 x 128")
 
-## Look at average area 
+## Look at average area and second moment
+
+tsecs = time_vec(data; time_measure = "secs")
+tdays = time_vec(data; time_measure = "days")
 avg_area = tracer_avg_area(data)
-plot(t, avg_area, label = false)
-K = [(avg_area[i + 1, 1] - avg_area[i , 1]) / (2 * (t[i + 1] - t[i])) for i in 1:length(avg_area[:, 1]) - 1]
-K[40]
+second_moments = tracer_second_mom(data)
+
+plot(tdays, avg_area, label = false)
+plot(tdays, second_moments ,label = false)
+
+K = second_moments[2:end, :] ./ (2 .* tsecs[2:end])
+plot(tdays[2:end], K, label = false)

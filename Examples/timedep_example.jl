@@ -57,8 +57,8 @@ while cl.step <= nsteps
             xlabel = "x",
             ylabel = "y",
             colorbar = true,
-            xlim = (-g_AD.Lx/2, g_AD.Lx/2),
-            ylim = (-g_AD.Ly/2, g_AD.Ly/2),
+            xlim = (-g.Lx/2, g.Lx/2),
+            ylim = (-g.Ly/2, g.Ly/2),
             title = "C(x,y,t), t = "*string(round(cl.t; digits = 2)))
         push!(tracer_plots, tp);
     elseif round(Int64, cl.step) == round(Int64, plot_time*nsteps)
@@ -68,8 +68,8 @@ while cl.step <= nsteps
             xlabel = "x",
             ylabel = "y",
             colorbar = true,
-            xlim = (-g_AD.Lx/2, g_AD.Lx/2),
-            ylim = (-g_AD.Ly/2, g_AD.Ly/2),
+            xlim = (-g.Lx/2, g.Lx/2),
+            ylim = (-g.Ly/2, g.Ly/2),
             title = "C(x,y,t), t = "*string(round(cl.t; digits = 2)))
         push!(tracer_plots, tp)
         global plot_time = 0.2 + plot_time
@@ -79,5 +79,4 @@ while cl.step <= nsteps
     #If using PassiveTracerFlows comment out above line and use line below
     #TracerAdvectionDiffusion.updatevars!(prob)
 end
-plot(tracer_plots[1], tracer_plots[2], tracer_plots[3], 
-    tracer_plots[4], tracer_plots[5], tracer_plots[6], size=(1200, 1200))
+plot(tracer_plots..., size=(1200, 1200))

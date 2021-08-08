@@ -8,8 +8,7 @@ An initial condition for tracer concentration is set in all layers then either a
 
 The tracer advection in either a steady flow or a time dependent flow remains unchanged from the original version of the module `TraverAdvDiff`.
 
-The module `MeasureMixing.jl` has various functions that can be used to calculate concentration diagnostics from either saved data or as a simulation is run.
-There are also functions that can generate plots and histograms of concentration data that has been saved from a simulation.
+The module `MeasureMixing.jl` has functions that can be used to create plots or animations from saved simulation data, as well as various concentration diagnostics.
 
 
 ## Using the modules
@@ -24,7 +23,7 @@ Then while in the repository's local directory open Julia, activate, and instant
 
 ```julia
 julia>]
-(@v1.5) pkg> activate .
+(@v1.6) pkg> activate .
 (QG_tracer_advection) pkg> instantiate
 ```
 
@@ -60,11 +59,12 @@ julia> include("Modules/MeasureMixing.jl")
 ```
 ### Tracer advection with QG flow 
 An example of how the module advects a passive tracer in a QG flow is given in the script `QGflow_example.jl`. 
-Here the `MultiLayerQG.Problem` from the [documentation](https://fourierflows.github.io/GeophysicalFlowsDocumentation/stable/generated/multilayerqg_2layer/) is used as the flow to advect the tracer.
+Here the `MultiLayerQG.Problem` from the [GeophysicalFlows.jl documentation](https://fourierflows.github.io/GeophysicalFlowsDocumentation/stable/generated/multilayerqg_2layer/) is used as the flow to advect the tracer.
 There are two different initial conditions in the script: a Gaussian "blob" or a Gaussian "strip".
 Both can be moved to different locations on the grid by altering the mean and the concentration about the mean is changed by altering the variance.
-The same initial condition is set in both layers then the problem is stepped forward and the tracer is advected.
-The output is then a series of plots showing the tracer advection.
+The same initial condition is set in both layers then the problem is stepped forward and the tracer is advected-diffused.
+The concentration field is saved to a `.jld2` file at regular intervals specified by the user. 
+After the saved simulation data has been loaded it can then be passed to the various functions of the `MeasureMixing.jl` module as is shown in the example.
 
 After the modules have been loaded into the local environment use the command
 ```julia
@@ -98,12 +98,6 @@ to run the example.
 **Note this script can also be run using the `PassiveTracerFlows` package.**
 There are instructions in the script as to how to do this.
 
-### Measure mixing 
-This example is the same as the tracer advection with QG flow above but includes some diagnostics to measure how the tracer is mixed over time.
-It can be run using 
-```julia
-julia> include("Examples/QGflow_measuremixing.jl")
-```
 ## Honours thesis
 This folder contains the code that I will be using for my honours thesis that I (@jbisits) am currently undertaking at UNSW.
 
