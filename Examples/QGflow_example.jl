@@ -50,7 +50,7 @@ MultiLayerQG.set_q!(QGprob, q₀)
 #Set diffusivity
 κ = 0.01
 #Set delay time (that is flow for t seconds, then drop tracer in)
-delay_time = Δt * 3000
+delay_time = Δt * 1000
 #Set the tracer advection probelm by passing in the QG problem 
 ADprob = TracerAdvDiff_QG.Problem(;prob = QGprob, delay_time = delay_time, inc_background_flow = true, nsubs = nsubs, κ = κ)
 ADsol, ADclock, ADvars, ADparams, ADgrid = ADprob.sol, ADprob.clock, ADprob.vars, ADprob.params, ADprob.grid
@@ -82,17 +82,21 @@ end
 #Set tracer initial condition in both layers
 TracerAdvDiff_QG.QGset_c!(ADprob, C₀)
 
-#Function to get the concentration field from the simulation, set frequecny at which data should be saved and create a file to save output to. 
+#Function to get the concentration field from the simulation
 function GetConcentration(ADprob)
     Concentration = @. ADprob.vars.c
     return Concentration
 end
+#Set frequecny at which data should be saved
 save_freq = 25
+#Create a file to save output to
 filename = joinpath(pwd(), "AdvectionDiffusionSim.jld2")
+#Create output
 ADOutput = Output(ADprob, filename, (:Concentration, GetConcentration))
+#Save various parts of the problem that are then used by `MeasureMixing.jl`
 saveproblem(ADOutput)
 
-#Step the tracer advection problem forward and plot at the desired time step.
+#Step the tracer advection-diffusion problem forward and saved data at specified time step.
 while ADclock.step <= nsteps
 
     if ADclock.step % save_freq == 0
@@ -105,7 +109,7 @@ while ADclock.step <= nsteps
 
 end
 
-#Save the number of steps in the simulation and some other info
+#Save the number of steps in the simulation and some other info for use with `MeasureMixing.jl`
 jldopen(ADOutput.path, "a+") do path
     path["clock/nsteps"] = ADclock.step - 1
     path["save_freq"] = save_freq
