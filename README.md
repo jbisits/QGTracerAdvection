@@ -23,7 +23,7 @@ Then while in the repository's local directory open Julia, activate, and instant
 
 ```julia
 julia>]
-(@v1.5) pkg> activate .
+(@v1.6) pkg> activate .
 (QG_tracer_advection) pkg> instantiate
 ```
 
@@ -59,11 +59,12 @@ julia> include("Modules/MeasureMixing.jl")
 ```
 ### Tracer advection with QG flow 
 An example of how the module advects a passive tracer in a QG flow is given in the script `QGflow_example.jl`. 
-Here the `MultiLayerQG.Problem` from the [documentation](https://fourierflows.github.io/GeophysicalFlowsDocumentation/stable/generated/multilayerqg_2layer/) is used as the flow to advect the tracer.
+Here the `MultiLayerQG.Problem` from the [GeophysicalFlows.jl documentation](https://fourierflows.github.io/GeophysicalFlowsDocumentation/stable/generated/multilayerqg_2layer/) is used as the flow to advect the tracer.
 There are two different initial conditions in the script: a Gaussian "blob" or a Gaussian "strip".
 Both can be moved to different locations on the grid by altering the mean and the concentration about the mean is changed by altering the variance.
 The same initial condition is set in both layers then the problem is stepped forward and the tracer is advected-diffused.
-The concentration field is then saved to a `.jld2` file which can then be passed to the various functions of the `MeasureMixing.jl` module as is shown in the example.
+The concentration field is saved to a `.jld2` file at regular intervals specified by the user. 
+After the saved simulation data has been loaded it can then be passed to the various functions of the `MeasureMixing.jl` module as is shown in the example.
 
 After the modules have been loaded into the local environment use the command
 ```julia
