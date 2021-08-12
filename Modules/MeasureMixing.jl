@@ -364,7 +364,7 @@ function tracer_second_mom(data::Array{Dict{String, Any}})
     nsteps = data[1]["clock/nsteps"]
     saved_steps = data[1]["save_freq"]
     plot_steps = 0:saved_steps:nsteps
-    no_of_sims = data[1]["no_of_sims"]
+    no_of_sims = length(data)
     second_mom = Array{Float64}(undef, length(plot_steps), nlayers, no_of_sims)
 
     for n ∈ 1:no_of_sims
@@ -462,21 +462,25 @@ Calculate average concentration from the tracer field of the ensemble simulation
 """
 function ensemble_concentration(data::Array{Dict{String, Any}})
 
-    saved_vals = 0:data[1]["save_freq"]:data[1]["clock/nsteps"]
-    ensemble_conc = data[1]
+    save_freq = data[1]["save_freq"]
+    nsteps = data[1]["clock/nsteps"]
+    saved_vals = 0:save_freq:nsteps
+    ensemble_concentration = data[1]
     no_of_sims = length(data)
+
     for i ∈ 2:no_of_sims
+
         for j ∈ saved_vals
-        @. ensemble_conc["snapshots/Concentration/"*string(j)]  += data[i]["snapshots/Concentration/"*string(j)] 
+          @. ensemble_concentration["snapshots/Concentration/"*string(j)] += data[i]["snapshots/Concentration/"*string(j)]
         end
-        if i == no_of_sims
-            for j ∈ saved_vals
-            @. ensemble_conc["snapshots/Concentration/"*string(j)]  / no_of_sims
-            end
-        end
+
     end
 
-    return ensemble_conc
+    for j ∈ saved_vals
+        @.  ensemble_concentration["snapshots/Concentration/"*string(j)]  /=  no_of_sims
+    end
+
+    return ensemble_concentration
 
 end
 """
@@ -485,10 +489,10 @@ Fit an exponential curve via least squares to the second stage of the growth of 
 the tracer patch as calculated from the `tracer_area_percentile` function.
 The data is fitted from 1:tfitfinal which can be specified then the plot is calculated for length tplot_length.
 """
-function exp_fit(data::Dict{String, Any}; Cₚ = 0.5, tfitfinal = 100, tplot_length = 10, days = false)
+function exp_fit(data::Dict{String, Any}; Cₚ = 0.5, tfitfinal = 100, tplot_length = 10, time_measure = nothing)
 
     area_per = tracer_area_percentile(data; Cₚ = 0.5)
-    t = time_vec(data; days = days)
+    t = time_vec(data; time_measure)
     tplot = t[1:tfitfinal + tplot_length]
     t = t[1:tfitfinal]
     nlayers = data["params/nlayers"]
@@ -508,10 +512,10 @@ Fit a linear curve via least squares to the third stage of the growth of the are
 the tracer patch as calculated from the `tracer_area_percentile` function. The data is fitted over the interval
 tfitvals and the length of the out plotting vectors can be specified by extra argument tplot_length.
 """
-function linear_fit(data::Dict{String, Any}; Cₚ = 0.5, tfitvals = [100, 250], tplot_length = [10 0], days = false)
+function linear_fit(data::Dict{String, Any}; Cₚ = 0.5, tfitvals = [100, 250], tplot_length = [10 0], time_measure = nothing)
     
     area_per = tracer_area_percentile(data; Cₚ)
-    t = time_vec(data; days = days)
+    t = time_vec(data; time_measure)
     tplot = t[tfitvals[1] - tplot_length[1] : tfitvals[2] + tplot_length[2]]
     t = t[tfitvals[1] : tfitvals[2]]
     nlayers = data["params/nlayers"]

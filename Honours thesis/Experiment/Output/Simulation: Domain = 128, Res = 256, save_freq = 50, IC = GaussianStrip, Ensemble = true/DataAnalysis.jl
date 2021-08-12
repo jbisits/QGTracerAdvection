@@ -81,15 +81,33 @@ ens_diff = diffusivity(data, [101 1; 101 1]; Cₚ = 0.05)
 
 ## Look at average area and second moment
 
-tsecs = time_vec(data[1]; time_measure = "secs")
-tdays = time_vec(data[1]; time_measure = "days")
+second_moms = tracer_second_mom(data)
+ens_conc = ensemble_concentration(data)
+ens_second_mom = tracer_second_mom(ens_conc)
 
-ensemble_conc = ensemble_concentration(data)
-avg_area = tracer_avg_area(ensemble_conc)
-second_moments = tracer_second_mom(ensemble_conc)
+t = time_vec(data[1])
 
-plot(tdays, avg_area, label = false)
-plot(tdays, second_moments ,label = false)
+## Top layer
+top_layer = plot(t, second_moms[:, 1, 1], 
+                label = "Ensemble member "*string(1), 
+                xlabel = "t",
+                ylabel = "σ²(t)",
+                legend = :bottomright)
+for i ∈ 2:length(data)
+    plot!(top_layer, t, second_moms[:, 1, i], label = "Ensemble member "*string(i))
+end
+plot!(top_layer, t, ens_second_mom[:, 1], label = "Ensemble average", line = (:dash, 3, :black))
 
-K = second_moments[2:end, :] ./ (2 .* tsecs[2:end])
-plot(tdays[2:end], K, label = false)
+## Bottom layer
+bottom_layer = plot(t, second_moms[:, 2, 1], 
+                label = "Ensemble member "*string(1), 
+                xlabel = "t",
+                ylabel = "σ²(t)",
+                legend = :bottomright)
+for i ∈ 2:length(data)
+    plot!(bottom_layer, t, second_moms[:, 2, i], label = "Ensemble member "*string(i))
+end
+plot!(bottom_layer, t, ens_second_mom[:, 2], label = "Ensemble average", line = (:dash, 3, :black))
+
+## 
+plot(top_layer, bottom_layer, layout = (2, 1), size = (1200, 1200))
