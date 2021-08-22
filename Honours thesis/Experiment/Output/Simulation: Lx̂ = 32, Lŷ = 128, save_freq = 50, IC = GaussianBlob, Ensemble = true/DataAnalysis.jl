@@ -43,3 +43,8 @@ plot!(bottom_layer, t, ens_second_mom[:, 2], label = "Ensemble average", line = 
 
 ##
 plot(top_layer, bottom_layer, layout = (2, 1), size = (1200, 1200))
+
+##
+t = time_vec(data[1]; time_measure = "secs")
+avg_area = tracer_avg_area(data[1])
+plot(t, avg_area, label = false)

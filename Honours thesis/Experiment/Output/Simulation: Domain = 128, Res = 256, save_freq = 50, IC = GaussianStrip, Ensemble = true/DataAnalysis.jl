@@ -48,7 +48,7 @@ save("tenensemble_area_per.png", ensemble_area_per)
 
 ## Ensemble area (Growth of average of concentration field)
 t = time_vec(data[1])
-area_per = tracer_area_percentile(data; Cₚ = 0.05)
+area_per = tracer_area_percentile(data; Cₚ = 0.999)
 ensemble_conc = ensemble_concentration(data)
 ensemble_area = tracer_area_percentile(ensemble_conc; Cₚ = 0.05)
 
@@ -78,6 +78,11 @@ ens_plot = plot(ensemble_upper, ensemble_lower, layout = (2,1), size = (1200, 12
 save("ensembleavg.png", ens_plot)
 
 ens_diff = diffusivity(data, [101 1; 101 1]; Cₚ = 0.05)
+
+##
+t = time_vec(data[1]; time_measure = "secs")
+avg_area = tracer_avg_area(data[1])
+plot(t, avg_area, label = false)
 
 ## Look at average area and second moment
 
