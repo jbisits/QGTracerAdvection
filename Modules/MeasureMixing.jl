@@ -14,7 +14,6 @@ export
     tracer_animate,
     time_vec,
     tracer_avg_area,
-    tracer_second_mom,
     tracer_area_percentile,
     avg_ensemble_tracer_area,
     ensemble_average_area,
@@ -325,62 +324,27 @@ function tracer_avg_area(data::Dict{String, Any})
     return Avg_area
 
 end
-"""
-    function tracer_second_mom(data::Dict{String, Any})
-Compute the second moment (centred) of the ordered (highest to lowest) concentration field C(A) by
-        ``\frac{∫(A - A₀)²C(A)dA}{∫C(A)dA} = \frac{Σ(k - Aₖ)²Cₖ}{ΣCₖ}`` for k ∈ 1: No. of grid cells,
-with Aₖ the centre of mass calculated by `tracer_avg_area`.
-"""
-function tracer_second_mom(data::Dict{String, Any})
+
+function tracer_avg_area(data::Array{Dict{String, Any}})
 
     nlayers = data["params/nlayers"]
     nsteps = data["clock/nsteps"]
     saved_steps = data["save_freq"]
     plot_steps = 0:saved_steps:nsteps
-    A₀ = tracer_avg_area(data)
-    second_mom = Array{Float64}(undef, length(plot_steps), nlayers)
+    Avg_area = Array{Float64}(undef, length(plot_steps), nlayers, length(data))
 
-    for i ∈ plot_steps
+    for i ∈ 1:length(data)
 
-        for j ∈ 1:nlayers
+        for j ∈ plot_steps
 
-            C = abs.(reshape(data["snapshots/Concentration/"*string(i)][:, :, j], :))
-            sort!(C, rev = true)
-            l = round(Int, i/saved_steps) + 1
-            ΣkAₖ²Cₖ = sum( [ (k - A₀[l, j])^2 * C[k] for k ∈ 1:length(C) ] )
-            ΣCₖ = sum(C)
-            second_mom[l, j] = ΣkAₖ²Cₖ / ΣCₖ
+            for l ∈ 1:nlayers
 
-        end
-
-    end
-
-    return second_mom
-end
-
-function tracer_second_mom(data::Array{Dict{String, Any}})
-
-    nlayers = data[1]["params/nlayers"]
-    nsteps = data[1]["clock/nsteps"]
-    saved_steps = data[1]["save_freq"]
-    plot_steps = 0:saved_steps:nsteps
-    no_of_sims = length(data)
-    second_mom = Array{Float64}(undef, length(plot_steps), nlayers, no_of_sims)
-
-    for n ∈ 1:no_of_sims
-
-        A₀ = tracer_avg_area(data[n])
-
-        for i ∈ plot_steps
-
-            for j ∈ 1:nlayers
-
-                C = abs.(reshape(data[n]["snapshots/Concentration/"*string(i)][:, :, j], :))
+                C = abs.(reshape(data["snapshots/Concentration/"*string(j)][:, :, l], :)) #Absolute value avoids the negative values
                 sort!(C, rev = true)
-                l = round(Int, i/saved_steps) + 1
-                ΣkAₖ²Cₖ = sum( [ (k - A₀[l, j])^2 * C[k] for k ∈ 1:length(C) ] )
+                ΣkCₖ =  sum( [k * C[k] for k ∈ 1:length(C)] )
                 ΣCₖ = sum(C)
-                second_mom[l, j, n] = ΣkAₖ²Cₖ / ΣCₖ
+                m = round(Int, j/saved_steps) + 1
+                Avg_area[m, l, i] = ΣkCₖ / ΣCₖ
 
             end
 
@@ -388,8 +352,9 @@ function tracer_second_mom(data::Array{Dict{String, Any}})
 
     end
 
-    return second_mom
+    return Avg_area
 end
+
  """
     function tracer_area_percentile(data::Dict{String, Any})
 Compute the percentile of area from a concentration field using 
