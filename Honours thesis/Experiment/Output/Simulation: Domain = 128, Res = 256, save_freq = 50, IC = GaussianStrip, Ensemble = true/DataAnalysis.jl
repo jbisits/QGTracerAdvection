@@ -101,5 +101,5 @@ plot!(t, avg_area_ens[:, 1], line = (:dash, 2, :black), label = "Ensemble")
 scatter!([t[70]], [avg_area_ens[70, 1]], color = :red, label = false)
 
 K = avg_area_ens[70, 1] / (4 * π * t[70])
-#K is a diffusivity and is translated into dimensions by U * Ld where U = 0.1m/s and Ld = 29862m
+#K is a diffusivity and is translated into dimensions by (U * Ld) * K where U = 0.1m/s and Ld = 29862m
 Kdim = (0.1 * 29862) * K
