@@ -327,9 +327,9 @@ end
 
 function tracer_avg_area(data::Array{Dict{String, Any}})
 
-    nlayers = data["params/nlayers"]
-    nsteps = data["clock/nsteps"]
-    saved_steps = data["save_freq"]
+    nlayers = data[1]["params/nlayers"]
+    nsteps = data[1]["clock/nsteps"]
+    saved_steps = data[1]["save_freq"]
     plot_steps = 0:saved_steps:nsteps
     Avg_area = Array{Float64}(undef, length(plot_steps), nlayers, length(data))
 
@@ -339,7 +339,7 @@ function tracer_avg_area(data::Array{Dict{String, Any}})
 
             for l ∈ 1:nlayers
 
-                C = abs.(reshape(data["snapshots/Concentration/"*string(j)][:, :, l], :)) #Absolute value avoids the negative values
+                C = abs.(reshape(data[i]["snapshots/Concentration/"*string(j)][:, :, l], :)) #Absolute value avoids the negative values
                 sort!(C, rev = true)
                 ΣkCₖ =  sum( [k * C[k] for k ∈ 1:length(C)] )
                 ΣCₖ = sum(C)

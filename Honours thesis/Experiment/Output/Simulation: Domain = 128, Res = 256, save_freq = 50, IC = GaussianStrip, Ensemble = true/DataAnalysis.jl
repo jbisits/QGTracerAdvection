@@ -84,35 +84,22 @@ t = time_vec(data[1]; time_measure = "secs")
 avg_area = tracer_avg_area(data[1])
 plot(t, avg_area, label = false)
 
-## Look at average area and second moment
-
-second_moms = tracer_second_mom(data)
-ens_conc = ensemble_concentration(data)
-ens_second_mom = tracer_second_mom(ens_conc)
+## Look at average area 
 
 t = time_vec(data[1])
+avg_area_members = tracer_avg_area(data)
+plot(t, avg_area_members[:, 1, :], 
+    title = "Average area of ensemble memebers and \n ensemble average from Gaussian strip (top layer)",
+    legend = :bottomright,
+    size = (800, 600))
 
-## Top layer
-top_layer = plot(t, second_moms[:, 1, 1], 
-                label = "Ensemble member "*string(1), 
-                xlabel = "t",
-                ylabel = "σ²(t)",
-                legend = :bottomright)
-for i ∈ 2:length(data)
-    plot!(top_layer, t, second_moms[:, 1, i], label = "Ensemble member "*string(i))
-end
-plot!(top_layer, t, ens_second_mom[:, 1], label = "Ensemble average", line = (:dash, 3, :black))
+ens_conc = ensemble_concentration(data)
+avg_area_ens = tracer_avg_area(ens_conc)
+plot!(t, avg_area_ens[:, 1], line = (:dash, 2, :black), label = "Ensemble")
 
-## Bottom layer
-bottom_layer = plot(t, second_moms[:, 2, 1], 
-                label = "Ensemble member "*string(1), 
-                xlabel = "t",
-                ylabel = "σ²(t)",
-                legend = :bottomright)
-for i ∈ 2:length(data)
-    plot!(bottom_layer, t, second_moms[:, 2, i], label = "Ensemble member "*string(i))
-end
-plot!(bottom_layer, t, ens_second_mom[:, 2], label = "Ensemble average", line = (:dash, 3, :black))
+## Now calculate diffusivity from the slope of the line
+scatter!([t[70]], [avg_area_ens[70, 1]], color = :red, label = false)
 
-## 
-plot(top_layer, bottom_layer, layout = (2, 1), size = (1200, 1200))
+K = avg_area_ens[70, 1] / (4 * π * t[70])
+#K is a diffusivity and is translated into dimensions by U * Ld where U = 0.1m/s and Ld = 29862m
+Kdim = (0.1 * 29862) * K
