@@ -52,3 +52,8 @@ plot(tdays, second_moments, label = false)
 
 K = second_moments[2:end, :] ./ (2 .* tsecs[2:end])
 plot(tdays[2:end], K, label = false)
+
+## Look at concentration ~ grid cells
+
+concVarea = concarea_animate(data)
+mp4(concVarea, "ConcVsArea.mp4", fps = 18)

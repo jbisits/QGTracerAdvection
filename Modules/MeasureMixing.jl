@@ -101,10 +101,10 @@ function hist_plot(data::Dict{String, Any}; plot_freq = 1000, number_of_bins = 0
 end
 """
     function concarea_plot(data)
-Create plots of Concetration ~ normalised area at the same time steps as the tracer plots from the 
+Create plots of Concetration ~ grid cells at the same time steps as the tracer plots from the 
 saved data in the output file. The input `data` is the loaded .jld2 file.
 """
-function concarea_plot(data::Dict{String, Any}; plot_freq = 1000, number_of_bins = 0)
+function concarea_plot(data::Dict{String, Any}; plot_freq = 1000)
 
     nlayers = data["params/nlayers"]
     nsteps = data["clock/nsteps"]
@@ -117,18 +117,12 @@ function concarea_plot(data::Dict{String, Any}; plot_freq = 1000, number_of_bins
         for j ∈ 1:nlayers
 
             concentration = reshape(data["snapshots/Concentration/"*string(i)][:, :, j], :)
-                if number_of_bins == 0
-                    concentration_hist = fit(Histogram, concentration)
-                else
-                    concentration_hist = fit(Histogram, concentration, nbins = number_of_bins)
-                end
-            norm_concentration_hist = normalize(concentration_hist, mode = :probability)
-            cumulative_area = vcat(0, cumsum(reverse(norm_concentration_hist.weights)))
-            conc_edges = reverse(Vector(norm_concentration_hist.edges[1]))
+            sort!(concentration, rev = true)
+            grid_cells = 1:length(concentration)
             k = round(Int, i / plot_freq) + 1
-            ConcentrationArea[k, j] = plot(cumulative_area , conc_edges,
+            ConcentrationArea[k, j] = plot(grid_cells , concentration,
                                                 label = false,
-                                                xlabel = "Normalised area",
+                                                xlabel = "Grid cells",
                                                 ylabel = "Concentration",
                                                 ylims = (0, max_conc[j]),
                                                 title = "Layer "*string(j))
@@ -138,9 +132,9 @@ function concarea_plot(data::Dict{String, Any}; plot_freq = 1000, number_of_bins
 end
 """
     function concarea_animate(data)
-Create an animation of Concetration ~ normalised area from the saved data in the output file.
+Create an animation of Concetration ~ grid cells from the saved data in the output file.
 """
-function concarea_animate(data::Dict{String, Any}; number_of_bins = 0)
+function concarea_animate(data::Dict{String, Any})
 
     save_freq = data["save_freq"]
     if save_freq <  10
@@ -157,17 +151,12 @@ function concarea_animate(data::Dict{String, Any}; number_of_bins = 0)
 
         for j ∈ 1:nlayers
             concentration = reshape(data["snapshots/Concentration/"*string(i)][:, :, j], :)
-                if number_of_bins == 0
-                    concentration_hist = fit(Histogram, concentration)
-                else
-                    concentration_hist = fit(Histogram, concentration, nbins = number_of_bins)
-                end
-            norm_concentration_hist = normalize(concentration_hist, mode = :probability)
-            cumulative_area = vcat(0, cumsum(reverse(norm_concentration_hist.weights)))
-            conc_edges = reverse(Vector(norm_concentration_hist.edges[1]))
-            cum_area_plot[j] = plot(cumulative_area , conc_edges,
+            concentration = reshape(data["snapshots/Concentration/"*string(i)][:, :, j], :)
+            sort!(concentration, rev = true)
+            grid_cells = 1:length(concentration)
+            cum_area_plot[j] = plot(grid_cells, concentration,
                                 label = false,
-                                xlabel = "Normalised area",
+                                xlabel = "Grid cells",
                                 ylabel = "Concentration",
                                 ylims = (0, max_conc[j]),
                                 title = "Layer "*string(j))
