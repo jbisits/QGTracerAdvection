@@ -5,7 +5,23 @@ file = joinpath(pwd(), "SimulationData.jld2")
 #Load in the data
 data = load(file)
 
-#Produce histogram plots from the saved concentration data
+## There is some useful stuff here but below is not really so useful
+t = time_vec(data)
+first_mom = first_moment(data)
+second_mom = second_moment(data)
+plot(t, first_mom, label = false)
+plot(t[250:400], first_mom[250:400, 1], label = false)
+plot(t, second_mom)
+#=
+Based on the way things are computed in the Pluto notebook would expect the linear
+would expect the linear phase of this to be growing at 4πKt, so to calculate K
+need K = ΔA / (4πΔt). This is is non-dim space, to get back to dim need ≈ 2900 * K 
+=#
+ΔA = first_mom[400, 1] - first_mom[250, 1]
+Δt = t[400] - t[250]
+K = ΔA / (4 * π * Δt)
+
+## Produce histogram plots from the saved concentration data
 histplots = hist_plot(data; plot_freq = 1000, xlims_same = false)
 
 #Produce heatmaps of tacer concentration from the saved concentration data

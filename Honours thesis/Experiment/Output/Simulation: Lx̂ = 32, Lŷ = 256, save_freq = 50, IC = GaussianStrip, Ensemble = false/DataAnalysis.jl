@@ -42,17 +42,10 @@ save("lower_area4domains.png", lowerarea256)
 ## Look at average area and second moment
 
 t = time_vec(data)
-tsecs = time_vec(data; time_measure = "secs")
-tdays = time_vec(data; time_measure = "days")
-avg_area = tracer_avg_area(data)
-second_moments = tracer_second_mom(data)
-
-plot(tdays, avg_area, label = false)
-plot(tdays, second_moments, label = false)
-
-K = second_moments[2:end, :] ./ (2 .* tsecs[2:end])
-plot(tdays[2:end], K, label = false)
-
+first_mom = first_moment(data)
+second_mom = second_moment(data)
+plot(t, first_mom)
+plot(t, second_mom)
 ## Look at concentration ~ grid cells
 
 concVarea = concarea_animate(data)
