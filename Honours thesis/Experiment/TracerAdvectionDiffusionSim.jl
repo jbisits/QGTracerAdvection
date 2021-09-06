@@ -17,7 +17,7 @@ include("PackageSetup.jl")
 # Rectangular domain flows (longer in meridional direction)
 #include("Flows/Rectangle/FlowSetup_nondim_32_64domain.jl")
 #include("Flows/Rectangle/FlowSetup_nondim_32_128domain.jl")
-include("Flows/Rectangle/FlowSetup_nondim_32_256domain.jl")
+#include("Flows/Rectangle/FlowSetup_nondim_32_256domain.jl")
 #include("Flows/Rectangle/FlowSetup_nondim_64_128domain.jl")
 #include("Flows/Rectangle/FlowSetup_nondim_64_256domain.jl")
 

@@ -48,7 +48,7 @@ save("tenensemble_area_per.png", ensemble_area_per)
 
 ## Ensemble area (Growth of average of concentration field)
 t = time_vec(data[1])
-area_per = tracer_area_percentile(data; Cₚ = 0.05)
+area_per = tracer_area_percentile(data; Cₚ = 0.999)
 ensemble_conc = ensemble_concentration(data)
 ensemble_area = tracer_area_percentile(ensemble_conc; Cₚ = 0.05)
 
@@ -79,17 +79,27 @@ save("ensembleavg.png", ens_plot)
 
 ens_diff = diffusivity(data, [101 1; 101 1]; Cₚ = 0.05)
 
-## Look at average area and second moment
+##
+t = time_vec(data[1]; time_measure = "secs")
+avg_area = tracer_avg_area(data[1])
+plot(t, avg_area, label = false)
 
-tsecs = time_vec(data[1]; time_measure = "secs")
-tdays = time_vec(data[1]; time_measure = "days")
+## Look at average area 
 
-ensemble_conc = ensemble_concentration(data)
-avg_area = tracer_avg_area(ensemble_conc)
-second_moments = tracer_second_mom(ensemble_conc)
+t = time_vec(data[1])
+avg_area_members = tracer_avg_area(data)
+plot(t, avg_area_members[:, 1, :], 
+    title = "Average area of ensemble memebers and \n ensemble average from Gaussian strip (top layer)",
+    legend = :bottomright,
+    size = (800, 600))
 
-plot(tdays, avg_area, label = false)
-plot(tdays, second_moments ,label = false)
+ens_conc = ensemble_concentration(data)
+avg_area_ens = tracer_avg_area(ens_conc)
+plot!(t, avg_area_ens[:, 1], line = (:dash, 2, :black), label = "Ensemble")
 
-K = second_moments[2:end, :] ./ (2 .* tsecs[2:end])
-plot(tdays[2:end], K, label = false)
+## Now calculate diffusivity from the slope of the line
+scatter!([t[70]], [avg_area_ens[70, 1]], color = :red, label = false)
+
+K = avg_area_ens[70, 1] / (4 * π * t[70])
+#K is a diffusivity and is translated into dimensions by (U * Ld) * K where U = 0.1m/s and Ld = 29862m
+Kdim = (0.1 * 29862) * K

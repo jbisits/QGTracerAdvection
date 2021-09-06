@@ -13,8 +13,8 @@ export
     tracer_plot,
     tracer_animate,
     time_vec,
-    tracer_avg_area,
-    tracer_second_mom,
+    first_moment,
+    second_moment,
     tracer_area_percentile,
     avg_ensemble_tracer_area,
     ensemble_average_area,
@@ -102,10 +102,10 @@ function hist_plot(data::Dict{String, Any}; plot_freq = 1000, number_of_bins = 0
 end
 """
     function concarea_plot(data)
-Create plots of Concetration ~ normalised area at the same time steps as the tracer plots from the 
+Create plots of Concetration ~ grid cells at the same time steps as the tracer plots from the 
 saved data in the output file. The input `data` is the loaded .jld2 file.
 """
-function concarea_plot(data::Dict{String, Any}; plot_freq = 1000, number_of_bins = 0)
+function concarea_plot(data::Dict{String, Any}; plot_freq = 1000)
 
     nlayers = data["params/nlayers"]
     nsteps = data["clock/nsteps"]
@@ -118,18 +118,12 @@ function concarea_plot(data::Dict{String, Any}; plot_freq = 1000, number_of_bins
         for j ∈ 1:nlayers
 
             concentration = reshape(data["snapshots/Concentration/"*string(i)][:, :, j], :)
-                if number_of_bins == 0
-                    concentration_hist = fit(Histogram, concentration)
-                else
-                    concentration_hist = fit(Histogram, concentration, nbins = number_of_bins)
-                end
-            norm_concentration_hist = normalize(concentration_hist, mode = :probability)
-            cumulative_area = vcat(0, cumsum(reverse(norm_concentration_hist.weights)))
-            conc_edges = reverse(Vector(norm_concentration_hist.edges[1]))
+            sort!(concentration, rev = true)
+            grid_cells = 1:length(concentration)
             k = round(Int, i / plot_freq) + 1
-            ConcentrationArea[k, j] = plot(cumulative_area , conc_edges,
+            ConcentrationArea[k, j] = plot(grid_cells , concentration,
                                                 label = false,
-                                                xlabel = "Normalised area",
+                                                xlabel = "Grid cells",
                                                 ylabel = "Concentration",
                                                 ylims = (0, max_conc[j]),
                                                 title = "Layer "*string(j))
@@ -139,9 +133,9 @@ function concarea_plot(data::Dict{String, Any}; plot_freq = 1000, number_of_bins
 end
 """
     function concarea_animate(data)
-Create an animation of Concetration ~ normalised area from the saved data in the output file.
+Create an animation of Concetration ~ grid cells from the saved data in the output file.
 """
-function concarea_animate(data::Dict{String, Any}; number_of_bins = 0)
+function concarea_animate(data::Dict{String, Any})
 
     save_freq = data["save_freq"]
     if save_freq <  10
@@ -158,17 +152,12 @@ function concarea_animate(data::Dict{String, Any}; number_of_bins = 0)
 
         for j ∈ 1:nlayers
             concentration = reshape(data["snapshots/Concentration/"*string(i)][:, :, j], :)
-                if number_of_bins == 0
-                    concentration_hist = fit(Histogram, concentration)
-                else
-                    concentration_hist = fit(Histogram, concentration, nbins = number_of_bins)
-                end
-            norm_concentration_hist = normalize(concentration_hist, mode = :probability)
-            cumulative_area = vcat(0, cumsum(reverse(norm_concentration_hist.weights)))
-            conc_edges = reverse(Vector(norm_concentration_hist.edges[1]))
-            cum_area_plot[j] = plot(cumulative_area , conc_edges,
+            concentration = reshape(data["snapshots/Concentration/"*string(i)][:, :, j], :)
+            sort!(concentration, rev = true)
+            grid_cells = 1:length(concentration)
+            cum_area_plot[j] = plot(grid_cells, concentration,
                                 label = false,
-                                xlabel = "Normalised area",
+                                xlabel = "Grid cells",
                                 ylabel = "Concentration",
                                 ylims = (0, max_conc[j]),
                                 title = "Layer "*string(j))
@@ -296,16 +285,15 @@ end
 """
     function tracer_avg_area(data::Dict{String, Any})
 Calculate the average area of the tracer patch. This is done by  
-    ``\frac{(∫A * C(A) dA)}{∫∫C dA} ≈ \frac{ΣkCₖ}{ΣCₖ}``  for k ∈ 1: No. of grid cells.
+    ``\frac{(∫A * C(A) dA)}{∫∫C dA} ≈ (ΔxΔy)\frac{ΣkCₖ}{ΣCₖ}``  for k ∈ 1:No. of grid cells.
 """
-function tracer_avg_area(data::Dict{String, Any})
-
+function first_moment(data::Dict{String, Any})
 
     nlayers = data["params/nlayers"]
     nsteps = data["clock/nsteps"]
     saved_steps = data["save_freq"]
     plot_steps = 0:saved_steps:nsteps
-    Avg_area = Array{Float64}(undef, length(plot_steps), nlayers)
+    first_mom = Array{Float64}(undef, length(plot_steps), nlayers)
  
     for i ∈ plot_steps
 
@@ -313,49 +301,117 @@ function tracer_avg_area(data::Dict{String, Any})
 
             C = abs.(reshape(data["snapshots/Concentration/"*string(i)][:, :, j], :)) #Absolute value avoids the negative values
             sort!(C, rev = true)
-            ΣkCₖ =  sum( [k * C[k] for k ∈ 1:length(C)] )
-            ΣCₖ = sum(C)
+            N = length(C)
+            Δx = data["grid/Lx"] / data["grid/nx"]
+            Δy = data["grid/Ly"] / data["grid/ny"]
+            ΣkCₖ =  (Δx * Δy)^2 * sum( [k * C[k] for k ∈ 1:N] )
+            ΣCₖ = (Δx * Δy) * sum(C)
             l = round(Int, i/saved_steps) + 1
-            Avg_area[l, j] = ΣkCₖ / ΣCₖ
+            first_mom[l, j] = ΣkCₖ / ΣCₖ
 
         end
                     
     end
 
-    return Avg_area
+    return first_mom
 
 end
-"""
-    function tracer_second_mom(data::Dict{String, Any})
-Compute the second moment (centred) of the ordered (highest to lowest) concentration field C(A) by
-        ``\frac{∫(A - A₀)²C(A)dA}{∫C(A)dA} = \frac{Σ(k - Aₖ)²Cₖ}{ΣCₖ}`` for k ∈ 1: No. of grid cells,
-with Aₖ the centre of mass calculated by `tracer_avg_area`.
-"""
-function tracer_second_mom(data::Dict{String, Any})
 
-    nlayers = data["params/nlayers"]
-    nsteps = data["clock/nsteps"]
-    saved_steps = data["save_freq"]
+function first_moment(data::Array{Dict{String, Any}})
+
+    nlayers = data[1]["params/nlayers"]
+    nsteps = data[1]["clock/nsteps"]
+    saved_steps = data[1]["save_freq"]
     plot_steps = 0:saved_steps:nsteps
-    A₀ = tracer_avg_area(data)
-    second_mom = Array{Float64}(undef, length(plot_steps), nlayers)
+    first_mom = Array{Float64}(undef, length(plot_steps), nlayers, length(data))
 
-    for i ∈ plot_steps
+    for i ∈ 1:length(data)
 
-        for j ∈ 1:nlayers
+        for j ∈ plot_steps
 
-            C = abs.(reshape(data["snapshots/Concentration/"*string(i)][:, :, j], :))
-            sort!(C, rev = true)
-            l = round(Int, i/saved_steps) + 1
-            ΣkAₖ²Cₖ = sum( [ (k - A₀[l, j])^2 * C[k] for k ∈ 1:length(C) ] )
-            ΣCₖ = sum(C)
-            second_mom[l, j] = ΣkAₖ²Cₖ / ΣCₖ
+            for l ∈ 1:nlayers
+
+                C = abs.(reshape(data[i]["snapshots/Concentration/"*string(j)][:, :, l], :)) #Absolute value avoids the negative values
+                sort!(C, rev = true)
+                N = length(C)
+                Δx = data["grid/Lx"] / data["grid/nx"]
+                Δy = data["grid/Ly"] / data["grid/ny"]
+                ΣkCₖ =  (Δx * Δy)^2 * sum( [k * C[k] for k ∈ 1:N] )
+                ΣCₖ = (Δx * Δy) * sum(C)
+                m = round(Int, j/saved_steps) + 1
+                first_mom[m, l, i] = ΣkCₖ / ΣCₖ
+
+            end
 
         end
 
     end
 
+    return  first_mom
+end
+
+function second_moment(data::Dict{String, Any})
+
+    nlayers = data["params/nlayers"]
+    nsteps = data["clock/nsteps"]
+    saved_steps = data["save_freq"]
+    plot_steps = 0:saved_steps:nsteps
+    second_mom = Array{Float64}(undef, length(plot_steps), nlayers)
+    k₀ = first_moment(data)
+ 
+    for i ∈ plot_steps
+
+        for j ∈ 1:nlayers
+
+            C = abs.(reshape(data["snapshots/Concentration/"*string(i)][:, :, j], :)) #Absolute value avoids the negative values
+            sort!(C, rev = true)
+            N = length(C)
+            Δx = data["grid/Lx"] / data["grid/nx"]
+            Δy = data["grid/Ly"] / data["grid/ny"]
+            l = round(Int, i/saved_steps) + 1
+            Σk²Cₖ =  (Δx * Δy)^3 * sum( [(k - k₀[l, j])^2 * C[k] for k ∈ 1:N] )
+            ΣCₖ = (Δx * Δy) * sum(C)
+            second_mom[l, j] = Σk²Cₖ / ΣCₖ
+
+        end
+                    
+    end
+
     return second_mom
+
+end
+function second_moment(data::Array{Dict{String, Any}})
+
+    nlayers = data[1]["params/nlayers"]
+    nsteps = data[1]["clock/nsteps"]
+    saved_steps = data[1]["save_freq"]
+    plot_steps = 0:saved_steps:nsteps
+    second_mom = Array{Float64}(undef, length(plot_steps), nlayers, length(data))
+    k₀ = first_moment(data)
+
+    for i ∈ 1:length(data)
+
+        for j ∈ plot_steps
+
+            for l ∈ 1:nlayers
+
+                C = abs.(reshape(data[i]["snapshots/Concentration/"*string(j)][:, :, l], :)) #Absolute value avoids the negative values
+                sort!(C, rev = true)
+                N = length(C)
+                Δx = data["grid/Lx"] / data["grid/nx"]
+                Δy = data["grid/Ly"] / data["grid/ny"]
+                m = round(Int, j/saved_steps) + 1
+                Σk²Cₖ =  (Δx * Δy)^3 * sum( [(k - k₀[m, l, i])^2 * C[k] for k ∈ 1:N] )
+                ΣCₖ = (Δx * Δy) * sum(C)
+                second_mom[m, l, i] = Σk²Cₖ / ΣCₖ
+
+            end
+
+        end
+
+    end
+
+    return  second_mom
 end
  """
     function tracer_area_percentile(data::Dict{String, Any})
@@ -429,21 +485,25 @@ Calculate average concentration from the tracer field of the ensemble simulation
 """
 function ensemble_concentration(data::Array{Dict{String, Any}})
 
-    saved_vals = 0:data[1]["save_freq"]:data[1]["clock/nsteps"]
-    ensemble_conc = data[1]
+    save_freq = data[1]["save_freq"]
+    nsteps = data[1]["clock/nsteps"]
+    saved_vals = 0:save_freq:nsteps
+    ensemble_concentration = data[1]
     no_of_sims = length(data)
+
     for i ∈ 2:no_of_sims
+
         for j ∈ saved_vals
-        @. ensemble_conc["snapshots/Concentration/"*string(j)]  += data[i]["snapshots/Concentration/"*string(j)] 
+          @. ensemble_concentration["snapshots/Concentration/"*string(j)] += data[i]["snapshots/Concentration/"*string(j)]
         end
-        if i == no_of_sims
-            for j ∈ saved_vals
-            @. ensemble_conc["snapshots/Concentration/"*string(j)]  / no_of_sims
-            end
-        end
+
     end
 
-    return ensemble_conc
+    for j ∈ saved_vals
+        @.  ensemble_concentration["snapshots/Concentration/"*string(j)]  /=  no_of_sims
+    end
+
+    return ensemble_concentration
 
 end
 """
@@ -452,10 +512,10 @@ Fit an exponential curve via least squares to the second stage of the growth of 
 the tracer patch as calculated from the `tracer_area_percentile` function.
 The data is fitted from 1:tfitfinal which can be specified then the plot is calculated for length tplot_length.
 """
-function exp_fit(data::Dict{String, Any}; Cₚ = 0.5, tfitfinal = 100, tplot_length = 10, days = false)
+function exp_fit(data::Dict{String, Any}; Cₚ = 0.5, tfitfinal = 100, tplot_length = 10, time_measure = nothing)
 
     area_per = tracer_area_percentile(data; Cₚ = 0.5)
-    t = time_vec(data; days = days)
+    t = time_vec(data; time_measure)
     tplot = t[1:tfitfinal + tplot_length]
     t = t[1:tfitfinal]
     nlayers = data["params/nlayers"]
@@ -475,10 +535,10 @@ Fit a linear curve via least squares to the third stage of the growth of the are
 the tracer patch as calculated from the `tracer_area_percentile` function. The data is fitted over the interval
 tfitvals and the length of the out plotting vectors can be specified by extra argument tplot_length.
 """
-function linear_fit(data::Dict{String, Any}; Cₚ = 0.5, tfitvals = [100, 250], tplot_length = [10 0], days = false)
+function linear_fit(data::Dict{String, Any}; Cₚ = 0.5, tfitvals = [100, 250], tplot_length = [10 0], time_measure = nothing)
     
     area_per = tracer_area_percentile(data; Cₚ)
-    t = time_vec(data; days = days)
+    t = time_vec(data; time_measure)
     tplot = t[tfitvals[1] - tplot_length[1] : tfitvals[2] + tplot_length[2]]
     t = t[tfitvals[1] : tfitvals[2]]
     nlayers = data["params/nlayers"]
