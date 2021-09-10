@@ -357,6 +357,8 @@ function second_moment(data::Dict{String, Any})
     saved_steps = data["save_freq"]
     plot_steps = 0:saved_steps:nsteps
     second_mom = Array{Float64}(undef, length(plot_steps), nlayers)
+    Δx = data["grid/Lx"] / data["grid/nx"]
+    Δy = data["grid/Ly"] / data["grid/ny"]
  
     for i ∈ plot_steps
 
@@ -365,8 +367,6 @@ function second_moment(data::Dict{String, Any})
             C = abs.(reshape(data["snapshots/Concentration/"*string(i)][:, :, j], :)) #Absolute value avoids the negative values
             sort!(C, rev = true)
             N = length(C)
-            Δx = data["grid/Lx"] / data["grid/nx"]
-            Δy = data["grid/Ly"] / data["grid/ny"]
             l = round(Int, i/saved_steps) + 1
             Σk²Cₖ =  (Δx * Δy)^2 * sum( [k^2 * C[k] for k ∈ 1:N] )
             ΣCₖ = sum(C)
@@ -386,6 +386,8 @@ function second_moment(data::Array{Dict{String, Any}})
     saved_steps = data[1]["save_freq"]
     plot_steps = 0:saved_steps:nsteps
     second_mom = Array{Float64}(undef, length(plot_steps), nlayers, length(data))
+    Δx = data[1]["grid/Lx"] / data[1]["grid/nx"]
+    Δy = data[1]["grid/Ly"] / data[1]["grid/ny"]
 
     for i ∈ 1:length(data)
 
@@ -396,8 +398,6 @@ function second_moment(data::Array{Dict{String, Any}})
                 C = abs.(reshape(data[i]["snapshots/Concentration/"*string(j)][:, :, l], :)) #Absolute value avoids the negative values
                 sort!(C, rev = true)
                 N = length(C)
-                Δx = data["grid/Lx"] / data["grid/nx"]
-                Δy = data["grid/Ly"] / data["grid/ny"]
                 m = round(Int, j/saved_steps) + 1
                 Σk²Cₖ =  (Δx * Δy)^2 * sum( [k^2 * C[k] for k ∈ 1:N] )
                 ΣCₖ = sum(C)

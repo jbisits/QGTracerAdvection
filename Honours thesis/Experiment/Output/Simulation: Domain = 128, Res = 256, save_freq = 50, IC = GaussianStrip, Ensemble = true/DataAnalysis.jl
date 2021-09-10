@@ -103,3 +103,17 @@ scatter!([t[70]], [avg_area_ens[70, 1]], color = :red, label = false)
 K = avg_area_ens[70, 1] / (4 * π * t[70])
 #K is a diffusivity and is translated into dimensions by (U * Ld) * K where U = 0.1m/s and Ld = 29862m
 Kdim = (0.1 * 29862) * K
+
+## 
+t = time_vec(data[1])
+second_moms = second_moment(data)
+second_mom_upper = plot(t, second_moms[:, 1, 1], label = "Member 1", legend = :bottomright)
+for i ∈ 2:length(data)
+    plot!(second_mom_upper, t, second_moms[:, 1, i], label = "Memeber "*string(i))
+end
+second_mom_upper
+
+ensemble_conc = ensemble_concentration(data)
+ensemble_avg = second_moment(ensemble_conc)
+
+plot!(second_mom_upper, t, ensemble_avg[:, 1], label = "Ensemble average", line = (:dash, 2, :black))

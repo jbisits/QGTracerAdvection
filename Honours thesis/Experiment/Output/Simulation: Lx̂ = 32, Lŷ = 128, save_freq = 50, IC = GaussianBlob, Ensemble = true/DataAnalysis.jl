@@ -31,4 +31,4 @@ plot!(first_mom_upper, t, ensemble_avg[:, 1], label = "Ensemble average", line =
 ΔA = ensemble_avg[80, 1] - ensemble_avg[30, 1]
 K = ΔA / (4 * π * Δt)
 
-#Now depends on the value of U the background horizontal velocity
+#Now depends on the value of U the background horizontal velocity but looking quite reasonable
