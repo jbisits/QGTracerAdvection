@@ -304,8 +304,8 @@ function first_moment(data::Dict{String, Any})
             N = length(C)
             Δx = data["grid/Lx"] / data["grid/nx"]
             Δy = data["grid/Ly"] / data["grid/ny"]
-            ΣkCₖ =  (Δx * Δy)^2 * sum( [k * C[k] for k ∈ 1:N] )
-            ΣCₖ = (Δx * Δy) * sum(C)
+            ΣkCₖ =  (Δx * Δy) * sum( [k * C[k] for k ∈ 1:N] )
+            ΣCₖ = sum(C)
             l = round(Int, i/saved_steps) + 1
             first_mom[l, j] = ΣkCₖ / ΣCₖ
 
@@ -336,8 +336,8 @@ function first_moment(data::Array{Dict{String, Any}})
                 N = length(C)
                 Δx = data["grid/Lx"] / data["grid/nx"]
                 Δy = data["grid/Ly"] / data["grid/ny"]
-                ΣkCₖ =  (Δx * Δy)^2 * sum( [k * C[k] for k ∈ 1:N] )
-                ΣCₖ = (Δx * Δy) * sum(C)
+                ΣkCₖ =  (Δx * Δy) * sum( [k * C[k] for k ∈ 1:N] )
+                ΣCₖ = sum(C)
                 m = round(Int, j/saved_steps) + 1
                 first_mom[m, l, i] = ΣkCₖ / ΣCₖ
 
@@ -357,7 +357,6 @@ function second_moment(data::Dict{String, Any})
     saved_steps = data["save_freq"]
     plot_steps = 0:saved_steps:nsteps
     second_mom = Array{Float64}(undef, length(plot_steps), nlayers)
-    k₀ = first_moment(data)
  
     for i ∈ plot_steps
 
@@ -369,8 +368,8 @@ function second_moment(data::Dict{String, Any})
             Δx = data["grid/Lx"] / data["grid/nx"]
             Δy = data["grid/Ly"] / data["grid/ny"]
             l = round(Int, i/saved_steps) + 1
-            Σk²Cₖ =  (Δx * Δy)^3 * sum( [(k - k₀[l, j])^2 * C[k] for k ∈ 1:N] )
-            ΣCₖ = (Δx * Δy) * sum(C)
+            Σk²Cₖ =  (Δx * Δy)^2 * sum( [k^2 * C[k] for k ∈ 1:N] )
+            ΣCₖ = sum(C)
             second_mom[l, j] = Σk²Cₖ / ΣCₖ
 
         end
@@ -387,7 +386,6 @@ function second_moment(data::Array{Dict{String, Any}})
     saved_steps = data[1]["save_freq"]
     plot_steps = 0:saved_steps:nsteps
     second_mom = Array{Float64}(undef, length(plot_steps), nlayers, length(data))
-    k₀ = first_moment(data)
 
     for i ∈ 1:length(data)
 
@@ -401,8 +399,8 @@ function second_moment(data::Array{Dict{String, Any}})
                 Δx = data["grid/Lx"] / data["grid/nx"]
                 Δy = data["grid/Ly"] / data["grid/ny"]
                 m = round(Int, j/saved_steps) + 1
-                Σk²Cₖ =  (Δx * Δy)^3 * sum( [(k - k₀[m, l, i])^2 * C[k] for k ∈ 1:N] )
-                ΣCₖ = (Δx * Δy) * sum(C)
+                Σk²Cₖ =  (Δx * Δy)^2 * sum( [k^2 * C[k] for k ∈ 1:N] )
+                ΣCₖ = sum(C)
                 second_mom[m, l, i] = Σk²Cₖ / ΣCₖ
 
             end
