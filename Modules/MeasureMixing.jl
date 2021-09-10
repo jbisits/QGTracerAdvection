@@ -294,6 +294,8 @@ function first_moment(data::Dict{String, Any})
     saved_steps = data["save_freq"]
     plot_steps = 0:saved_steps:nsteps
     first_mom = Array{Float64}(undef, length(plot_steps), nlayers)
+    Δx = data["grid/Lx"] / data["grid/nx"]
+    Δy = data["grid/Ly"] / data["grid/ny"]
  
     for i ∈ plot_steps
 
@@ -302,8 +304,6 @@ function first_moment(data::Dict{String, Any})
             C = abs.(reshape(data["snapshots/Concentration/"*string(i)][:, :, j], :)) #Absolute value avoids the negative values
             sort!(C, rev = true)
             N = length(C)
-            Δx = data["grid/Lx"] / data["grid/nx"]
-            Δy = data["grid/Ly"] / data["grid/ny"]
             ΣkCₖ =  (Δx * Δy) * sum( [k * C[k] for k ∈ 1:N] )
             ΣCₖ = sum(C)
             l = round(Int, i/saved_steps) + 1
@@ -324,6 +324,8 @@ function first_moment(data::Array{Dict{String, Any}})
     saved_steps = data[1]["save_freq"]
     plot_steps = 0:saved_steps:nsteps
     first_mom = Array{Float64}(undef, length(plot_steps), nlayers, length(data))
+    Δx = data[1]["grid/Lx"] / data[1]["grid/nx"]
+    Δy = data[1]["grid/Ly"] / data[1]["grid/ny"]
 
     for i ∈ 1:length(data)
 
@@ -331,11 +333,9 @@ function first_moment(data::Array{Dict{String, Any}})
 
             for l ∈ 1:nlayers
 
-                C = abs.(reshape(data[i]["snapshots/Concentration/"*string(j)][:, :, l], :)) #Absolute value avoids the negative values
+                C = abs.(reshape(data[i]["snapshots/Concentration/"*string(j)][:, :, l], :))#Absolute value avoids the negative values
                 sort!(C, rev = true)
                 N = length(C)
-                Δx = data["grid/Lx"] / data["grid/nx"]
-                Δy = data["grid/Ly"] / data["grid/ny"]
                 ΣkCₖ =  (Δx * Δy) * sum( [k * C[k] for k ∈ 1:N] )
                 ΣCₖ = sum(C)
                 m = round(Int, j/saved_steps) + 1
@@ -486,7 +486,7 @@ function ensemble_concentration(data::Array{Dict{String, Any}})
     save_freq = data[1]["save_freq"]
     nsteps = data[1]["clock/nsteps"]
     saved_vals = 0:save_freq:nsteps
-    ensemble_concentration = data[1]
+    ensemble_concentration = deepcopy(data[1])
     no_of_sims = length(data)
 
     for i ∈ 2:no_of_sims
