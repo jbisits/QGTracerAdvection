@@ -16,19 +16,33 @@ end
 ##
 t = time_vec(data[1])
 first_moms = first_moment(data)
-first_mom_upper = plot(t, first_moms[:, 1, 1], label = "Member 1", legend = :bottomright)
+first_mom_upper = plot(t, first_moms[:, 1, 1], 
+                        xlabel = "t",
+                        ylabel  = "⟨A⟩",
+                        title = "Average area growth in upper layer",
+                        label = "Member 1",
+                        legend = :bottomright)
+first_mom_lower = plot(t, first_moms[:, 2, 1], 
+                        xlabel = "t",
+                        ylabel  = "⟨A⟩",
+                        title = "Average area growth in lower layer",
+                        label = "Member 1", 
+                        legend = :bottomright)
 for i ∈ 2:length(data)
     plot!(first_mom_upper, t, first_moms[:, 1, i], label = "Memeber "*string(i))
+    plot!(first_mom_lower, t, first_moms[:, 2, i], label = "Memeber "*string(i))
 end
-first_mom_upper
 
 ensemble_conc = ensemble_concentration(data)
 ensemble_avg = first_moment(ensemble_conc)
 
 plot!(first_mom_upper, t, ensemble_avg[:, 1], label = "Ensemble average", line = (:dash, 2, :black))
+plot!(first_mom_lower, t, ensemble_avg[:, 2], label = "Ensemble average", line = (:dash, 2, :black))
 
-Δt = t[80] - t[30]
-ΔA = ensemble_avg[80, 1] - ensemble_avg[30, 1]
-K = ΔA / (4 * π * Δt)
+plot(first_mom_upper, first_mom_lower, layout = (2, 1), size = (800, 800))
+
+Δt = t[80] - t[1]
+ΔA = ensemble_avg[80, :] .- ensemble_avg[1, :]
+K = ΔA ./ (4 * π * Δt)
 
 #Now depends on the value of U the background horizontal velocity but looking quite reasonable
