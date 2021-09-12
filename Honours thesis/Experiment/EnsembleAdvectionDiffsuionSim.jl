@@ -7,29 +7,29 @@ cd(SimPath)
 include("PackageSetup.jl")
 
 #Define number of tracer advection simulations
-ADSims = 20
+ADSims = 10
 
 #Import a an ensemble of flows on a square domain
-#include("Flows/EnsembleSquare/EnsembleFlow_32domain_64res.jl")
+include("Flows/EnsembleSquare/EnsembleFlow_32domain_64res.jl")
 #include("Flows/EnsembleSquare/EnsembleFlow_64domain_128res.jl")
 #include("Flows/EnsembleSquare/EnsembleFlow_128domain_256res.jl")
 #include("Flows/EnsembleSquare/EnsembleFlow_256domain_512res.jl")
 
 #Import an ensemble of flows on a rectanglular domain
-include("Flows/EnsembleRectangle/EnsembleFlow_32_64_domain.jl")
+#include("Flows/EnsembleRectangle/EnsembleFlow_32_64_domain.jl")
 #include("Flows/EnsembleRectangle/EnsembleFlow_32_128_domain.jl")
 #include("Flows/EnsembleRectangle/EnsembleFlow_32_256_domain.jl")
 #include("Flows/EnsembleRectangle/EnsembleFlow_64_128_domain.jl")
 #include("Flows/EnsembleRectangle/EnsembleFlow_64_256_domain.jl")
 
 nsubs  = 1           #Set the number of steps the simulation takes at each iteration. This is also the frequency that data is saved at.         
-nsteps = 4200           #Set the total amount of time steps the advection-diffusion simulation should run for
+nsteps = 3000           #Set the total amount of time steps the advection-diffusion simulation should run for
 
 κ = 0.01
 #Set delay times (that is flow for some length of time, then drop tracer in)
 delay_time = Δt̂ * 3000
 #Set the frequency at which to save data
-save_freq = 20
+save_freq = 50
 
 #This runs a non-parallel simulation where an array of QG problems is defined then used to advect the tracers
 for i ∈ 1:ADSims
