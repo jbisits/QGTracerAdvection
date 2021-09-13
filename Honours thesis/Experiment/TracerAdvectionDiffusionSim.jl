@@ -9,7 +9,7 @@ include("PackageSetup.jl")
 #Import a flow that has already been set up from the Flows folder
 
 # Square domain flows
-include("Flows/Square/FlowSetup_nondim_32domain_64res.jl")
+#include("Flows/Square/FlowSetup_nondim_32domain_64res.jl")
 #include("Flows/Square/FlowSetup_nondim_64domain_128res.jl")
 #include("Flows/Square/FlowSetup_nondim_128domain_256res.jl")
 #include("Flows/Square/FlowSetup_nondim_256domain_512res.jl")

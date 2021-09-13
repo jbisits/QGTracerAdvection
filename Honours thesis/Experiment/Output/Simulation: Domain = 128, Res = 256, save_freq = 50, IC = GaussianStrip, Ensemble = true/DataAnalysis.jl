@@ -1,5 +1,4 @@
 cd(joinpath(SimPath, "Output/Simulation: Domain = 128, res = 256, save_freq = 50, IC = GaussianStrip, Ensemble = true"))
-file = joinpath(pwd(), "SimulationData.jld2")
 
 #Load in the data. This is an ensemble simulation so now have an array of dictionaries.
 data = Array{Dict{String, Any}}(undef, 10)
@@ -14,6 +13,15 @@ for i ∈ 1:length(data)
 end
 
 t = time_vec(data[1])
+mer_sec_mom = meridiondal_second_mom(data)
+
+enss_conc = ensemble_concentration(data)
+ense_second_mom = meridiondal_second_mom(enss_conc)
+
+data[1]["snapshots/Concentration/"*string(0)][:, :, 1]
+
+
+#Stuff below here may not be useful
 ## Average of area percentage growth
 area_per = tracer_area_percentile(data; Cₚ = 0.5)
 avg_area_per = avg_ensemble_tracer_area(data; Cₚ = 0.5)
