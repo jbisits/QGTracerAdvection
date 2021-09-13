@@ -435,7 +435,7 @@ function meridional_second_mom(data::Dict{String, Any})
                 C = abs.(reshape(data["snapshots/Concentration/"*string(j)][n, :, l], :)) #Absolute value avoids the negative values
                 sort!(C, rev = true)
                 N = length(C)
-                Σk²Cₖ = (Δy)^2 * sum( [k^2 * C[k] for k ∈ 1:N] )
+                Σk²Cₖ = (Δy / 2)^2 * sum( [k^2 * C[k] for k ∈ 1:N] )
                 ΣCₖ = sum(C)
                 meridional_second_mom[n] = Σk²Cₖ / ΣCₖ
 
@@ -470,7 +470,7 @@ function meridional_second_mom(data::Array{Dict{String, Any}})
                     C = abs.(reshape(data[i]["snapshots/Concentration/"*string(j)][n, :, l], :)) #Absolute value avoids the negative values
                     sort!(C, rev = true)
                     N = length(C)
-                    Σk²Cₖ =  (Δy)^2 * sum( [k^2 * C[k] for k ∈ 1:N] )
+                    Σk²Cₖ =  (Δy / 2)^2 * sum( [k^2 * C[k] for k ∈ 1:N] )
                     ΣCₖ = sum(C)
                     meridional_second_mom[n] = Σk²Cₖ / ΣCₖ
 
