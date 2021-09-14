@@ -7,7 +7,7 @@ cd(SimPath)
 include("PackageSetup.jl")
 
 #Define number of tracer advection simulations
-ADSims = 10
+ADSims = 20
 
 #Import a an ensemble of flows on a square domain
 #include("Flows/EnsembleSquare/EnsembleFlow_32domain_64res.jl")
@@ -23,7 +23,7 @@ include("Flows/EnsembleRectangle/EnsembleFlow_32_64_domain.jl")
 #include("Flows/EnsembleRectangle/EnsembleFlow_64_256_domain.jl")
 
 nsubs  = 1           #Set the number of steps the simulation takes at each iteration. This is also the frequency that data is saved at.         
-nsteps = 5000           #Set the total amount of time steps the advection-diffusion simulation should run for
+nsteps = 4500           #Set the total amount of time steps the advection-diffusion simulation should run for
 
 κ = 0.01
 #Set delay times (that is flow for some length of time, then drop tracer in)
