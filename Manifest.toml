@@ -579,6 +579,12 @@ git-tree-sha1 = "bfd7d8c7fd87f04543810d9cbd3995972236ba1b"
 uuid = "69de0a69-1ddd-5017-9359-2bf0b02dc9f0"
 version = "1.1.2"
 
+[[PassiveTracerFlows]]
+deps = ["CUDA", "DocStringExtensions", "FourierFlows", "JLD2", "LinearAlgebra", "Random", "Reexport", "Statistics"]
+git-tree-sha1 = "9e83e6d56f3c38de1a9160b95a9d67b75446f7f8"
+uuid = "dc26d6a1-c8d5-50f2-8a17-f57a5c578a00"
+version = "0.5.1"
+
 [[Pixman_jll]]
 deps = ["Artifacts", "JLLWrappers", "Libdl", "Pkg"]
 git-tree-sha1 = "b4f5d02549a10e20780a24fce72bea96b6329e29"

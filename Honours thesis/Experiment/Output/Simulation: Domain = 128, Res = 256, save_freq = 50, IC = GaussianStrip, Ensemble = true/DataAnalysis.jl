@@ -1,5 +1,4 @@
 cd(joinpath(SimPath, "Output/Simulation: Domain = 128, res = 256, save_freq = 50, IC = GaussianStrip, Ensemble = true"))
-file = joinpath(pwd(), "SimulationData.jld2")
 
 #Load in the data. This is an ensemble simulation so now have an array of dictionaries.
 data = Array{Dict{String, Any}}(undef, 10)
@@ -14,6 +13,15 @@ for i ∈ 1:length(data)
 end
 
 t = time_vec(data[1])
+mer_sec_mom = meridiondal_second_mom(data)
+
+enss_conc = ensemble_concentration(data)
+ense_second_mom = meridiondal_second_mom(enss_conc)
+
+data[1]["snapshots/Concentration/"*string(0)][:, :, 1]
+
+
+#Stuff below here may not be useful
 ## Average of area percentage growth
 area_per = tracer_area_percentile(data; Cₚ = 0.5)
 avg_area_per = avg_ensemble_tracer_area(data; Cₚ = 0.5)
@@ -103,3 +111,17 @@ scatter!([t[70]], [avg_area_ens[70, 1]], color = :red, label = false)
 K = avg_area_ens[70, 1] / (4 * π * t[70])
 #K is a diffusivity and is translated into dimensions by (U * Ld) * K where U = 0.1m/s and Ld = 29862m
 Kdim = (0.1 * 29862) * K
+
+## 
+t = time_vec(data[1])
+second_moms = second_moment(data)
+second_mom_upper = plot(t, second_moms[:, 1, 1], label = "Member 1", legend = :bottomright)
+for i ∈ 2:length(data)
+    plot!(second_mom_upper, t, second_moms[:, 1, i], label = "Memeber "*string(i))
+end
+second_mom_upper
+
+ensemble_conc = ensemble_concentration(data)
+ensemble_avg = second_moment(ensemble_conc)
+
+plot!(second_mom_upper, t, ensemble_avg[:, 1], label = "Ensemble average", line = (:dash, 2, :black))

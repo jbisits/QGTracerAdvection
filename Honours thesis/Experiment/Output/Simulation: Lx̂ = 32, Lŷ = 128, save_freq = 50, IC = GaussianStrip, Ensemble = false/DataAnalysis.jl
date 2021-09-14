@@ -6,6 +6,12 @@ file = joinpath(pwd(), "SimulationData.jld2")
 data = load(file)
 
 t = time_vec(data)
+mer_sec_mom = meridional_second_mom(data)
+
+plot(t, mer_sec_mom, label = false)
+
+
+## Older probably not sueful stuff
 area_per = tracer_area_percentile(data; Cₚ = 0.1)
 p1 = plot(t, area_per, 
         label = ["Upper layer" "Lower layer"],

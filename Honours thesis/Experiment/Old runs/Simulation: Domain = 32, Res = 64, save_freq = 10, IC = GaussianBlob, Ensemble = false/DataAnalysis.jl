@@ -5,6 +5,11 @@ file = joinpath(pwd(), "SimulationData.jld2")
 #Load in the data
 data = load(file)
 
+t = time_vec(data)
+first_mom = first_moment(data)
+
+plot(t, first_mom, label = false)
+
 #Produce histogram plots from the saved concentration data
 histplots = hist_plot(data; plot_freq = 1000, xlims_same = false)
 

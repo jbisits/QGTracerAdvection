@@ -14,7 +14,7 @@ export
     tracer_animate,
     time_vec,
     first_moment,
-    second_moment,
+    meridional_second_mom,
     tracer_area_percentile,
     avg_ensemble_tracer_area,
     ensemble_average_area,
@@ -283,9 +283,10 @@ function  time_vec(data::Dict{String, Any}; time_measure = nothing)
     return t
 end
 """
-    function tracer_avg_area(data::Dict{String, Any})
+    function first_moment(data::Dict{String, Any})
 Calculate the average area of the tracer patch. This is done by  
-    ``\frac{(∫A * C(A) dA)}{∫∫C dA} ≈ (ΔxΔy)\frac{ΣkCₖ}{ΣCₖ}``  for k ∈ 1:No. of grid cells.
+    ``\frac{(∫A * C(A) dA)}{∫∫C dA} ≈ (ΔxΔy)\frac{ΣkCₖ}{ΣCₖ}``  for k ∈ 1:No. of grid cells
+and is used to calculate the average area growth of the Gaussian blob.
 """
 function first_moment(data::Dict{String, Any})
 
@@ -294,6 +295,8 @@ function first_moment(data::Dict{String, Any})
     saved_steps = data["save_freq"]
     plot_steps = 0:saved_steps:nsteps
     first_mom = Array{Float64}(undef, length(plot_steps), nlayers)
+    Δx = data["grid/Lx"] / data["grid/nx"]
+    Δy = data["grid/Ly"] / data["grid/ny"]
  
     for i ∈ plot_steps
 
@@ -302,8 +305,6 @@ function first_moment(data::Dict{String, Any})
             C = abs.(reshape(data["snapshots/Concentration/"*string(i)][:, :, j], :)) #Absolute value avoids the negative values
             sort!(C, rev = true)
             N = length(C)
-            Δx = data["grid/Lx"] / data["grid/nx"]
-            Δy = data["grid/Ly"] / data["grid/ny"]
             ΣkCₖ =  (Δx * Δy) * sum( [k * C[k] for k ∈ 1:N] )
             ΣCₖ = sum(C)
             l = round(Int, i/saved_steps) + 1
@@ -324,6 +325,8 @@ function first_moment(data::Array{Dict{String, Any}})
     saved_steps = data[1]["save_freq"]
     plot_steps = 0:saved_steps:nsteps
     first_mom = Array{Float64}(undef, length(plot_steps), nlayers, length(data))
+    Δx = data[1]["grid/Lx"] / data[1]["grid/nx"]
+    Δy = data[1]["grid/Ly"] / data[1]["grid/ny"]
 
     for i ∈ 1:length(data)
 
@@ -331,11 +334,9 @@ function first_moment(data::Array{Dict{String, Any}})
 
             for l ∈ 1:nlayers
 
-                C = abs.(reshape(data[i]["snapshots/Concentration/"*string(j)][:, :, l], :)) #Absolute value avoids the negative values
+                C = abs.(reshape(data[i]["snapshots/Concentration/"*string(j)][:, :, l], :))#Absolute value avoids the negative values
                 sort!(C, rev = true)
                 N = length(C)
-                Δx = data["grid/Lx"] / data["grid/nx"]
-                Δy = data["grid/Ly"] / data["grid/ny"]
                 ΣkCₖ =  (Δx * Δy) * sum( [k * C[k] for k ∈ 1:N] )
                 ΣCₖ = sum(C)
                 m = round(Int, j/saved_steps) + 1
@@ -349,43 +350,55 @@ function first_moment(data::Array{Dict{String, Any}})
 
     return  first_mom
 end
-
-function second_moment(data::Dict{String, Any})
+"""
+    function meridiondal_second_mom
+Calculate merional second moment from the Gaussian strip condition.
+This is computed by ``\frac{\int \int y^2c(x, y)}{\int \int c(x, t)} ≈ (Δy / 2)²∑ⱼ∑ᵢi²c(j, i) / ∑ⱼ∑ᵢc(j, i)
+"""
+function meridional_second_mom(data::Dict{String, Any})
 
     nlayers = data["params/nlayers"]
     nsteps = data["clock/nsteps"]
     saved_steps = data["save_freq"]
     plot_steps = 0:saved_steps:nsteps
+    nx = data["grid/nx"]
+    meridional_second_mom = Array{Float64}(undef, nx)
     second_mom = Array{Float64}(undef, length(plot_steps), nlayers)
- 
-    for i ∈ plot_steps
+    Δy = data["grid/Ly"] / data["grid/ny"]
 
-        for j ∈ 1:nlayers
+    for j ∈ plot_steps
 
-            C = abs.(reshape(data["snapshots/Concentration/"*string(i)][:, :, j], :)) #Absolute value avoids the negative values
-            sort!(C, rev = true)
-            N = length(C)
-            Δx = data["grid/Lx"] / data["grid/nx"]
-            Δy = data["grid/Ly"] / data["grid/ny"]
-            l = round(Int, i/saved_steps) + 1
-            Σk²Cₖ =  (Δx * Δy)^2 * sum( [k^2 * C[k] for k ∈ 1:N] )
+        for l ∈ 1:nlayers
+
+            for n ∈ 1:nx
+
+                C = abs.(reshape(data["snapshots/Concentration/"*string(j)][n, :, l], :)) #Absolute value avoids the negative values
+                sort!(C, rev = true)
+                N = length(C)
+                Σk²Cₖ = (Δy / 2)^2 * sum( [k^2 * C[k] for k ∈ 1:N] )
+                meridional_second_mom[n] = Σk²Cₖ
+
+            end
+            C = abs.(reshape(data["snapshots/Concentration/"*string(j)][:, :, l], :)) #Absolute value avoids the negative values
             ΣCₖ = sum(C)
-            second_mom[l, j] = Σk²Cₖ / ΣCₖ
-
+            m = round(Int, j/saved_steps) + 1
+            second_mom[m, l] = sum(meridional_second_mom) / ΣCₖ
         end
-                    
+
     end
 
-    return second_mom
-
+    return  second_mom
 end
-function second_moment(data::Array{Dict{String, Any}})
+function meridional_second_mom(data::Array{Dict{String, Any}})
 
     nlayers = data[1]["params/nlayers"]
     nsteps = data[1]["clock/nsteps"]
     saved_steps = data[1]["save_freq"]
     plot_steps = 0:saved_steps:nsteps
+    nx = data[1]["grid/nx"]
+    meridional_second_mom = Array{Float64}(undef, nx)
     second_mom = Array{Float64}(undef, length(plot_steps), nlayers, length(data))
+    Δy = data[1]["grid/Ly"] / data[1]["grid/ny"]
 
     for i ∈ 1:length(data)
 
@@ -393,16 +406,19 @@ function second_moment(data::Array{Dict{String, Any}})
 
             for l ∈ 1:nlayers
 
-                C = abs.(reshape(data[i]["snapshots/Concentration/"*string(j)][:, :, l], :)) #Absolute value avoids the negative values
-                sort!(C, rev = true)
-                N = length(C)
-                Δx = data["grid/Lx"] / data["grid/nx"]
-                Δy = data["grid/Ly"] / data["grid/ny"]
-                m = round(Int, j/saved_steps) + 1
-                Σk²Cₖ =  (Δx * Δy)^2 * sum( [k^2 * C[k] for k ∈ 1:N] )
-                ΣCₖ = sum(C)
-                second_mom[m, l, i] = Σk²Cₖ / ΣCₖ
+                for n ∈ 1:nx
 
+                    C = abs.(reshape(data[i]["snapshots/Concentration/"*string(j)][n, :, l], :)) #Absolute value avoids the negative values
+                    sort!(C, rev = true)
+                    N = length(C)
+                    Σk²Cₖ =  (Δy / 2)^2 * sum( [k^2 * C[k] for k ∈ 1:N] )
+                    meridional_second_mom[n] = Σk²Cₖ 
+
+                end
+                C = abs.(reshape(data[i]["snapshots/Concentration/"*string(j)][:, :, l], :))
+                ΣCₖ = sum(C)
+                m = round(Int, j/saved_steps) + 1
+                second_mom[m, l, i] = sum(meridional_second_mom) / ΣCₖ
             end
 
         end
@@ -486,7 +502,7 @@ function ensemble_concentration(data::Array{Dict{String, Any}})
     save_freq = data[1]["save_freq"]
     nsteps = data[1]["clock/nsteps"]
     saved_vals = 0:save_freq:nsteps
-    ensemble_concentration = data[1]
+    ensemble_concentration = deepcopy(data[1])
     no_of_sims = length(data)
 
     for i ∈ 2:no_of_sims

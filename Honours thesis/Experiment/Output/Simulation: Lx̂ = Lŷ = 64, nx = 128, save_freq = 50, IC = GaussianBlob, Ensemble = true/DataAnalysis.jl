@@ -1,8 +1,8 @@
 #Change to correct directory
-cd(joinpath(SimPath, "Output/Simulation: Lx̂ = 32, Lŷ = 128, save_freq = 50, IC = GaussianBlob, Ensemble = true"))
+cd(joinpath(SimPath, "Output/Simulation: Lx̂ = Lŷ = 64, nx = 128, save_freq = 50, IC = GaussianBlob, Ensemble = true"))
 
 ## Load in the data. This is an ensemble simulation so now have an array of dictionaries.
-data = Array{Dict{String, Any}}(undef, 10)
+data = Array{Dict{String, Any}}(undef, 15)
 for i ∈ 1:length(data)
     if i == 1
         file = joinpath(pwd(), "SimulationData.jld2")
@@ -13,20 +13,19 @@ for i ∈ 1:length(data)
     end
 end
 
-##
 t = time_vec(data[1])
 first_moms = first_moment(data)
 first_mom_upper = plot(t, first_moms[:, 1, 1], 
+                        label = "Member 1", 
+                        title = "Upper layer average area growth",
                         xlabel = "t",
-                        ylabel  = "⟨A⟩",
-                        title = "Average area growth in upper layer",
-                        label = "Member 1",
+                        ylabel = "⟨A⟩",
                         legend = :bottomright)
 first_mom_lower = plot(t, first_moms[:, 2, 1], 
-                        xlabel = "t",
-                        ylabel  = "⟨A⟩",
-                        title = "Average area growth in lower layer",
                         label = "Member 1", 
+                        title = "Lower layer average area growth",
+                        xlabel = "t",
+                        ylabel = "⟨A⟩",
                         legend = :bottomright)
 for i ∈ 2:length(data)
     plot!(first_mom_upper, t, first_moms[:, 1, i], label = "Memeber "*string(i))
@@ -39,10 +38,9 @@ ensemble_avg = first_moment(ensemble_conc)
 plot!(first_mom_upper, t, ensemble_avg[:, 1], label = "Ensemble average", line = (:dash, 2, :black))
 plot!(first_mom_lower, t, ensemble_avg[:, 2], label = "Ensemble average", line = (:dash, 2, :black))
 
-plot(first_mom_upper, first_mom_lower, layout = (2, 1), size = (800, 800))
+plot(first_mom_upper, first_mom_lower, layout = (2, 1), size= (800, 800))
 
-Δt = t[80] - t[1]
-ΔA = ensemble_avg[80, :] .- ensemble_avg[1, :]
+
+Δt = t[50] - t[25]
+ΔA = ensemble_avg[50, :] .- ensemble_avg[25, :]
 K = ΔA ./ (4 * π * Δt)
-
-#Now depends on the value of U the background horizontal velocity but looking quite reasonable
