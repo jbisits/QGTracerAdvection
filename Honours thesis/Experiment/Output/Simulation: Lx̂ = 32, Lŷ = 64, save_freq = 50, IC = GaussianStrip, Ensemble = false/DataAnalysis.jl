@@ -6,21 +6,6 @@ file = joinpath(pwd(), "SimulationData.jld2")
 data = load(file)
 
 t = time_vec(data)
-area_per = tracer_area_percentile(data; conc_min = 0.1)
-p1 = plot(t, area_per, 
-        label = ["Upper layer" "Lower layer"],
-        title = "Growth of 90% area of tracer patch in \n both layers; domain = 32 x 64. \n Gaussian strip IC",
-        legend = :topleft
-        )
-logp1 = plot(t, log.(area_per), 
-            label = ["Upper layer" "Lower layer"],
-            title = "Growth of 90% of log(area of tracer patch) \n in both layers; domain = 32 x 64. \n Gaussian strip IC",
-            legend = :bottomright
-            )
-plot(p1, logp1, layout = (2, 1), size = (700, 700))
+mer_sec_mom = meridional_second_mom(data)
 
-plot!(upperarea256, t, area_per[:, 1] .* 2, label = "32 x 64")
-plot!(lowerarea256, t, area_per[:, 2] .* 2, label = "32 x 64")
-
-avg_area = tracer_avg_area(data)
-plot(t, avg_area)
+plot(t, log.(mer_sec_mom))

@@ -7,7 +7,7 @@ cd(SimPath)
 include("PackageSetup.jl")
 
 #Define number of tracer advection simulations
-ADSims = 20
+ADSims = 10
 
 #Import a an ensemble of flows on a square domain
 #include("Flows/EnsembleSquare/EnsembleFlow_32domain_64res.jl")

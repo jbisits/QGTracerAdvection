@@ -353,7 +353,6 @@ end
 """
     function meridiondal_second_mom
 Calculate merional second moment from the Gaussian strip condition.
-This is computed by ``\frac{\int \int y^2c(x, y)}{\int \int c(x, t)} ≈ (Δy / 2)²∑ⱼ∑ᵢi²c(j, i) / ∑ⱼ∑ᵢc(j, i)
 """
 function meridional_second_mom(data::Dict{String, Any})
 
