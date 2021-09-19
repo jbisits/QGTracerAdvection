@@ -38,4 +38,6 @@ plot!(lowerplot, t64, first_mom64[:, 2], label = "Meridional length = 64")
 plot!(lowerplot, t128, first_mom128[:, 2], label = "Meridional length = 128")
 plot!(lowerplot, t256, first_mom256[:, 2], label = "Meridional length = 256")
 
-plot(upperplot, lowerplot, layout = (2, 1), size = (800, 800))
+fullplot = plot(upperplot, lowerplot, layout = (2, 1), size = (800, 800))
+
+#savefig(fullplot, "meridionaldomainincreas.png")
