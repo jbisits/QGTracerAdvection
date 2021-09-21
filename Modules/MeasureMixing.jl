@@ -14,6 +14,7 @@ export
     tracer_animate,
     time_vec,
     first_moment,
+    second_moment,
     meridional_second_mom,
     tracer_area_percentile,
     avg_ensemble_tracer_area,
@@ -349,6 +350,73 @@ function first_moment(data::Array{Dict{String, Any}})
     end
 
     return  first_mom
+end
+"""
+    function second_moment(data::Dict{Union{String, Any}}
+Caclutate the second moment of the area from tracer data.
+"""
+function second_moment(data::Dict{String, Any})
+
+    nlayers = data["params/nlayers"]
+    nsteps = data["clock/nsteps"]
+    saved_steps = data["save_freq"]
+    plot_steps = 0:saved_steps:nsteps
+    second_mom = Array{Float64}(undef, length(plot_steps), nlayers)
+    Δx = data["grid/Lx"] / data["grid/nx"]
+    Δy = data["grid/Ly"] / data["grid/ny"]
+    ΔA = Δx * Δy
+
+    for i ∈ plot_steps
+
+        for j ∈ 1:nlayers
+
+            C = abs.(reshape(data["snapshots/Concentration/"*string(i)][:, :, j], :)) #Absolute value avoids the negative values
+            sort!(C, rev = true)
+            N = length(C)
+            l = round(Int, i/saved_steps) + 1
+            Σk²Cₖ =  (ΔA)^2 * sum( [k^2 * C[k] for k ∈ 1:N] )
+            ΣCₖ = sum(C)
+            second_mom[l, j] = Σk²Cₖ / ΣCₖ
+
+        end
+
+    end
+
+    return second_mom
+
+end
+function second_moment(data::Array{Dict{String, Any}})
+
+    nlayers = data[1]["params/nlayers"]
+    nsteps = data[1]["clock/nsteps"]
+    saved_steps = data[1]["save_freq"]
+    plot_steps = 0:saved_steps:nsteps
+    second_mom = Array{Float64}(undef, length(plot_steps), nlayers, length(data))
+    Δx = data[1]["grid/Lx"] / data[1]["grid/nx"]
+    Δy = data[1]["grid/Ly"] / data[1]["grid/ny"]
+    ΔA = Δx * Δy
+
+    for i ∈ 1:length(data)
+
+        for j ∈ plot_steps
+
+            for l ∈ 1:nlayers
+
+                C = abs.(reshape(data[i]["snapshots/Concentration/"*string(j)][:, :, l], :)) #Absolute value avoids the negative values
+                sort!(C, rev = true)
+                N = length(C)
+                m = round(Int, j/saved_steps) + 1
+                Σk²Cₖ =  (ΔA)^2 * sum( [k^2 * C[k] for k ∈ 1:N] )
+                ΣCₖ = sum(C)
+                second_mom[m, l, i] = Σk²Cₖ / ΣCₖ
+
+            end
+
+        end
+
+    end
+
+    return  second_mom
 end
 """
     function meridiondal_second_mom

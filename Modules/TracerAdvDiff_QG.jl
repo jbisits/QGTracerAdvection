@@ -358,8 +358,16 @@ function QGset_c!(prob, c)
   
   C = zeros(g.nx, g.ny, nlayers)
   
-  for n in 1:nlayers
-    C[:, :, n] = c
+  if size(c) == size(C)
+
+    @. C = c
+
+  else
+
+    for n in 1:nlayers
+        C[:, :, n] = c
+    end
+
   end
   
   MultiLayerQG.fwdtransform!(sol, C, prob.params)

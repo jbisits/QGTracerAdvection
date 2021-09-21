@@ -9,24 +9,25 @@ include("PackageSetup.jl")
 #Import a flow that has already been set up from the Flows folder
 
 # Square domain flows
-#include("Flows/Square/FlowSetup_nondim_32domain_64res.jl")
+include("Flows/Square/FlowSetup_nondim_32domain_64res.jl")
 #include("Flows/Square/FlowSetup_nondim_64domain_128res.jl")
 #include("Flows/Square/FlowSetup_nondim_128domain_256res.jl")
 #include("Flows/Square/FlowSetup_nondim_256domain_512res.jl")
 
 # Rectangular domain flows (longer in meridional direction)
-include("Flows/Rectangle/FlowSetup_nondim_32_64domain.jl")
+#include("Flows/Rectangle/FlowSetup_nondim_32_64domain.jl")
 #include("Flows/Rectangle/FlowSetup_nondim_32_128domain.jl")
 #include("Flows/Rectangle/FlowSetup_nondim_32_256domain.jl")
 #include("Flows/Rectangle/FlowSetup_nondim_64_128domain.jl")
 #include("Flows/Rectangle/FlowSetup_nondim_64_256domain.jl")
 
-nsubs  = 1            #Set the number of steps the simulation takes at each iteration. This is also the frequency that data is saved at.         
-nsteps = 5000          #Set the total amount of time steps the advection-diffusion simulation should run for
+nsubs  = 1            #Set the number of steps the simulation takes at each iteration.         
+nsteps = 6000          #Set the total amount of time steps the advection-diffusion simulation should run for
 
 κ = 0.01
 #Set delay time (that is flow for some length of time, then drop tracer in)
-delay_time = Δt̂ * 3000
+#delay_time = Δt̂ * 3000
+delay_time = 0
 #Set the tracer advection probelm by passing in the QG problem 
 ADProb = TracerAdvDiff_QG.Problem(;prob = QGProb, delay_time = delay_time, nsubs = nsubs, κ = κ)
 ADSol, ADClock, ADVars, ADParams, ADGrid = ADProb.sol, ADProb.clock, ADProb.vars, ADProb.params, ADProb.grid
@@ -35,10 +36,13 @@ ADSol, ADClock, ADVars, ADParams, ADGrid = ADProb.sol, ADProb.clock, ADProb.vars
 #μIC = [0, 0]
 #Σ = [1 0; 0 1]
 #IC = GaussianBlobIC(μIC, Σ, ADGrid)
-μIC = 0
-σ² = 1
-IC = GaussianStripIC(μIC, σ², ADGrid)
+#Set the Gaussian band initial condition
+#μIC = 0
+#σ² = 1
+#IC = GaussianStripIC(μIC, σ², ADGrid)
 #IC = PointSourceIC([64, 64], 1, ADGrid)
+#Set the QGPV initial condition
+IC = QGPVIC(QGProb)
 
 QGset_c!(ADProb, IC.C₀)
 save_freq = 50

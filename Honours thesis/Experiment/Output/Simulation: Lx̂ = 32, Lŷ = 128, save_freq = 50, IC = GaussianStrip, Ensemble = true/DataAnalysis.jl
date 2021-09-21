@@ -40,3 +40,36 @@ plot!(upperplot, t, ens_mer_sec_mom[:, 1], label = "Ensemble", line = (:dash, :b
 plot!(lowerplot, t, ens_mer_sec_mom[:, 2], label = "Ensemble", line = (:dash, :black, 2))
 
 plot(upperplot, lowerplot, layout = (2, 1), size = (800, 800))
+
+##
+t = time_vec(data[1])
+sec_mom = second_moment(data)
+
+upperplot = plot(t, sec_mom[:, 1, 1],
+                title = "Upper layer",
+                xlabel = "t",
+                ylabel = "σ²ₐ",
+                label = "Member 1",
+                legend = :bottomright)
+lowerplot = plot(t, sec_mom[:, 2, 1],
+                title = "Lower layer",
+                xlabel = "t",
+                ylabel = "σ²ₐ",
+                label = "Member 1",
+                legend = :bottomright)
+for i ∈ 2:length(data)
+    plot!(upperplot, t, sec_mom[:, 1, i], label = "Member "*string(i)) 
+    plot!(lowerplot, t, sec_mom[:, 2, i], label = "Member "*string(i)) 
+end
+
+ens_conc = ensemble_concentration(data)
+ens_sec_mom = second_moment(ens_conc)
+
+plot!(upperplot, t, ens_sec_mom[:, 1], label = "Ensemble", line = (:dash, :black, 2))
+plot!(lowerplot, t, ens_sec_mom[:, 2], label = "Ensemble", line = (:dash, :black, 2))
+
+plot(upperplot, lowerplot, layout = (2, 1), size = (800, 800))
+
+ΔA² = ens_sec_mom[30, :] - ens_sec_mom[1, :]
+Δt = t[30] - t[1]
+K = ΔA² / (data[1]["grid/Lx"]^2 * 8 * Δt)

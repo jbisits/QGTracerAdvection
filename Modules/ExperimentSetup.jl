@@ -4,6 +4,7 @@ export
     GaussianBlobIC,
     GaussianStripIC,
     PointSourceIC,
+    QGPVIC,
     CreateFile, 
     GetConcentration
 
@@ -36,6 +37,14 @@ struct PointSource{T, U, V} <: InitialCondition
     y  :: T
     C₀ :: U
     ConcentrationAmount :: V
+end
+"""
+    Struct for QGPV initial condition
+"""
+struct QGPV{T, U} <: InitialCondition
+    q :: T
+    plan_vort :: U
+    C₀:: T
 end
 """
     function GaussianBlobIC(μ, Σ, grid)
@@ -92,6 +101,21 @@ function PointSourceIC(ConcentrationPoint::Vector, ConcentrationAmount, grid)
     end
 
     return PointSource(xconcpt, yconcpt, C₀, ConcentrationAmount)
+end
+"""
+    function QGPVIC()
+Create an initial condition that is the full QGPV.
+"""
+function QGPVIC(QGProb::FourierFlows.Problem)
+
+    q = QGProb.vars.q 
+    f₀ = QGProb.params.f₀
+    β = QGProb.params.β
+    plan_vort = f₀ .+ β
+
+    Q = q .+ plan_vort
+
+    return QGPV(q, plan_vort, Q)
 end
 """
     CreateFile(ADProb)
