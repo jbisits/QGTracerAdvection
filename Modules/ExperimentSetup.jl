@@ -111,7 +111,7 @@ function QGPVIC(QGProb::FourierFlows.Problem)
     q = QGProb.vars.q 
     f₀ = QGProb.params.f₀
     β = QGProb.params.β
-    plan_vort = f₀ .+ β
+    plan_vort = f₀ + β
 
     Q = q .+ plan_vort
 

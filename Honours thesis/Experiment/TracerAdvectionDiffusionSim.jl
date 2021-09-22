@@ -22,12 +22,12 @@ include("Flows/Square/FlowSetup_nondim_32domain_64res.jl")
 #include("Flows/Rectangle/FlowSetup_nondim_64_256domain.jl")
 
 nsubs  = 1            #Set the number of steps the simulation takes at each iteration.         
-nsteps = 6000          #Set the total amount of time steps the advection-diffusion simulation should run for
+nsteps = 5000          #Set the total amount of time steps the advection-diffusion simulation should run for
 
 κ = 0.01
 #Set delay time (that is flow for some length of time, then drop tracer in)
-#delay_time = Δt̂ * 3000
-delay_time = 0
+delay_time = Δt̂ * 6000
+#delay_time = 0
 #Set the tracer advection probelm by passing in the QG problem 
 ADProb = TracerAdvDiff_QG.Problem(;prob = QGProb, delay_time = delay_time, nsubs = nsubs, κ = κ)
 ADSol, ADClock, ADVars, ADParams, ADGrid = ADProb.sol, ADProb.clock, ADProb.vars, ADProb.params, ADProb.grid

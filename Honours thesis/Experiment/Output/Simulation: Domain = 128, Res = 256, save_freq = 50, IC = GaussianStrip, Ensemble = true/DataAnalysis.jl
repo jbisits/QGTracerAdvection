@@ -13,12 +13,12 @@ for i ∈ 1:length(data)
 end
 
 t = time_vec(data[1])
-mer_sec_mom = meridional_second_mom(data)
+sec_mom = second_moment(data)
 
 enss_conc = ensemble_concentration(data)
-ense_second_mom = meridional_second_mom(enss_conc)
+ense_second_mom = second_moment(enss_conc)
 
-plot(t, ense_second_mom )
+plot(t, ense_second_mom)
 
 #Stuff below here may not be useful
 ## Average of area percentage growth
