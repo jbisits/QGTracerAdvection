@@ -7,7 +7,7 @@ cd(SimPath)
 include("PackageSetup.jl")
 
 #Define number of tracer advection simulations
-ADSims = 15
+ADSims = 10
 
 #Import a an ensemble of flows on a square domain
 #include("Flows/EnsembleSquare/EnsembleFlow_32domain_64res.jl")
@@ -44,6 +44,8 @@ for i ∈ 1:ADSims
     μIC = 0
     σ² = 1
     IC = GaussianStripIC(μIC, σ², ADGrid)
+    #Set QGPV as initial condition
+    IC = QGPVIC(QGProb)
     #File name for saving, FourierFlows creates a new file each time with _i appended
     filename = CreateFile(ADProb, IC, save_freq, SimPath; Ensemble = true)
 
