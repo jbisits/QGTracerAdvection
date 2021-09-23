@@ -1,7 +1,9 @@
 #Change to correct directory
 cd(joinpath(SimPath, "Output/Simulation: Lx̂ = 32, Lŷ = 128, save_freq = 50, IC = GaussianBlob, Ensemble = true"))
 
-## Load in the data. This is an ensemble simulation so now have an array of dictionaries.
+#The saved data `Simulationdata` to `Simulationdata_9` are one set of ensemble expt with delay time = Δt * 3000
+#The saved data `Simulationdata_10` to `Simulationdata_19` are one set of ensemble expt with delay time = Δt * 5000 to see if more developed flow changes anything.
+##Read in the first ensemble sim
 data = Array{Dict{String, Any}}(undef, 10)
 for i ∈ 1:length(data)
     if i == 1
@@ -9,6 +11,16 @@ for i ∈ 1:length(data)
         data[i] = load(file)
     else
         file = joinpath(pwd(), "SimulationData_"*string(i - 1)*".jld2")
+        data[i] = load(file)
+    end
+end
+#Read in second ensemble sim
+for i ∈ 1:length(data)
+    if i == 1 
+        file = joinpath(pwd(), "SimulationData_10.jld2")
+        data[i] = load(file)
+    else
+        file = joinpath(pwd(), "SimulationData_"*string(i + 9)*".jld2")
         data[i] = load(file)
     end
 end
@@ -46,3 +58,7 @@ plot(first_mom_upper, first_mom_lower, layout = (2, 1), size = (800, 800))
 K = ΔA ./ (4 * π * Δt)
 
 #Now depends on the value of U the background horizontal velocity but looking quite reasonable
+
+##
+tp = tracer_plot(data[1]; plot_freq = 1000)
+plot(tp[:, 1]..., size = (1200, 1200))

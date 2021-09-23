@@ -6,10 +6,9 @@ file = joinpath(pwd(), "SimulationData.jld2")
 data = load(file)
 
 t = time_vec(data)
-mer_sec_mom = meridional_second_mom(data)
+sec_mom = second_moment(data)
 
-plot(t, mer_sec_mom, label = false)
-
+plot(t, sec_mom, label = false)
 
 ## Older probably not sueful stuff
 area_per = tracer_area_percentile(data; Cₚ = 0.1)
