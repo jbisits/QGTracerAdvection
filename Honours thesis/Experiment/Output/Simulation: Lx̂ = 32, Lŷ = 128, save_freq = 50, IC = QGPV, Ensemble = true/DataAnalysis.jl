@@ -45,6 +45,9 @@ plot(first_mom_upper, first_mom_lower, layout = (2, 1), size = (800, 800))
 ΔA = ensemble_avg[30, :] .- ensemble_avg[1, :]
 K = ΔA ./ (4 * π * Δt)
 
+tp = tracer_plot(data[1])
+plot(tp[:, 1]..., size = (1200, 1200))
+
 ## Second moment
 sec_mom = second_moment(data)
 
