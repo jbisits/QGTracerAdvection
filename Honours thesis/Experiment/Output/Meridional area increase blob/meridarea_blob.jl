@@ -1,4 +1,4 @@
-cd(joinpath(SimPath, "Output/Meridional area increase"))
+cd(joinpath(SimPath, "Output/Meridional area increase blob"))
 files = [joinpath(pwd(), "SimulationData_32.jld2"), joinpath(pwd(), "SimulationData_64.jld2"),
         joinpath(pwd(), "SimulationData_128.jld2"), joinpath(pwd(), "SimulationData_256.jld2")]
 
