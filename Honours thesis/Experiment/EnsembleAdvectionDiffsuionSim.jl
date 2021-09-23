@@ -17,17 +17,18 @@ ADSims = 10
 
 #Import an ensemble of flows on a rectanglular domain
 #include("Flows/EnsembleRectangle/EnsembleFlow_32_64_domain.jl")
-#include("Flows/EnsembleRectangle/EnsembleFlow_32_128_domain.jl")
+include("Flows/EnsembleRectangle/EnsembleFlow_32_128_domain.jl")
 #include("Flows/EnsembleRectangle/EnsembleFlow_32_256_domain.jl")
 #include("Flows/EnsembleRectangle/EnsembleFlow_64_128_domain.jl")
 #include("Flows/EnsembleRectangle/EnsembleFlow_64_256_domain.jl")
 
 nsubs  = 1           #Set the number of steps the simulation takes at each iteration. This is also the frequency that data is saved at.         
-nsteps = 6200           #Set the total amount of time steps the advection-diffusion simulation should run for
+nsteps = 5500           #Set the total amount of time steps the advection-diffusion simulation should run for
 
 κ = 0.01
 #Set delay times (that is flow for some length of time, then drop tracer in)
-delay_time = Δt̂ * 3000
+#delay_time = Δt̂ * 3000
+delay_time = 0
 #Set the frequency at which to save data
 save_freq = 50
 
@@ -45,7 +46,7 @@ for i ∈ 1:ADSims
     σ² = 1
     IC = GaussianStripIC(μIC, σ², ADGrid)
     #Set QGPV as initial condition
-    IC = QGPVIC(QGProb)
+    IC = QGPVIC(QGProbs[i])
     #File name for saving, FourierFlows creates a new file each time with _i appended
     filename = CreateFile(ADProb, IC, save_freq, SimPath; Ensemble = true)
 
