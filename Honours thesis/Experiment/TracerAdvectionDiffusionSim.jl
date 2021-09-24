@@ -1,10 +1,13 @@
 #Tracer advcetion diffusion experiment
 
+## Load all packages
 #Change to the correct directory (if it was not already correct for some reason)
 SimPath = joinpath("/Users/Joey/Desktop/ThesisCode/QG_tracer_advection", "Honours thesis/Experiment")
 cd(SimPath)
 #Load in all the required packages for the simulation
 include("PackageSetup.jl")
+
+## Run a simulation
 
 #Import a flow that has already been set up from the Flows folder
 
@@ -36,11 +39,14 @@ ADSol, ADClock, ADVars, ADParams, ADGrid = ADProb.sol, ADProb.clock, ADProb.vars
 μIC = [0, 0]
 Σ = [1 0; 0 1]
 IC = GaussianBlobIC(μIC, Σ, ADGrid)
+
 #Set the Gaussian band initial condition
 #μIC = 0
 #σ² = 1
 #IC = GaussianStripIC(μIC, σ², ADGrid)
+
 #IC = PointSourceIC([64, 64], 1, ADGrid)
+
 #Set the QGPV initial condition
 #IC = QGPVIC(QGProb)
 

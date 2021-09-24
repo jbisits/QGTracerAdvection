@@ -1,11 +1,13 @@
 #Ensemble tracer advection diffusion experiment
 
+## Load all packages
 #Change to the correct directory (if it was not already correct for some reason)
 SimPath = joinpath("/Users/Joey/Desktop/ThesisCode/QG_tracer_advection", "Honours thesis/Experiment")
 cd(SimPath)
 #Load in all the required packages for the simulation
 include("PackageSetup.jl")
 
+## Run a simulation
 #Define number of tracer advection simulations
 ADSims = 10
 
@@ -17,17 +19,17 @@ ADSims = 10
 
 #Import an ensemble of flows on a rectanglular domain
 #include("Flows/EnsembleRectangle/EnsembleFlow_32_64_domain.jl")
-include("Flows/EnsembleRectangle/EnsembleFlow_32_128_domain.jl")
+#include("Flows/EnsembleRectangle/EnsembleFlow_32_128_domain.jl")
 #include("Flows/EnsembleRectangle/EnsembleFlow_32_256_domain.jl")
-#include("Flows/EnsembleRectangle/EnsembleFlow_64_128_domain.jl")
+include("Flows/EnsembleRectangle/EnsembleFlow_64_128_domain.jl")
 #include("Flows/EnsembleRectangle/EnsembleFlow_64_256_domain.jl")
 
 nsubs  = 1           #Set the number of steps the simulation takes at each iteration. This is also the frequency that data is saved at.         
-nsteps = 5500           #Set the total amount of time steps the advection-diffusion simulation should run for
+nsteps = 5000           #Set the total amount of time steps the advection-diffusion simulation should run for
 
 κ = 0.01
 #Set delay times (that is flow for some length of time, then drop tracer in)
-delay_time = Δt̂ * 4000
+delay_time = Δt̂ * 5200
 #delay_time = 0
 #Set the frequency at which to save data
 save_freq = 50
@@ -38,15 +40,18 @@ for i ∈ 1:ADSims
     ADProb = TracerAdvDiff_QG.Problem(;prob = QGProbs[i], delay_time = delay_time, nsubs = nsubs, κ = κ)
     ADSol, ADClock, ADVars, ADParams, ADGrid = ADProb.sol, ADProb.clock, ADProb.vars, ADProb.params, ADProb.grid
     #Set the Gaussian blob initial condition
-    #μIC = [0, 0]
-    #Σ = [1 0; 0 1]
-    #IC = GaussianBlobIC(μIC, Σ, ADGrid)
+    μIC = [0, 0]
+    Σ = [1 0; 0 1]
+    IC = GaussianBlobIC(μIC, Σ, ADGrid)
+
     #Set the Gaussian strip initial condition
-    μIC = 0
-    σ² = 1
-    IC = GaussianStripIC(μIC, σ², ADGrid)
+    #μIC = 0
+    #σ² = 1
+    #IC = GaussianStripIC(μIC, σ², ADGrid)
+
     #Set QGPV as initial condition
     #IC = QGPVIC(QGProbs[i])
+
     #File name for saving, FourierFlows creates a new file each time with _i appended
     filename = CreateFile(ADProb, IC, save_freq, SimPath; Ensemble = true)
 

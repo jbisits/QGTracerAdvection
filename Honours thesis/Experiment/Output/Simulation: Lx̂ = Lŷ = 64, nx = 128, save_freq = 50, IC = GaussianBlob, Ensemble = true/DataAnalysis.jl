@@ -1,7 +1,7 @@
 #Change to correct directory
 cd(joinpath(SimPath, "Output/Simulation: Lx̂ = Lŷ = 64, nx = 128, save_freq = 50, IC = GaussianBlob, Ensemble = true"))
 
-## Load in the data. This is an ensemble simulation so now have an array of dictionaries.
+## Load in the data for delay_time = Δt * 3000
 data = Array{Dict{String, Any}}(undef, 15)
 for i ∈ 1:length(data)
     if i == 1
@@ -12,7 +12,19 @@ for i ∈ 1:length(data)
         data[i] = load(file)
     end
 end
+## Load in the data for delay_time = Δt * 5000
+data = Array{Dict{String, Any}}(undef, 10)
+for i ∈ 1:length(data)
+    if i == 1
+        file = joinpath(pwd(), "SimulationData_15.jld2")
+        data[i] = load(file)
+    else
+        file = joinpath(pwd(), "SimulationData_"*string(i + 14)*".jld2")
+        data[i] = load(file)
+    end
+end
 
+##
 t = time_vec(data[1])
 first_moms = first_moment(data)
 first_mom_upper = plot(t, first_moms[:, 1, 1], 
@@ -40,7 +52,6 @@ plot!(first_mom_lower, t, ensemble_avg[:, 2], label = "Ensemble average", line =
 
 plot(first_mom_upper, first_mom_lower, layout = (2, 1), size= (800, 800))
 
-
-Δt = t[50] - t[25]
-ΔA = ensemble_avg[50, :] .- ensemble_avg[25, :]
+Δt = t[25] - t[1]
+ΔA = ensemble_avg[25, :] .- ensemble_avg[1, :]
 K = ΔA ./ (4 * π * Δt)
