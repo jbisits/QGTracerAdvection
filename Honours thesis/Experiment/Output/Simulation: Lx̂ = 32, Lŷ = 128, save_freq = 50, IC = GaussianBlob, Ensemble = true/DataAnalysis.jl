@@ -1,8 +1,9 @@
 #Change to correct directory
 cd(joinpath(SimPath, "Output/Simulation: Lx̂ = 32, Lŷ = 128, save_freq = 50, IC = GaussianBlob, Ensemble = true"))
 
-#The saved data `Simulationdata` to `Simulationdata_9` are one set of ensemble expt with delay time = Δt * 3000
-#The saved data `Simulationdata_10` to `Simulationdata_19` are one set of ensemble expt with delay time = Δt * 5000 to see if more developed flow changes anything.
+#The saved data `Simulationdata` to `Simulationdata_9` are ensemble with delay_time = Δt * 3000 
+#The saved data `Simulationdata_10` to `Simulationdata_19` are ensemble with delay_time = Δt * 5000 
+#The saved data `Simulationdata_20` to `Simulationdata_29` are ensemble with delay_time = Δt * 4000 
 ##Read in the first ensemble sim
 data = Array{Dict{String, Any}}(undef, 10)
 for i ∈ 1:length(data)
@@ -21,6 +22,16 @@ for i ∈ 1:length(data)
         data[i] = load(file)
     else
         file = joinpath(pwd(), "SimulationData_"*string(i + 9)*".jld2")
+        data[i] = load(file)
+    end
+end
+#Read in third ensemble sim
+for i ∈ 1:length(data)
+    if i == 1 
+        file = joinpath(pwd(), "SimulationData_20.jld2")
+        data[i] = load(file)
+    else
+        file = joinpath(pwd(), "SimulationData_"*string(i + 19)*".jld2")
         data[i] = load(file)
     end
 end

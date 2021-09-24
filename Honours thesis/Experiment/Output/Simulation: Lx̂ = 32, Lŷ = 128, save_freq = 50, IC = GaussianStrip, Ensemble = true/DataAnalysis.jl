@@ -25,7 +25,16 @@ for i ∈ 1:length(data)
         data[i] = load(file)
     end
 end
-
+#Read in third ensemble sim
+for i ∈ 1:length(data)
+    if i == 1 
+        file = joinpath(pwd(), "SimulationData_20.jld2")
+        data[i] = load(file)
+    else
+        file = joinpath(pwd(), "SimulationData_"*string(i + 19)*".jld2")
+        data[i] = load(file)
+    end
+end
 ##
 t = time_vec(data[1])
 sec_mom = second_moment(data)
