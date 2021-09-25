@@ -1,7 +1,7 @@
 #Change to correct directory
 cd(joinpath(SimPath, "Output/Simulation: Lx̂ = 32, Lŷ = 64, save_freq = 20, IC = GaussianBlob, Ensemble = true"))
 
-## Load in the data. This is an ensemble simulation so now have an array of dictionaries.
+## Load in the data, these first 20 were for delay_time = Δt * 3000 
 data = Array{Dict{String, Any}}(undef, 20)
 for i ∈ 1:length(data)
     if i == 1
@@ -12,7 +12,7 @@ for i ∈ 1:length(data)
         data[i] = load(file)
     end
 end
-
+##
 t = time_vec(data[1])
 first_moms = first_moment(data)
 first_mom_upper = plot(t, first_moms[:, 1, 1], 

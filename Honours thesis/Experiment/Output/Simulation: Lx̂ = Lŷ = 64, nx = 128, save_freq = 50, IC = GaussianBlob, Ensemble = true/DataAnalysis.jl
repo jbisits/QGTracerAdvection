@@ -12,6 +12,28 @@ for i ∈ 1:length(data)
         data[i] = load(file)
     end
 end
+## Load in the data for delay_time = Δt * 4000
+data = Array{Dict{String, Any}}(undef, 10)
+for i ∈ 1:length(data)
+    if i == 1
+        file = joinpath(pwd(), "SimulationData_25.jld2")
+        data[i] = load(file)
+    else
+        file = joinpath(pwd(), "SimulationData_"*string(i + 24)*".jld2")
+        data[i] = load(file)
+    end
+end
+## Load in the data for delay_time = Δt * 4500
+data = Array{Dict{String, Any}}(undef, 10)
+for i ∈ 1:length(data)
+    if i == 1
+        file = joinpath(pwd(), "SimulationData_45.jld2")
+        data[i] = load(file)
+    else
+        file = joinpath(pwd(), "SimulationData_"*string(i + 44)*".jld2")
+        data[i] = load(file)
+    end
+end
 ## Load in the data for delay_time = Δt * 5000
 data = Array{Dict{String, Any}}(undef, 10)
 for i ∈ 1:length(data)
@@ -23,7 +45,17 @@ for i ∈ 1:length(data)
         data[i] = load(file)
     end
 end
-
+## Load in the data for delay_time = Δt * 6000
+data = Array{Dict{String, Any}}(undef, 10)
+for i ∈ 1:length(data)
+    if i == 1
+        file = joinpath(pwd(), "SimulationData_35.jld2")
+        data[i] = load(file)
+    else
+        file = joinpath(pwd(), "SimulationData_"*string(i + 34)*".jld2")
+        data[i] = load(file)
+    end
+end
 ##
 t = time_vec(data[1])
 first_moms = first_moment(data)
@@ -51,7 +83,7 @@ plot!(first_mom_upper, t, ensemble_avg[:, 1], label = "Ensemble average", line =
 plot!(first_mom_lower, t, ensemble_avg[:, 2], label = "Ensemble average", line = (:dash, 2, :black))
 
 plot(first_mom_upper, first_mom_lower, layout = (2, 1), size= (800, 800))
-
+##
 Δt = t[25] - t[1]
 ΔA = ensemble_avg[25, :] .- ensemble_avg[1, :]
 K = ΔA ./ (4 * π * Δt)

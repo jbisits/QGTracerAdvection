@@ -11,6 +11,17 @@ for i ∈ 1:length(data)
         data[i] = load(file)
     end
 end
+## Load in the data for delay_time = Δt * 4500
+data = Array{Dict{String, Any}}(undef, 10)
+for i ∈ 1:length(data)
+    if i == 1
+        file = joinpath(pwd(), "SimulationData_25.jld2")
+        data[i] = load(file)
+    else
+        file = joinpath(pwd(), "SimulationData_"*string(i + 24)*".jld2")
+        data[i] = load(file)
+    end
+end
 ## Load in the data for delay_time = Δt * 5000
 data = Array{Dict{String, Any}}(undef, 10)
 for i ∈ 1:length(data)
@@ -51,7 +62,7 @@ plot!(upperplot, t, ens_sec_mom[:, 1], label = "Ensemble", line = (:dash, :black
 plot!(lowerplot, t, ens_sec_mom[:, 2], label = "Ensemble", line = (:dash, :black, 2))
 
 plot(upperplot, lowerplot, layout = (2, 1), size = (800, 800))
-
+##
 ΔA² = ens_sec_mom[25, :] - ens_sec_mom[1, :]
 Δt = t[25] - t[1]
 K = ΔA² / (data[1]["grid/Lx"]^2 * 8 * Δt)
