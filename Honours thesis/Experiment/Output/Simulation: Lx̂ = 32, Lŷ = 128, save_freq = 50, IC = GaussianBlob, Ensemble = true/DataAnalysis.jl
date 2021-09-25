@@ -4,6 +4,7 @@ cd(joinpath(SimPath, "Output/Simulation: Lx̂ = 32, Lŷ = 128, save_freq = 50, 
 #The saved data `Simulationdata` to `Simulationdata_9` are ensemble with delay_time = Δt * 3000 
 #The saved data `Simulationdata_10` to `Simulationdata_19` are ensemble with delay_time = Δt * 5000 
 #The saved data `Simulationdata_20` to `Simulationdata_29` are ensemble with delay_time = Δt * 4000 
+#The saved data `Simulationdata_20` to `Simulationdata_29` are ensemble with delay_time = Δt * 3500 
 ##Read in the first ensemble sim
 data = Array{Dict{String, Any}}(undef, 10)
 for i ∈ 1:length(data)
@@ -15,7 +16,7 @@ for i ∈ 1:length(data)
         data[i] = load(file)
     end
 end
-#Read in second ensemble sim
+## Read in second ensemble sim
 for i ∈ 1:length(data)
     if i == 1 
         file = joinpath(pwd(), "SimulationData_10.jld2")
@@ -25,7 +26,7 @@ for i ∈ 1:length(data)
         data[i] = load(file)
     end
 end
-#Read in third ensemble sim
+## Read in third ensemble sim
 for i ∈ 1:length(data)
     if i == 1 
         file = joinpath(pwd(), "SimulationData_20.jld2")
@@ -63,7 +64,7 @@ plot!(first_mom_upper, t, ensemble_avg[:, 1], label = "Ensemble average", line =
 plot!(first_mom_lower, t, ensemble_avg[:, 2], label = "Ensemble average", line = (:dash, 2, :black))
 
 plot(first_mom_upper, first_mom_lower, layout = (2, 1), size = (800, 800))
-
+##
 Δt = t[80] - t[1]
 ΔA = ensemble_avg[80, :] .- ensemble_avg[1, :]
 K = ΔA ./ (4 * π * Δt)

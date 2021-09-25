@@ -13,12 +13,12 @@ ADSims = 10
 
 #Import a an ensemble of flows on a square domain
 #include("Flows/EnsembleSquare/EnsembleFlow_32domain_64res.jl")
-include("Flows/EnsembleSquare/EnsembleFlow_64domain_128res.jl")
+#include("Flows/EnsembleSquare/EnsembleFlow_64domain_128res.jl")
 #include("Flows/EnsembleSquare/EnsembleFlow_128domain_256res.jl")
 #include("Flows/EnsembleSquare/EnsembleFlow_256domain_512res.jl")
 
 #Import an ensemble of flows on a rectanglular domain
-#include("Flows/EnsembleRectangle/EnsembleFlow_32_64_domain.jl")
+include("Flows/EnsembleRectangle/EnsembleFlow_32_64_domain.jl")
 #include("Flows/EnsembleRectangle/EnsembleFlow_32_128_domain.jl")
 #include("Flows/EnsembleRectangle/EnsembleFlow_32_256_domain.jl")
 #include("Flows/EnsembleRectangle/EnsembleFlow_64_128_domain.jl")
@@ -29,7 +29,7 @@ nsteps = 4000           #Set the total amount of time steps the advection-diffus
 
 κ = 0.01
 #Set delay times (that is flow for some length of time, then drop tracer in)
-delay_time = Δt̂ * 4500
+delay_time = Δt̂ * 4000
 #delay_time = 0
 #Set the frequency at which to save data
 save_freq = 50
