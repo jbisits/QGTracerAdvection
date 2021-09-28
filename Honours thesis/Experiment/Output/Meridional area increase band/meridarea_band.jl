@@ -1,4 +1,5 @@
 #Change to the current directory
+#These are done with delauy_time = Δt * 3500
 cd(joinpath(SimPath, "Output/Meridional area increase band"))
 files = [joinpath(pwd(), "SimulationData_32.jld2"), joinpath(pwd(), "SimulationData_64.jld2"),
         joinpath(pwd(), "SimulationData_128.jld2"), joinpath(pwd(), "SimulationData_256.jld2")]
@@ -40,3 +41,25 @@ plot!(lowerplot, t128, second_mom128[:, 2], label = "Meridional length = 128")
 plot!(lowerplot, t256, second_mom256[:, 2], label = "Meridional length = 256")
 
 fullplot = plot(upperplot, lowerplot, layout = (2, 1), size = (800, 800))
+##
+upperplot = plot(t32, second_mom32[:, 1],
+    title = "Upper layer area second moment for zonal length x̂ = 32 \n and four meridional lengths",
+    xlabel = "t",
+    ylabel = "σ²ₐ",
+    label = "Meridional length = 32",
+    legend = :bottomright)
+plot!(upperplot, t64[1:60], second_mom64[1:60, 1], label = "Meridional length = 64")
+plot!(upperplot, t128[1:60], second_mom128[1:60, 1], label = "Meridional length = 128")
+plot!(upperplot, t256[1:60], second_mom256[1:60, 1], label = "Meridional length = 256")
+
+lowerplot = plot(t32, second_mom32[:, 2], 
+    title = "Lower layer area second moment for zonal length x̂ = 32 \n and four meridional lengths",
+    xlabel = "t",
+    ylabel = "σ²ₐ",
+    label = "Meridional length = 32",
+    legend = :bottomright)
+plot!(lowerplot, t64[1:60], second_mom64[1:60, 2], label = "Meridional length = 64")
+plot!(lowerplot, t128[1:60], second_mom128[1:60, 2], label = "Meridional length = 128")
+plot!(lowerplot, t256[1:60], second_mom256[1:60, 2], label = "Meridional length = 256")
+
+fullplot_shortertime = plot(upperplot, lowerplot, layout = (2, 1), size = (800, 800))
