@@ -18,7 +18,7 @@ ADSims = 10
 #include("Flows/EnsembleSquare/EnsembleFlow_256domain_512res.jl")
 
 #Import an ensemble of flows on a rectanglular domain
-include("Flows/EnsembleRectangle/EnsembleFlow_32_64_domain.jl")
+#include("Flows/EnsembleRectangle/EnsembleFlow_32_64_domain.jl")
 #include("Flows/EnsembleRectangle/EnsembleFlow_32_128_domain.jl")
 #include("Flows/EnsembleRectangle/EnsembleFlow_32_256_domain.jl")
 #include("Flows/EnsembleRectangle/EnsembleFlow_64_128_domain.jl")
@@ -29,7 +29,7 @@ nsteps = 4000           #Set the total amount of time steps the advection-diffus
 
 κ = 0.01
 #Set delay times (that is flow for some length of time, then drop tracer in)
-delay_time = Δt̂ * 4000
+delay_time = Δt̂ * 4500
 #delay_time = 0
 #Set the frequency at which to save data
 save_freq = 50
@@ -40,14 +40,14 @@ for i ∈ 1:ADSims
     ADProb = TracerAdvDiff_QG.Problem(;prob = QGProbs[i], delay_time = delay_time, nsubs = nsubs, κ = κ)
     ADSol, ADClock, ADVars, ADParams, ADGrid = ADProb.sol, ADProb.clock, ADProb.vars, ADProb.params, ADProb.grid
     #Set the Gaussian blob initial condition
-    μIC = [0, 0]
-    Σ = [1 0; 0 1]
-    IC = GaussianBlobIC(μIC, Σ, ADGrid)
+    #μIC = [0, 0]
+    #Σ = [1 0; 0 1]
+    #IC = GaussianBlobIC(μIC, Σ, ADGrid)
 
     #Set the Gaussian strip initial condition
-    #μIC = 0
-    #σ² = 1
-    #IC = GaussianStripIC(μIC, σ², ADGrid)
+    μIC = 0
+    σ² = 1
+    IC = GaussianStripIC(μIC, σ², ADGrid)
 
     #Set QGPV as initial condition
     #IC = QGPVIC(QGProbs[i])

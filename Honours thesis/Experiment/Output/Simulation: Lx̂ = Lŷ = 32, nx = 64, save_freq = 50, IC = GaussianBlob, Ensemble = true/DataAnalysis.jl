@@ -40,13 +40,13 @@ first_moms = first_moment(data)
 first_mom_upper = plot(t, first_moms[:, 1, 1], 
                         xlabel = "t",
                         ylabel  = "⟨A⟩",
-                        title = "Average area growth in upper layer",
+                        title = "Upper layer average area growth for Gaussian blob initial condition",
                         label = "Member 1",
                         legend = :bottomright)
 first_mom_lower = plot(t, first_moms[:, 2, 1], 
                         xlabel = "t",
                         ylabel  = "⟨A⟩",
-                        title = "Average area growth in lower layer",
+                        title = "Lower layer average area growth for Gaussian blob initial condition",
                         label = "Member 1", 
                         legend = :bottomright)
 for i ∈ 2:length(data)
@@ -60,7 +60,8 @@ ensemble_avg = first_moment(ensemble_conc)
 plot!(first_mom_upper, t, ensemble_avg[:, 1], label = "Ensemble average", line = (:dash, 2, :black))
 plot!(first_mom_lower, t, ensemble_avg[:, 2], label = "Ensemble average", line = (:dash, 2, :black))
 
-plot(first_mom_upper, first_mom_lower, layout = (2, 1), size = (800, 800))
+fullplot = plot(first_mom_upper, first_mom_lower, layout = (2, 1), size = (800, 800))
+savefig(fullplot, "Gaussblob_32dom_dt3500.png")
 ##
 Δt = t[22] - t[1]
 ΔA = ensemble_avg[22, :] .- ensemble_avg[1, :]

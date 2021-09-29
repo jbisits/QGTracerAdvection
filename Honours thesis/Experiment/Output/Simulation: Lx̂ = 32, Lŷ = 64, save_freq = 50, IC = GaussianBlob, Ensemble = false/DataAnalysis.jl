@@ -8,3 +8,5 @@ data = load(file)
 t = time_vec(data)
 first_mom = first_moment(data)
 plot(t, first_mom)
+
+data["delay_time"]

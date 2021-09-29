@@ -63,19 +63,24 @@ plot!(upperplot, t, ens_sec_mom[:, 1], label = "Ensemble", line = (:dash, :black
 plot!(lowerplot, t, ens_sec_mom[:, 2], label = "Ensemble", line = (:dash, :black, 2))
 
 plot(upperplot, lowerplot, layout = (2, 1), size = (800, 800))
-
-ΔA² = ens_sec_mom[50, :] - ens_sec_mom[10, :]
-Δt = t[50] - t[10]
+##
+ΔA² = ens_sec_mom[50, :] - ens_sec_mom[1, :]
+Δt = t[50] - t[1]
 Lₓ = data[10]["grid/Lx"]
 K = ΔA² / (Lₓ^2 * 8 * Δt)
 ##
 tp = tracer_plot(data[1])
 plot(tp[:, 1]..., size = (1200, 1200))
+
+
+
+#####################################################################################
+#Different diag
 ##
 t = time_vec(data[1])
-mer_sec_mom = meridional_second_mom(data)
+sec_mom = meridional_second_mom(data)
 
-upperplot = plot(t, mer_sec_mom[:, 1, 1],
+upperplot = plot(t, sec_mom[:, 1, 1],
                 title = "Upper layer",
                 xlabel = "t",
                 ylabel = "σ²y",
@@ -99,3 +104,8 @@ plot!(upperplot, t, ens_mer_sec_mom[:, 1], label = "Ensemble", line = (:dash, :b
 plot!(lowerplot, t, ens_mer_sec_mom[:, 2], label = "Ensemble", line = (:dash, :black, 2))
 
 plot(upperplot, lowerplot, layout = (2, 1), size = (800, 800))
+##
+ΔA² = ens_sec_mom[45, :] - ens_sec_mom[20, :]
+Δt = t[45] - t[20]
+Lₓ = data[10]["grid/Lx"]
+K = ΔA² / (Lₓ^2 * 8 * Δt)

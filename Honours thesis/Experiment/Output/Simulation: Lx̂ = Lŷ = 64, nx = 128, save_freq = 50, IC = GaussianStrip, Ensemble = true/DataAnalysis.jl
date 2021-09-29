@@ -39,13 +39,13 @@ t = time_vec(data[1])
 sec_mom = second_moment(data)
 
 upperplot = plot(t, sec_mom[:, 1, 1],
-                title = "Upper layer",
+                title = "Upper layer second moment of area growth \n for Gaussian band initial condition",
                 xlabel = "t",
                 ylabel = "σ²ₐ",
                 label = "Member 1",
                 legend = :bottomright)
 lowerplot = plot(t, sec_mom[:, 2, 1],
-                title = "Lower layer",
+                title = "Lower layer second moment of area growth \n for Gaussian band initial condition",
                 xlabel = "t",
                 ylabel = "σ²ₐ",
                 label = "Member 1",
@@ -61,12 +61,14 @@ ens_sec_mom = second_moment(ens_conc)
 plot!(upperplot, t, ens_sec_mom[:, 1], label = "Ensemble", line = (:dash, :black, 2))
 plot!(lowerplot, t, ens_sec_mom[:, 2], label = "Ensemble", line = (:dash, :black, 2))
 
-plot(upperplot, lowerplot, layout = (2, 1), size = (800, 800))
+fullplot = plot(upperplot, lowerplot, layout = (2, 1), size = (800, 800))
+#savefig(fullplot, "Gaussianband_64dom_td4500.png")
 ##
 ΔA² = ens_sec_mom[25, :] - ens_sec_mom[1, :]
 Δt = t[25] - t[1]
 K = ΔA² / (data[1]["grid/Lx"]^2 * 8 * Δt)
 
+#########################################################################################
 ##
 t = time_vec(data[1])
 mer_sec_mom = meridional_second_mom(data)

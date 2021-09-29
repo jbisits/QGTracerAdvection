@@ -1,8 +1,8 @@
 #Change to correct directory
-cd(joinpath(SimPath, "Output/Simulation: Lx̂ = 32, Lŷ = 64, save_freq = 20, IC = GaussianBlob, Ensemble = true"))
+cd(joinpath(SimPath, "Output/Simulation: Lx̂ = 32, Lŷ = 64, save_freq = 50, IC = GaussianBlob, Ensemble = true"))
 
-## Load in the data, these first 20 were for delay_time = Δt * 3000 
-data = Array{Dict{String, Any}}(undef, 20)
+## Load in the data, these first 20 were for delay_time = Δt * 4500 
+data = Array{Dict{String, Any}}(undef, 10)
 for i ∈ 1:length(data)
     if i == 1
         file = joinpath(pwd(), "SimulationData.jld2")
@@ -42,6 +42,6 @@ plot!(first_mom_lower, t, ensemble_avg[:, 2], label = "Ensemble average", line =
 plot(first_mom_upper, first_mom_lower, layout = (2, 1), size= (800, 800))
 
 ##
-Δt = t[100] - t[1]
-ΔA = ensemble_avg[100, :] .- ensemble_avg[1, :]
+Δt = t[25] - t[1]
+ΔA = ensemble_avg[25, :] .- ensemble_avg[1, :]
 K = ΔA ./ (4 * π * Δt)

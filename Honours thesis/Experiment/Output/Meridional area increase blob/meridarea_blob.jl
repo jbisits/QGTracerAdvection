@@ -1,3 +1,5 @@
+#All have delay_time = Δt * 3500
+
 cd(joinpath(SimPath, "Output/Meridional area increase blob"))
 files = [joinpath(pwd(), "SimulationData_32.jld2"), joinpath(pwd(), "SimulationData_64.jld2"),
         joinpath(pwd(), "SimulationData_128.jld2"), joinpath(pwd(), "SimulationData_256.jld2")]
@@ -40,4 +42,4 @@ plot!(lowerplot, t256, first_mom256[:, 2], label = "Meridional length = 256")
 
 fullplot = plot(upperplot, lowerplot, layout = (2, 1), size = (800, 800))
 
-#savefig(fullplot, "meridionaldomainincreas.png")
+savefig(fullplot, "meridareainc_blob_dt3500.png")
