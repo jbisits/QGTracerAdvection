@@ -51,13 +51,23 @@ plot!(upperplot, t, ens_sec_mom[:, 1], label = "Ensemble", line = (:dash, :black
 plot!(lowerplot, t, ens_sec_mom[:, 2], label = "Ensemble", line = (:dash, :black, 2))
 
 fullplot = plot(upperplot, lowerplot, layout = (2, 1), size = (800, 800))
-savefig(fullplot, "Gaussianband_32dom_td3500.png")
+#savefig(fullplot, "Gaussianband_32dom_td3500.png")
 ##
 ΔA² = ens_sec_mom[22, :] - ens_sec_mom[1, :]
 Δt = t[22] - t[1]
 Lₓ = data[1]["grid/Lx"]
 K = ΔA² / (Lₓ^2 * 8 * Δt)
 
+## Least squares fit the data
+Avals = ens_sec_mom[1:22, :]
+tvals = t[1:22]
+
+best_fit = tvals \ Avals
+plot(tvals, best_fit[1] * tvals, label = "Liner best fit", legend = :bottomright)
+plot!(tvals, Avals[:, 1], label = "True values")
+plot(tvals, best_fit[2] * tvals, label = "Liner best fit", legend = :bottomright)
+plot!(tvals, Avals[:, 2], label = "True values")
+###################################################################################################
 ##
 t = time_vec(data[1])
 mer_sec_mom = meridional_second_mom(data)

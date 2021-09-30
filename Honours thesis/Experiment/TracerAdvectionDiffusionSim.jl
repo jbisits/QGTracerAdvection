@@ -18,7 +18,7 @@ include("PackageSetup.jl")
 #include("Flows/Square/FlowSetup_nondim_256domain_512res.jl")
 
 # Rectangular domain flows (longer in meridional direction)
-include("Flows/Rectangle/FlowSetup_nondim_32_64domain.jl")
+#include("Flows/Rectangle/FlowSetup_nondim_32_64domain.jl")
 #include("Flows/Rectangle/FlowSetup_nondim_32_128domain.jl")
 #include("Flows/Rectangle/FlowSetup_nondim_32_256domain.jl")
 #include("Flows/Rectangle/FlowSetup_nondim_64_128domain.jl")
@@ -48,7 +48,7 @@ ADSol, ADClock, ADVars, ADParams, ADGrid = ADProb.sol, ADProb.clock, ADProb.vars
 #IC = PointSourceIC([64, 64], 1, ADGrid)
 
 #Set the QGPV initial condition
-IC = QGPVIC(QGProb)
+#IC = QGPVIC(QGProb)
 
 QGset_c!(ADProb, IC.C₀)
 save_freq = 50

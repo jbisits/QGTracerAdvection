@@ -72,8 +72,16 @@ plot!(first_mom_upper, t, ensemble_avg[:, 1], label = "Ensemble average", line =
 plot!(first_mom_lower, t, ensemble_avg[:, 2], label = "Ensemble average", line = (:dash, 2, :black))
 
 fullplot = plot(first_mom_upper, first_mom_lower, layout = (2, 1), size = (800, 800))
-savefig(fullplot, "Gaussblob_32dom_dt3500.png")
+#savefig(fullplot, "Gaussblob_32dom_dt3500.png")
 ##
 Δt = t[22] - t[1]
 ΔA = ensemble_avg[22, :] .- ensemble_avg[1, :]
 K = ΔA ./ (4 * π * Δt)
+
+ΔA / Δt
+slope = t[1:22] \ ensemble_avg[1:22, :]
+
+plot(t[1:22], slope .* t[1:22], label = "Best fit", legend = :bottomright)
+plot!(t[1:22], ensemble_avg[1:22, :], label ="Measured")
+##
+nondim2dim(data[1]; U = 0.02)

@@ -204,7 +204,7 @@ function tracer_plot(data::Dict{String, Any}; plot_freq = 1000)
 
         for j ∈ 1:nlayers
             k = round(Int, i / plot_freq) + 1
-            tracer_plots[k, j] = heatmap(x, y, data["snapshots/Concentration/"*string(i)][:, :, j]',
+            tracer_plots[k, j] = heatmap(x, y, abs.(data["snapshots/Concentration/"*string(i)][:, :, j])',
                                         title = "C(x,y,t) step = "*string(i); 
                                         plotargs...)
         end
@@ -682,6 +682,7 @@ Translates parameters that have been set in the non-dimensional space (as I use 
 to the phsyical space based off mid-latitude values in metres and seconds. The values have defaults set.
 """
 function nondim2dim(prob::FourierFlows.Problem;
+                    U = 0.1,         # Background current
                     Ω = 7.29e-5,     # Earth"s rotation
                     ϕ = π/3,         # Latitude
                     a = 6378e3,      # Earth's radius
@@ -695,7 +696,6 @@ function nondim2dim(prob::FourierFlows.Problem;
     gprime = g*((ρ₂ - ρ₁)/ρ₂)   # Reduced gravity
     
     Ld = sqrt(gprime*H)/(f₀)    #Rossby deformation radius
-    U = 0.1
 
     #Domain
     Lx̂, Lŷ = prob.grid.Lx, prob.grid.Ly
@@ -719,7 +719,8 @@ function nondim2dim(prob::FourierFlows.Problem;
                 "ν"  => ν,
                 "Lx" => Lx,
                 "Ly" => Ly,
-                "Δt" => Δt
+                "Δt" => Δt,
+                "Ld" => Ld
                 )
 
 end
@@ -727,20 +728,20 @@ end
 Compute the nondimensionalised time and length from the saved data of a advection diffusion simulation
 """
 function nondim2dim(data::Dict{String, Any};
+                    U = 0.1,         # Background current
                     Ω = 7.29e-5,     # Earth"s rotation
                     ϕ = π/3,         # Latitude
                     a = 6378e3,      # Earth's radius
                     g = 9.81,        # Gravity
                     H = 1500,        # Total depth (in metres)
                     ρ₁ = 1034,       # Density of top layer
-                    ρ₂ = 1035        # Density of bottom layer
+                    ρ₂ = 1035,       # Density of bottom layer
                     )
     
     f₀ = 2*Ω*sin(ϕ)             # Coriolis computed from above values
     gprime = g*((ρ₂ - ρ₁)/ρ₂)   # Reduced gravity
     
     Ld = sqrt(gprime*H)/(f₀)    #Rossby deformation radius
-    U = 0.1
 
     #Domain
     Lx̂, Lŷ = data["grid/Lx"], data["grid/Ly"]
@@ -758,7 +759,8 @@ function nondim2dim(data::Dict{String, Any};
     return Dict("Lx" => Lx,
                 "Ly" => Ly,
                 "Δt" => Δt,
-                "κ"  => κ
+                "κ"  => κ,
+                "Ld" => Ld
                 )
 end
 
