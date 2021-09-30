@@ -62,11 +62,13 @@ plot!(upperplot, t, ens_sec_mom[:, 1], label = "Ensemble", line = (:dash, :black
 plot!(lowerplot, t, ens_sec_mom[:, 2], label = "Ensemble", line = (:dash, :black, 2))
 
 fullplot = plot(upperplot, lowerplot, layout = (2, 1), size = (800, 800))
-#savefig(fullplot, "Gaussianband_64dom_td4500.png")
+savefig(fullplot, "Gaussianband_64dom_td4500.png")
 ##
 ΔA² = ens_sec_mom[25, :] - ens_sec_mom[1, :]
 Δt = t[25] - t[1]
 K = ΔA² / (data[1]["grid/Lx"]^2 * 8 * Δt)
+
+
 
 #########################################################################################
 ##

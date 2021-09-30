@@ -4,7 +4,6 @@ cd(joinpath(SimPath, "Output/Simulation: Lx̂ = 32, Lŷ = 128, save_freq = 50, 
 #The saved data `Simulationdata` to `Simulationdata_9` are ensemble with delay_time = Δt * 3000 
 #The saved data `Simulationdata_10` to `Simulationdata_19` are ensemble with delay_time = Δt * 5000 
 #The saved data `Simulationdata_20` to `Simulationdata_29` are ensemble with delay_time = Δt * 4000 
-#The saved data `Simulationdata_20` to `Simulationdata_29` are ensemble with delay_time = Δt * 3500 
 ##Read in the first ensemble sim
 data = Array{Dict{String, Any}}(undef, 10)
 for i ∈ 1:length(data)

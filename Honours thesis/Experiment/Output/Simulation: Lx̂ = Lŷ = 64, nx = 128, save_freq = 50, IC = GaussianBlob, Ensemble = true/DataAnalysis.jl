@@ -83,7 +83,7 @@ plot!(first_mom_upper, t, ensemble_avg[:, 1], label = "Ensemble average", line =
 plot!(first_mom_lower, t, ensemble_avg[:, 2], label = "Ensemble average", line = (:dash, 2, :black))
 
 fullplot = plot(first_mom_upper, first_mom_lower, layout = (2, 1), size= (800, 800))
-#savefig(fullpot, "Gaussianblob_64dom_td4500.png")
+savefig(fullplot, "Gaussianblob_64dom_td4500.png")
 ##
 Δt = t[25] - t[1]
 ΔA = ensemble_avg[25, :] .- ensemble_avg[1, :]

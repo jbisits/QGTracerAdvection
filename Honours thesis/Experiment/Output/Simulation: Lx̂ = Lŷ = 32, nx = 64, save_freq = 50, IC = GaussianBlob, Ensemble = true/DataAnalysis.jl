@@ -34,6 +34,17 @@ for i ∈ 1:length(data)
         data[i] = load(file)
     end
 end
+## Load in the data delay_time = Δt * 4500
+data = Array{Dict{String, Any}}(undef, 10)
+for i ∈ 1:length(data)
+    if i == 1
+        file = joinpath(pwd(), "SimulationData_30.jld2")
+        data[i] = load(file)
+    else
+        file = joinpath(pwd(), "SimulationData_"*string(i + 29)*".jld2")
+        data[i] = load(file)
+    end
+end
 ##
 t = time_vec(data[1])
 first_moms = first_moment(data)
