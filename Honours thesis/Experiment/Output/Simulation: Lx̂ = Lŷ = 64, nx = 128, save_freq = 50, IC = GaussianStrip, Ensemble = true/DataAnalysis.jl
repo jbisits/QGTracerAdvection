@@ -33,6 +33,17 @@ for i ∈ 1:length(data)
         data[i] = load(file)
     end
 end
+## New flow params for delay_time = Δt * 6000
+data = Array{Dict{String, Any}}(undef, 10)
+for i ∈ 1:length(data)
+    if i == 1
+        file = joinpath(pwd(), "SimulationData_35.jld2")
+        data[i] = load(file)
+    else
+        file = joinpath(pwd(), "SimulationData_"*string(i + 34)*".jld2")
+        data[i] = load(file)
+    end
+end
 
 ##
 t = time_vec(data[1])
@@ -62,14 +73,22 @@ plot!(upperplot, t, ens_sec_mom[:, 1], label = "Ensemble", line = (:dash, :black
 plot!(lowerplot, t, ens_sec_mom[:, 2], label = "Ensemble", line = (:dash, :black, 2))
 
 fullplot = plot(upperplot, lowerplot, layout = (2, 1), size = (800, 800))
-savefig(fullplot, "Gaussianband_64dom_td4500.png")
+#savefig(fullplot, "Gaussianband_64dom_td4500.png")
 ##
-ΔA² = ens_sec_mom[25, :] - ens_sec_mom[1, :]
-Δt = t[25] - t[1]
+ΔA² = ens_sec_mom[50, :] - ens_sec_mom[1, :]
+Δt = t[50] - t[1]
 K = ΔA² / (data[1]["grid/Lx"]^2 * 8 * Δt)
 
+##
+ΔA²/ Δt
+slope = t[1:50] \ ens_sec_mom[1:50, :]
 
-
+plot(t[1:50], slope .* t[1:50], label =  ["Upper best fit" "Lower best fit"], legend = :bottomright)
+plot!(t[1:50], ens_sec_mom[1:50, :], label = ["Upper ensemble average data" "Lower ensemble average data"])
+##
+tracer_plots = tracer_plot(data[1]; plot_freq = 500)
+plot(tracer_plots[:, 1]..., size = (1200, 1200))
+plot(tracer_plots[:, 2]..., size = (1200, 1200))
 #########################################################################################
 ##
 t = time_vec(data[1])

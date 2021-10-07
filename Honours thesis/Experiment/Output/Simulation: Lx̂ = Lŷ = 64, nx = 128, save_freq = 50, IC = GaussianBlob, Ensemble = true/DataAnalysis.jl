@@ -56,6 +56,17 @@ for i ∈ 1:length(data)
         data[i] = load(file)
     end
 end
+## Update params in the flow to match better with real values, delay_time = Δt * 6000
+data = Array{Dict{String, Any}}(undef, 10)
+for i ∈ 1:length(data)
+    if i == 1
+        file = joinpath(pwd(), "SimulationData_55.jld2")
+        data[i] = load(file)
+    else
+        file = joinpath(pwd(), "SimulationData_"*string(i + 54)*".jld2")
+        data[i] = load(file)
+    end
+end
 ##
 t = time_vec(data[1])
 first_moms = first_moment(data)
@@ -83,8 +94,18 @@ plot!(first_mom_upper, t, ensemble_avg[:, 1], label = "Ensemble average", line =
 plot!(first_mom_lower, t, ensemble_avg[:, 2], label = "Ensemble average", line = (:dash, 2, :black))
 
 fullplot = plot(first_mom_upper, first_mom_lower, layout = (2, 1), size= (800, 800))
-savefig(fullplot, "Gaussianblob_64dom_td4500.png")
+#savefig(fullplot, "Gaussianblob_64dom_td4500.png")
 ##
-Δt = t[25] - t[1]
-ΔA = ensemble_avg[25, :] .- ensemble_avg[1, :]
+Δt = t[40] - t[1]
+ΔA = ensemble_avg[40, :] .- ensemble_avg[1, :]
 K = ΔA ./ (4 * π * Δt)
+##
+slope = t[1:40] \ ensemble_avg[1:40, :]
+
+plot(t[1:40], slope .* t[1:40], label = ["Upper best fit" "Lower best fit"], legend = :bottomright)
+plot!(t[1:40], ensemble_avg[1:40, :], label = ["Upper ensemble average data" "Lower ensemble average data"])
+##
+##
+tracer_plots = tracer_plot(data[1]; plot_freq = 500)
+plot(tracer_plots[:, 1]..., size = (1200, 1200))
+plot(tracer_plots[:, 2], size = (1200, 1200))
