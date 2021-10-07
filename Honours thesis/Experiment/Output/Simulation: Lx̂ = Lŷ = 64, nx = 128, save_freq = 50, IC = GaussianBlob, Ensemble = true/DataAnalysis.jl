@@ -99,6 +99,7 @@ fullplot = plot(first_mom_upper, first_mom_lower, layout = (2, 1), size= (800, 8
 Δt = t[40] - t[1]
 ΔA = ensemble_avg[40, :] .- ensemble_avg[1, :]
 K = ΔA ./ (4 * π * Δt)
+
 ##
 slope = t[1:40] \ ensemble_avg[1:40, :]
 
