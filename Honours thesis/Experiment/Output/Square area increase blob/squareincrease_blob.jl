@@ -1,4 +1,4 @@
-cd(joinpath(SimPath, "Output/Square area increase"))
+cd(joinpath(SimPath, "Output/Square area increase blob"))
 files = [joinpath(pwd(), "SimulationData_32.jld2"), joinpath(pwd(), "SimulationData_64.jld2"),
         joinpath(pwd(), "SimulationData_128.jld2"), joinpath(pwd(), "SimulationData_256.jld2")]
 
@@ -26,7 +26,7 @@ upperplot = plot(t32, first_mom32[:, 1],
     legend = :topleft)
 plot!(upperplot, t64, first_mom64[:, 1], label = "Lx̂ = Lŷ = 64")
 plot!(upperplot, t128, first_mom128[:, 1], label = "Lx̂ = Lŷ = 128")
-plot!(upperplot, t256[1:round(Int, 3 * end / 4)], first_mom256[1:round(Int, 3 * end / 4), 1], label = "Lx̂ = Lŷ = 256")
+plot!(upperplot, t256, first_mom256[:, 1], label = "Lx̂ = Lŷ = 256")
 
 lowerplot = plot(t32, first_mom32[:, 2], 
     title = "Lower layer average area on square domains",
@@ -36,8 +36,8 @@ lowerplot = plot(t32, first_mom32[:, 2],
     legend = :topleft)
 plot!(lowerplot, t64, first_mom64[:, 2], label =  "Lx̂ = Lŷ = 64")
 plot!(lowerplot, t128, first_mom128[:, 2], label =  "Lx̂ = Lŷ = 128")
-plot!(lowerplot, t256[1:round(Int, 3 * end / 4)], first_mom256[1:round(Int, 3 * end / 4), 2], label =  "Lx̂ = Lŷ = 256")
+plot!(lowerplot, t256, first_mom256[:, 2], label =  "Lx̂ = Lŷ = 256")
 
 fullplot = plot(upperplot, lowerplot, layout = (2, 1), size = (800, 800))
 
-savefig(fullplot, "sqaureareaincrease.png")
+#savefig(fullplot, "sqaureareaincrease_blob.png")
