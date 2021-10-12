@@ -94,7 +94,7 @@ plot!(first_mom_upper, t, ensemble_avg[:, 1], label = "Ensemble average", line =
 plot!(first_mom_lower, t, ensemble_avg[:, 2], label = "Ensemble average", line = (:dash, 2, :black))
 
 fullplot = plot(first_mom_upper, first_mom_lower, layout = (2, 1), size= (800, 800))
-#savefig(fullplot, "Gaussianblob_64dom_td4500.png")
+savefig(fullplot, "Gaussianblob_64dom_td4500.png")
 ##
 Δt = t[40] - t[1]
 ΔA = ensemble_avg[40, :] .- ensemble_avg[1, :]
@@ -108,5 +108,8 @@ plot!(t[1:40], ensemble_avg[1:40, :], label = ["Upper ensemble average data" "Lo
 ##
 ##
 tracer_plots = tracer_plot(data[1]; plot_freq = 500)
-plot(tracer_plots[:, 1]..., size = (1200, 1200))
+upperlayerblob = plot(tracer_plots[:, 1]..., size = (1200, 1200))
+#savefig(upperlayerblob, "upperlayertracerblob.png")
+upperlayerblobIC = plot(tracer_plots[1, 1])
+savefig(upperlayerblobIC, "blobIC.png")
 plot(tracer_plots[:, 2], size = (1200, 1200))

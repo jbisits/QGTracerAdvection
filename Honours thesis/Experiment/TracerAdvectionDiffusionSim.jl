@@ -31,7 +31,7 @@ include("PackageSetup.jl")
 #include("Flows/NewParamsSquare/Square_new_params_256domain_512res.jl")
 
 #Import a flow on a rectanglular domain with updated params that translate to accurate values for U = 0.02.
-include("Flows/NewParamsRectangle/Rectangle_new_params_64_128dom.jl")
+#include("Flows/NewParamsRectangle/Rectangle_new_params_64_128dom.jl")
 #include("Flows/NewParamsRectangle/Rectangle_new_params_64_256dom.jl")
 
 nsubs  = 1            #Set the number of steps the simulation takes at each iteration.         

@@ -37,4 +37,4 @@ plot!(lowerplot, t256, first_mom256[:, 2], label = "Meridional length = 256")
 
 fullplot = plot(upperplot, lowerplot, layout = (2, 1), size = (800, 800))
 
-#savefig(fullplot, "meridareainc_blob_dt6000.png")
+savefig(fullplot, "meridareaincrease_blob.png")

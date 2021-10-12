@@ -682,7 +682,7 @@ Translates parameters that have been set in the non-dimensional space (as I use 
 to the phsyical space based off mid-latitude values in metres and seconds. The values have defaults set.
 """
 function nondim2dim(prob::FourierFlows.Problem;
-                    U = 0.1,         # Background current
+                    U = 0.02,         # Background current
                     Ω = 7.29e-5,     # Earth"s rotation
                     ϕ = π/3,         # Latitude
                     a = 6378e3,      # Earth's radius
@@ -728,7 +728,7 @@ end
 Compute the nondimensionalised time and length from the saved data of a advection diffusion simulation
 """
 function nondim2dim(data::Dict{String, Any};
-                    U = 0.1,         # Background current
+                    U = 0.02,         # Background current
                     Ω = 7.29e-5,     # Earth"s rotation
                     ϕ = π/3,         # Latitude
                     a = 6378e3,      # Earth's radius

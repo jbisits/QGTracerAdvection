@@ -13,25 +13,25 @@ t64 = time_vec(data64)
 t128 = time_vec(data128)
 t256 = time_vec(data256)
 
-second_mom32 = second_moment(data32)
-second_mom64 = second_moment(data64)
-second_mom128 = second_moment(data128)
-second_mom256 = second_moment(data256)
+second_mom32 = second_moment(data32) ./ 32^2
+second_mom64 = second_moment(data64) ./ 64^2
+second_mom128 = second_moment(data128) ./ 128^2
+second_mom256 = second_moment(data256) ./ 256^2
 
-upperplot = plot(t32, second_mom32[:, 1]./32^2,
+upperplot = plot(t32, second_mom32[:, 1],
     title = "Upper layer second moment of area on square domains",
     xlabel = "t",
-    ylabel = "σ²ₐ",
+    ylabel = "σ²ₐ/Lₓ²",
     label = "Lx̂ = Lŷ = 32",
     legend = :topleft)
-plot!(upperplot, t64, second_mom64[:, 1]./64^2, label = "Lx̂ = Lŷ = 64")
-plot!(upperplot, t128, second_mom128[:, 1]./128^2, label = "Lx̂ = Lŷ = 128")
-plot!(upperplot, t256, second_mom256[:, 1]./256^2, label = "Lx̂ = Lŷ = 256")
+plot!(upperplot, t64, second_mom64[:, 1], label = "Lx̂ = Lŷ = 64")
+plot!(upperplot, t128, second_mom128[:, 1], label = "Lx̂ = Lŷ = 128")
+plot!(upperplot, t256, second_mom256[:, 1], label = "Lx̂ = Lŷ = 256")
 
 lowerplot = plot(t32, second_mom32[:, 2], 
     title = "Lower layer second moment of area on square domains",
     xlabel = "t",
-    ylabel = "σ²ₐ",
+    ylabel = "σ²ₐ/Lₓ²",
     label = "Lx̂ = Lŷ = 32",
     legend = :topleft)
 plot!(lowerplot, t64, second_mom64[:, 2], label =  "Lx̂ = Lŷ = 64")
@@ -40,7 +40,7 @@ plot!(lowerplot, t256, second_mom256[:, 2], label =  "Lx̂ = Lŷ = 256")
 
 fullplot = plot(upperplot, lowerplot, layout = (2, 1), size = (800, 800))
 
-#savefig(fullplot, "sqaureareaincrease_band.png")
+savefig(fullplot, "sqaureareaincrease_band.png")
 
 ## Smaller plot
 lowerplot = plot(t32[1:50], second_mom32[1:50, 2], 

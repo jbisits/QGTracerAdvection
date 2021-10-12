@@ -87,7 +87,10 @@ plot(t[1:50], slope .* t[1:50], label =  ["Upper best fit" "Lower best fit"], le
 plot!(t[1:50], ens_sec_mom[1:50, :], label = ["Upper ensemble average data" "Lower ensemble average data"])
 ##
 tracer_plots = tracer_plot(data[1]; plot_freq = 500)
-plot(tracer_plots[:, 1]..., size = (1200, 1200))
+upperlayerband = plot(tracer_plots[:, 1]..., size = (1200, 1200))
+#savefig(upperlayerband, "upperlayerbandtracer.png")
+upperlayerbandIC = plot(tracer_plots[1, 1])
+savefig(upperlayerbandIC, "upperlayerbandIC.png")
 plot(tracer_plots[:, 2]..., size = (1200, 1200))
 #########################################################################################
 ##

@@ -1,5 +1,5 @@
 #Change to the current directory
-#These are done with delauy_time = Δt * 3500
+#These are done with delauy_time = Δt * 6000
 cd(joinpath(SimPath, "Output/Meridional area increase band"))
 files = [joinpath(pwd(), "SimulationData_64_64.jld2"), joinpath(pwd(), "SimulationData_64_128.jld2"), 
         joinpath(pwd(), "SimulationData_64_256.jld2")]
@@ -36,6 +36,7 @@ plot!(lowerplot, t128, second_mom128[:, 2], label = "Meridional length = 128")
 plot!(lowerplot, t256, second_mom256[:, 2], label = "Meridional length = 256")
 
 fullplot = plot(upperplot, lowerplot, layout = (2, 1), size = (800, 800))
+savefig(fullplot, "meridareaincrease_band.png")
 ##
 upperplot = plot(t32, second_mom32[:, 1],
     title = "Upper layer area second moment for zonal length x̂ = 32 \n and four meridional lengths",
