@@ -26,7 +26,7 @@ include("PackageSetup.jl")
 
 #Import a flow on a square domain with updated params that translate to accurate values for U = 0.02.
 #include("Flows/NewParamsSquare/Square_new_params_32domain_64res.jl")
-#include("Flows/NewParamsSquare/Square_new_params_64domain_128res.jl")
+include("Flows/NewParamsSquare/Square_new_params_64domain_128res.jl")
 #include("Flows/NewParamsSquare/Square_new_params_128domain_256res.jl")
 #include("Flows/NewParamsSquare/Square_new_params_256domain_512res.jl")
 
@@ -52,14 +52,14 @@ ADSol, ADClock, ADVars, ADParams, ADGrid = ADProb.sol, ADProb.clock, ADProb.vars
 #IC = GaussianBlobIC(μIC, Σ, ADGrid)
 
 #Set the Gaussian band initial condition
-μIC = 0
-σ² = 1
-IC = GaussianStripIC(μIC, σ², ADGrid)
+#μIC = 0
+#σ² = 1
+#IC = GaussianStripIC(μIC, σ², ADGrid)
 
 #IC = PointSourceIC([64, 64], 1, ADGrid)
 
 #Set the QGPV initial condition
-#IC = QGPVIC(QGProb)
+IC = QGPVIC(QGProb)
 
 QGset_c!(ADProb, IC.C₀)
 save_freq = 50

@@ -188,8 +188,8 @@ function tracer_plot(data::Dict{String, Any}; plot_freq = 1000)
     plotargs = (
             aspectratio = Lx/Ly,
                 color = :deep,
-                xlabel = "x",
-                ylabel = "y",
+                xlabel = "x̂",
+                ylabel = "ŷ",
                 colorbar = true,
                 xlims = (-Lx/2, Lx/2),
                 ylims = (-Ly/2, Ly/2),
@@ -224,8 +224,8 @@ function tracer_animate(data::Dict{String, Any})
     x, y = data["grid/x"], data["grid/y"]=
     plotargs = (
                 color = :deep,
-                xlabel = "x",
-                ylabel = "y",
+                xlabel = "x̂",
+                ylabel = "ŷ",
                 colorbar = true,
                 xlims = (-Lx/2, Lx/2),
                 ylims = (-Ly/2, Ly/2)
