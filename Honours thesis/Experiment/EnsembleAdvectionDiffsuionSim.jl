@@ -1,13 +1,15 @@
 #Ensemble tracer advection diffusion experiment
 
+## Load all packages
 #Change to the correct directory (if it was not already correct for some reason)
 SimPath = joinpath("/Users/Joey/Desktop/ThesisCode/QG_tracer_advection", "Honours thesis/Experiment")
 cd(SimPath)
 #Load in all the required packages for the simulation
 include("PackageSetup.jl")
 
+## Run a simulation
 #Define number of tracer advection simulations
-ADSims = 20
+ADSims = 10
 
 #Import a an ensemble of flows on a square domain
 #include("Flows/EnsembleSquare/EnsembleFlow_32domain_64res.jl")
@@ -15,19 +17,26 @@ ADSims = 20
 #include("Flows/EnsembleSquare/EnsembleFlow_128domain_256res.jl")
 #include("Flows/EnsembleSquare/EnsembleFlow_256domain_512res.jl")
 
+#Import an ensemble of flows on square domain with updated params that translate to accurate values for U = 0.02.
+#include("Flows/NewParamsEnsembleSquare/EnsembleSquare_new_params_32domain_64res.jl")
+include("Flows/NewParamsEnsembleSquare/EnsembleSquare_new_params_64domain_128res.jl")
+#include("Flows/NewParamsEnsembleSquare/EnsembleSquare_new_params_128domain_256res.jl")
+
 #Import an ensemble of flows on a rectanglular domain
-include("Flows/EnsembleRectangle/EnsembleFlow_32_64_domain.jl")
+#include("Flows/EnsembleRectangle/EnsembleFlow_32_64_domain.jl")
 #include("Flows/EnsembleRectangle/EnsembleFlow_32_128_domain.jl")
 #include("Flows/EnsembleRectangle/EnsembleFlow_32_256_domain.jl")
 #include("Flows/EnsembleRectangle/EnsembleFlow_64_128_domain.jl")
 #include("Flows/EnsembleRectangle/EnsembleFlow_64_256_domain.jl")
 
 nsubs  = 1           #Set the number of steps the simulation takes at each iteration. This is also the frequency that data is saved at.         
-nsteps = 4500           #Set the total amount of time steps the advection-diffusion simulation should run for
+nsteps = 4000           #Set the total amount of time steps the advection-diffusion simulation should run for
 
-κ = 0.01
+#κ = 0.01
+κ = 0.03
 #Set delay times (that is flow for some length of time, then drop tracer in)
-delay_time = Δt̂ * 3000
+delay_time = Δt̂ * 6000
+#delay_time = 0
 #Set the frequency at which to save data
 save_freq = 50
 
@@ -40,10 +49,15 @@ for i ∈ 1:ADSims
     #μIC = [0, 0]
     #Σ = [1 0; 0 1]
     #IC = GaussianBlobIC(μIC, Σ, ADGrid)
+
     #Set the Gaussian strip initial condition
     μIC = 0
     σ² = 1
     IC = GaussianStripIC(μIC, σ², ADGrid)
+
+    #Set QGPV as initial condition
+    #IC = QGPVIC(QGProbs[i])
+
     #File name for saving, FourierFlows creates a new file each time with _i appended
     filename = CreateFile(ADProb, IC, save_freq, SimPath; Ensemble = true)
 

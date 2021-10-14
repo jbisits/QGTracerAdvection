@@ -14,6 +14,7 @@ export
     tracer_animate,
     time_vec,
     first_moment,
+    second_moment,
     meridional_second_mom,
     tracer_area_percentile,
     avg_ensemble_tracer_area,
@@ -187,8 +188,8 @@ function tracer_plot(data::Dict{String, Any}; plot_freq = 1000)
     plotargs = (
             aspectratio = Lx/Ly,
                 color = :deep,
-                xlabel = "x",
-                ylabel = "y",
+                xlabel = "x̂",
+                ylabel = "ŷ",
                 colorbar = true,
                 xlims = (-Lx/2, Lx/2),
                 ylims = (-Ly/2, Ly/2),
@@ -203,7 +204,7 @@ function tracer_plot(data::Dict{String, Any}; plot_freq = 1000)
 
         for j ∈ 1:nlayers
             k = round(Int, i / plot_freq) + 1
-            tracer_plots[k, j] = heatmap(x, y, data["snapshots/Concentration/"*string(i)][:, :, j]',
+            tracer_plots[k, j] = heatmap(x, y, abs.(data["snapshots/Concentration/"*string(i)][:, :, j])',
                                         title = "C(x,y,t) step = "*string(i); 
                                         plotargs...)
         end
@@ -223,8 +224,8 @@ function tracer_animate(data::Dict{String, Any})
     x, y = data["grid/x"], data["grid/y"]=
     plotargs = (
                 color = :deep,
-                xlabel = "x",
-                ylabel = "y",
+                xlabel = "x̂",
+                ylabel = "ŷ",
                 colorbar = true,
                 xlims = (-Lx/2, Lx/2),
                 ylims = (-Ly/2, Ly/2)
@@ -351,9 +352,75 @@ function first_moment(data::Array{Dict{String, Any}})
     return  first_mom
 end
 """
+    function second_moment(data::Dict{Union{String, Any}}
+Caclutate the second moment of the area from tracer data.
+"""
+function second_moment(data::Dict{String, Any})
+
+    nlayers = data["params/nlayers"]
+    nsteps = data["clock/nsteps"]
+    saved_steps = data["save_freq"]
+    plot_steps = 0:saved_steps:nsteps
+    second_mom = Array{Float64}(undef, length(plot_steps), nlayers)
+    Δx = data["grid/Lx"] / data["grid/nx"]
+    Δy = data["grid/Ly"] / data["grid/ny"]
+    ΔA = Δx * Δy
+
+    for i ∈ plot_steps
+
+        for j ∈ 1:nlayers
+
+            C = abs.(reshape(data["snapshots/Concentration/"*string(i)][:, :, j], :)) #Absolute value avoids the negative values
+            sort!(C, rev = true)
+            N = length(C)
+            l = round(Int, i/saved_steps) + 1
+            Σk²Cₖ =  (ΔA)^2 * sum( [k^2 * C[k] for k ∈ 1:N] )
+            ΣCₖ = sum(C)
+            second_mom[l, j] = Σk²Cₖ / ΣCₖ
+
+        end
+
+    end
+
+    return second_mom
+
+end
+function second_moment(data::Array{Dict{String, Any}})
+
+    nlayers = data[1]["params/nlayers"]
+    nsteps = data[1]["clock/nsteps"]
+    saved_steps = data[1]["save_freq"]
+    plot_steps = 0:saved_steps:nsteps
+    second_mom = Array{Float64}(undef, length(plot_steps), nlayers, length(data))
+    Δx = data[1]["grid/Lx"] / data[1]["grid/nx"]
+    Δy = data[1]["grid/Ly"] / data[1]["grid/ny"]
+    ΔA = Δx * Δy
+
+    for i ∈ 1:length(data)
+
+        for j ∈ plot_steps
+
+            for l ∈ 1:nlayers
+
+                C = abs.(reshape(data[i]["snapshots/Concentration/"*string(j)][:, :, l], :)) #Absolute value avoids the negative values
+                sort!(C, rev = true)
+                N = length(C)
+                m = round(Int, j/saved_steps) + 1
+                Σk²Cₖ =  (ΔA)^2 * sum( [k^2 * C[k] for k ∈ 1:N] )
+                ΣCₖ = sum(C)
+                second_mom[m, l, i] = Σk²Cₖ / ΣCₖ
+
+            end
+
+        end
+
+    end
+
+    return  second_mom
+end
+"""
     function meridiondal_second_mom
 Calculate merional second moment from the Gaussian strip condition.
-This is computed by ``\frac{\int \int y^2c(x, y)}{\int \int c(x, t)} ≈ (Δy / 2)²∑ⱼ∑ᵢi²c(j, i) / ∑ⱼ∑ᵢc(j, i)
 """
 function meridional_second_mom(data::Dict{String, Any})
 
@@ -615,6 +682,7 @@ Translates parameters that have been set in the non-dimensional space (as I use 
 to the phsyical space based off mid-latitude values in metres and seconds. The values have defaults set.
 """
 function nondim2dim(prob::FourierFlows.Problem;
+                    U = 0.02,         # Background current
                     Ω = 7.29e-5,     # Earth"s rotation
                     ϕ = π/3,         # Latitude
                     a = 6378e3,      # Earth's radius
@@ -628,7 +696,6 @@ function nondim2dim(prob::FourierFlows.Problem;
     gprime = g*((ρ₂ - ρ₁)/ρ₂)   # Reduced gravity
     
     Ld = sqrt(gprime*H)/(f₀)    #Rossby deformation radius
-    U = 0.1
 
     #Domain
     Lx̂, Lŷ = prob.grid.Lx, prob.grid.Ly
@@ -652,7 +719,8 @@ function nondim2dim(prob::FourierFlows.Problem;
                 "ν"  => ν,
                 "Lx" => Lx,
                 "Ly" => Ly,
-                "Δt" => Δt
+                "Δt" => Δt,
+                "Ld" => Ld
                 )
 
 end
@@ -660,20 +728,20 @@ end
 Compute the nondimensionalised time and length from the saved data of a advection diffusion simulation
 """
 function nondim2dim(data::Dict{String, Any};
+                    U = 0.02,         # Background current
                     Ω = 7.29e-5,     # Earth"s rotation
                     ϕ = π/3,         # Latitude
                     a = 6378e3,      # Earth's radius
                     g = 9.81,        # Gravity
                     H = 1500,        # Total depth (in metres)
                     ρ₁ = 1034,       # Density of top layer
-                    ρ₂ = 1035        # Density of bottom layer
+                    ρ₂ = 1035,       # Density of bottom layer
                     )
     
     f₀ = 2*Ω*sin(ϕ)             # Coriolis computed from above values
     gprime = g*((ρ₂ - ρ₁)/ρ₂)   # Reduced gravity
     
     Ld = sqrt(gprime*H)/(f₀)    #Rossby deformation radius
-    U = 0.1
 
     #Domain
     Lx̂, Lŷ = data["grid/Lx"], data["grid/Ly"]
@@ -691,7 +759,8 @@ function nondim2dim(data::Dict{String, Any};
     return Dict("Lx" => Lx,
                 "Ly" => Ly,
                 "Δt" => Δt,
-                "κ"  => κ
+                "κ"  => κ,
+                "Ld" => Ld
                 )
 end
 

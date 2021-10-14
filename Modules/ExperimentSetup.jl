@@ -4,6 +4,7 @@ export
     GaussianBlobIC,
     GaussianStripIC,
     PointSourceIC,
+    QGPVIC,
     CreateFile, 
     GetConcentration
 
@@ -36,6 +37,14 @@ struct PointSource{T, U, V} <: InitialCondition
     y  :: T
     C₀ :: U
     ConcentrationAmount :: V
+end
+"""
+    Struct for QGPV initial condition
+"""
+struct QGPV{T, U} <: InitialCondition
+    q :: T
+    plan_vort :: U
+    C₀:: T
 end
 """
     function GaussianBlobIC(μ, Σ, grid)
@@ -94,6 +103,22 @@ function PointSourceIC(ConcentrationPoint::Vector, ConcentrationAmount, grid)
     return PointSource(xconcpt, yconcpt, C₀, ConcentrationAmount)
 end
 """
+    function QGPVIC(QGProb::FourierFlows.Problem)
+Create an initial condition that is the full QGPV.
+"""
+function QGPVIC(QGProb::FourierFlows.Problem)
+
+    q = QGProb.vars.q 
+    f₀ = QGProb.params.f₀
+    β = QGProb.params.β
+    y = QGProb.grid.y
+    plan_vort = f₀ .+ β .* y
+
+    Q = q .+ plan_vort'
+
+    return QGPV(q, plan_vort, Q)
+end
+"""
     CreateFile(ADProb)
 Create directory and file for a given run that will be appended with 
 flow characteristics and .jld2. If already exists uses directory and removes the file.
@@ -112,7 +137,7 @@ function CreateFile(ADProb::FourierFlows.Problem, IC::InitialCondition, save_fre
                             )
     else
         filepath = joinpath(SimPath, 
-        "Output/Simulation: Lx̂ = "*string(round(Int, Lx))*", Lŷ = "*string(round(Int, Ly))*", save_freq = "*string(save_freq)*", IC = "*IC*", Ensemble = "*string(Ensemble)
+                            "Output/Simulation: Lx̂ = "*string(round(Int, Lx))*", Lŷ = "*string(round(Int, Ly))*", save_freq = "*string(save_freq)*", IC = "*IC*", Ensemble = "*string(Ensemble)
         )
     end
 

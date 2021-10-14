@@ -1,7 +1,18 @@
 #Change to correct directory
 cd(joinpath(SimPath, "Output/Simulation: Lx̂ = Lŷ = 32, nx = 64, save_freq = 20, IC = GaussianBlob, Ensemble = true"))
 
-## Load in the data. This is an ensemble simulation so now have an array of dictionaries.
+## Load in the data delay_time = Δt * 3000
+data = Array{Dict{String, Any}}(undef, 10)
+for i ∈ 1:length(data)
+    if i == 1
+        file = joinpath(pwd(), "SimulationData.jld2")
+        data[i] = load(file)
+    else
+        file = joinpath(pwd(), "SimulationData_"*string(i - 1)*".jld2")
+        data[i] = load(file)
+    end
+end
+## Load in the data delay_time = Δt * 6000
 data = Array{Dict{String, Any}}(undef, 10)
 for i ∈ 1:length(data)
     if i == 1

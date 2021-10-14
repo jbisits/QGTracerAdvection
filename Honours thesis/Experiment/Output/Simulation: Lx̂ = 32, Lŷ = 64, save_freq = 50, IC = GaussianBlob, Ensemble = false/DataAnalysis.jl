@@ -1,4 +1,4 @@
-cd(joinpath(SimPath, "Output/Simulation: Lx̂ = 64, Lŷ = 128, save_freq = 50, IC = GaussianBlob, Ensemble = false"))
+cd(joinpath(SimPath, "Output/Simulation: Lx̂ = 32, Lŷ = 64, save_freq = 50, IC = GaussianBlob, Ensemble = false"))
 file = joinpath(pwd(), "SimulationData.jld2")
 
 #Load in the data

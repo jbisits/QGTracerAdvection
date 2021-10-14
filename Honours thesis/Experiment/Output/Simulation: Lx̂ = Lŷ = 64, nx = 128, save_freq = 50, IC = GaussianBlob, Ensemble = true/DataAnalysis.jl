@@ -1,7 +1,7 @@
 #Change to correct directory
 cd(joinpath(SimPath, "Output/Simulation: Lx̂ = Lŷ = 64, nx = 128, save_freq = 50, IC = GaussianBlob, Ensemble = true"))
 
-## Load in the data. This is an ensemble simulation so now have an array of dictionaries.
+## Load in the data for delay_time = Δt * 3000
 data = Array{Dict{String, Any}}(undef, 15)
 for i ∈ 1:length(data)
     if i == 1
@@ -12,18 +12,73 @@ for i ∈ 1:length(data)
         data[i] = load(file)
     end
 end
-
+## Load in the data for delay_time = Δt * 4000
+data = Array{Dict{String, Any}}(undef, 10)
+for i ∈ 1:length(data)
+    if i == 1
+        file = joinpath(pwd(), "SimulationData_25.jld2")
+        data[i] = load(file)
+    else
+        file = joinpath(pwd(), "SimulationData_"*string(i + 24)*".jld2")
+        data[i] = load(file)
+    end
+end
+## Load in the data for delay_time = Δt * 4500
+data = Array{Dict{String, Any}}(undef, 10)
+for i ∈ 1:length(data)
+    if i == 1
+        file = joinpath(pwd(), "SimulationData_45.jld2")
+        data[i] = load(file)
+    else
+        file = joinpath(pwd(), "SimulationData_"*string(i + 44)*".jld2")
+        data[i] = load(file)
+    end
+end
+## Load in the data for delay_time = Δt * 5000
+data = Array{Dict{String, Any}}(undef, 10)
+for i ∈ 1:length(data)
+    if i == 1
+        file = joinpath(pwd(), "SimulationData_15.jld2")
+        data[i] = load(file)
+    else
+        file = joinpath(pwd(), "SimulationData_"*string(i + 14)*".jld2")
+        data[i] = load(file)
+    end
+end
+## Load in the data for delay_time = Δt * 6000
+data = Array{Dict{String, Any}}(undef, 10)
+for i ∈ 1:length(data)
+    if i == 1
+        file = joinpath(pwd(), "SimulationData_35.jld2")
+        data[i] = load(file)
+    else
+        file = joinpath(pwd(), "SimulationData_"*string(i + 34)*".jld2")
+        data[i] = load(file)
+    end
+end
+## Update params in the flow to match better with real values, delay_time = Δt * 6000
+data = Array{Dict{String, Any}}(undef, 10)
+for i ∈ 1:length(data)
+    if i == 1
+        file = joinpath(pwd(), "SimulationData_55.jld2")
+        data[i] = load(file)
+    else
+        file = joinpath(pwd(), "SimulationData_"*string(i + 54)*".jld2")
+        data[i] = load(file)
+    end
+end
+##
 t = time_vec(data[1])
 first_moms = first_moment(data)
 first_mom_upper = plot(t, first_moms[:, 1, 1], 
                         label = "Member 1", 
-                        title = "Upper layer average area growth",
+                        title = "Upper layer average area growth for Gaussian blob initial condition",
                         xlabel = "t",
                         ylabel = "⟨A⟩",
                         legend = :bottomright)
 first_mom_lower = plot(t, first_moms[:, 2, 1], 
                         label = "Member 1", 
-                        title = "Lower layer average area growth",
+                        title = "Lower layer average area growth for Gaussian blob initial condition",
                         xlabel = "t",
                         ylabel = "⟨A⟩",
                         legend = :bottomright)
@@ -38,9 +93,23 @@ ensemble_avg = first_moment(ensemble_conc)
 plot!(first_mom_upper, t, ensemble_avg[:, 1], label = "Ensemble average", line = (:dash, 2, :black))
 plot!(first_mom_lower, t, ensemble_avg[:, 2], label = "Ensemble average", line = (:dash, 2, :black))
 
-plot(first_mom_upper, first_mom_lower, layout = (2, 1), size= (800, 800))
-
-
-Δt = t[50] - t[25]
-ΔA = ensemble_avg[50, :] .- ensemble_avg[25, :]
+fullplot = plot(first_mom_upper, first_mom_lower, layout = (2, 1), size= (800, 800))
+savefig(fullplot, "Gaussianblob_64dom_td4500.png")
+##
+Δt = t[40] - t[1]
+ΔA = ensemble_avg[40, :] .- ensemble_avg[1, :]
 K = ΔA ./ (4 * π * Δt)
+
+##
+slope = t[1:40] \ ensemble_avg[1:40, :]
+
+plot(t[1:40], slope .* t[1:40], label = ["Upper best fit" "Lower best fit"], legend = :bottomright)
+plot!(t[1:40], ensemble_avg[1:40, :], label = ["Upper ensemble average data" "Lower ensemble average data"])
+##
+##
+tracer_plots = tracer_plot(data[1]; plot_freq = 500)
+upperlayerblob = plot(tracer_plots[:, 1]..., size = (1200, 1200))
+#savefig(upperlayerblob, "upperlayertracerblob.png")
+upperlayerblobIC = plot(tracer_plots[1, 1])
+savefig(upperlayerblobIC, "blobIC.png")
+plot(tracer_plots[:, 2], size = (1200, 1200))
