@@ -89,7 +89,7 @@ plot!(t[1:50], ens_sec_mom[1:50, :], label = ["Upper ensemble average data" "Low
 tracer_plots = tracer_plot(data[1]; plot_freq = 500)
 upperlayerband = plot(tracer_plots[:, 1]..., size = (1200, 1200))
 #savefig(upperlayerband, "upperlayerbandtracer.png")
-upperlayerbandIC = plot(tracer_plots[1, 1])
+upperlayerbandIC = plot(tracer_plots[1, 1], size = (800, 400))
 savefig(upperlayerbandIC, "upperlayerbandIC.png")
 plot(tracer_plots[:, 2]..., size = (1200, 1200))
 #########################################################################################

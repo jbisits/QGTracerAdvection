@@ -191,6 +191,7 @@ function tracer_plot(data::Dict{String, Any}; plot_freq = 1000)
                 xlabel = "x̂",
                 ylabel = "ŷ",
                 colorbar = true,
+                colorbar_title = "Concentration",
                 xlims = (-Lx/2, Lx/2),
                 ylims = (-Ly/2, Ly/2),
                 framestyle = :rectangle
@@ -227,6 +228,7 @@ function tracer_animate(data::Dict{String, Any})
                 xlabel = "x̂",
                 ylabel = "ŷ",
                 colorbar = true,
+                colorbar_title = "Concentration",
                 xlims = (-Lx/2, Lx/2),
                 ylims = (-Ly/2, Ly/2)
                 ) 

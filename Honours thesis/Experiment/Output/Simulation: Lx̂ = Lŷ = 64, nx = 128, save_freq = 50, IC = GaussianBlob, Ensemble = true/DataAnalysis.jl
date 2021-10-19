@@ -108,8 +108,8 @@ plot!(t[1:40], ensemble_avg[1:40, :], label = ["Upper ensemble average data" "Lo
 ##
 ##
 tracer_plots = tracer_plot(data[1]; plot_freq = 500)
-upperlayerblob = plot(tracer_plots[:, 1]..., size = (1200, 1200))
-#savefig(upperlayerblob, "upperlayertracerblob.png")
-upperlayerblobIC = plot(tracer_plots[1, 1])
+upperlayerblob = plot(tracer_plots[:, 1]..., size = (1400, 1400))
+savefig(upperlayerblob, "upperlayertracerblob.png")
+upperlayerblobIC = plot(tracer_plots[1, 1], size = (900, 400))
 savefig(upperlayerblobIC, "blobIC.png")
 plot(tracer_plots[:, 2], size = (1200, 1200))
