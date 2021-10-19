@@ -1,7 +1,7 @@
 #Change to correct directory
 cd(joinpath(SimPath, "Output/Simulation: Lx̂ = Lŷ = 128, nx = 256, save_freq = 50, IC = GaussianBlob, Ensemble = true"))
 
-## Load in the data for delay_time = Δt * 6000 with the new parameters.
+## Load in the data for delay_time = Δt * 6000 with the new parameters, seed = 1234
 data = Array{Dict{String, Any}}(undef, 10)
 for i ∈ 1:length(data)
     if i == 1
