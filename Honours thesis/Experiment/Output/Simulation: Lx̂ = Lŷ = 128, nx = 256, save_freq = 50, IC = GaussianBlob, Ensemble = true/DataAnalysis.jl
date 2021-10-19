@@ -40,22 +40,21 @@ plot!(first_mom_lower, t, ensemble_avg[:, 2], label = "Ensemble average", line =
 
 fullplot = plot(first_mom_upper, first_mom_lower, layout = (2, 1), size= (800, 800))
 #savefig(fullplot, "Gaussianblob_128dom_td6000.png")
-##
+## Diffusivity
 Δt = t[end] - t[1]
 ΔA = ensemble_avg[end, :] .- ensemble_avg[1, :]
 K = ΔA ./ (4 * π * Δt)
 
-##
+## Linear fit
 slope = t \ ensemble_avg
 
 plot(t, slope[1] .* t, label = ["Upper best fit" "Lower best fit"], legend = :bottomright)
 plot!(t, ensemble_avg[:, 1], label = ["Upper ensemble average data" "Lower ensemble average data"])
-##
-##
+## Tracer plots
 tracer_plots = tracer_plot(data[1]; plot_freq = 500)
-upperlayerblob = plot(tracer_plots[:, 2]..., size = (1400, 1400))
-#plot(tracer_plots[1, 1], tracer_plots[2, 1], tracer_plots[3, 1], tracer_plots[4, 1], tracer_plots[5, 1], size = (1400, 1400))
+upperlayerblob = plot(tracer_plots[:, 1]..., size = (1400, 1400))
 savefig(upperlayerblob, "upperlayertracerblob.png")
+lowerlayerblob = plot(tracer_plots[:, 2]..., size = (1400, 1400))
+savefig(lowerlayerblob, "lowerlayertracerblob.png")
 upperlayerblobIC = plot(tracer_plots[1, 1], size = (900, 400))
 savefig(upperlayerblobIC, "blobIC.png")
-plot(tracer_plots[:, 2], size = (1200, 1200))

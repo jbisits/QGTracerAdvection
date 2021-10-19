@@ -40,22 +40,23 @@ plot!(lowerplot, t, ens_sec_mom[:, 2], label = "Ensemble", line = (:dash, :black
 
 fullplot = plot(upperplot, lowerplot, layout = (2, 1), size = (800, 800))
 #savefig(fullplot, "Gaussianband_128dom_td6000.png")
-##
+## Diffusivity
 ΔA² = ens_sec_mom[end, :] - ens_sec_mom[41, :]
 Δt = t[end] - t[41]
 Lₓ = data[1]["grid/Lx"]
 K = ΔA² / (Lₓ^2 * 8 * Δt)
 
-##
+## Linear best fit
 ΔA²/ Δt
 slope = t \ ens_sec_mom
 
 plot(t, slope .* t, label =  ["Upper best fit" "Lower best fit"], legend = :bottomright)
 plot!(t, ens_sec_mom, label = ["Upper ensemble average data" "Lower ensemble average data"])
-##
+## Plots of the tracer
 tracer_plots = tracer_plot(data[1]; plot_freq = 500)
-upperlayerband = plot(tracer_plots[:, 1]..., size = (1200, 1200))
-#savefig(upperlayerband, "upperlayerbandtracer.png")
+upperlayerband = plot(tracer_plots[:, 1]..., size = (1400, 1400))
+savefig(upperlayerband, "upperlayerbandtracer.png")
+lowerlayerband = plot(tracer_plots[:, 2]..., size = (1400, 1400))
+savefig(lowerlayerband, "lowerlayerbandtracer.png")
 upperlayerbandIC = plot(tracer_plots[1, 1], size = (800, 400))
-savefig(upperlayerbandIC, "upperlayerbandIC.png")
-plot(tracer_plots[:, 2]..., size = (1200, 1200))
+#savefig(upperlayerbandIC, "upperlayerbandIC.png")
