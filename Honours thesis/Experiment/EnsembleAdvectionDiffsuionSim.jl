@@ -19,8 +19,8 @@ ADSims = 10
 
 #Import an ensemble of flows on square domain with updated params that translate to accurate values for U = 0.02.
 #include("Flows/NewParamsEnsembleSquare/EnsembleSquare_new_params_32domain_64res.jl")
-include("Flows/NewParamsEnsembleSquare/EnsembleSquare_new_params_64domain_128res.jl")
-#include("Flows/NewParamsEnsembleSquare/EnsembleSquare_new_params_128domain_256res.jl")
+#include("Flows/NewParamsEnsembleSquare/EnsembleSquare_new_params_64domain_128res.jl")
+include("Flows/NewParamsEnsembleSquare/EnsembleSquare_new_params_128domain_256res.jl")
 
 #Import an ensemble of flows on a rectanglular domain
 #include("Flows/EnsembleRectangle/EnsembleFlow_32_64_domain.jl")
@@ -46,14 +46,14 @@ for i ∈ 1:ADSims
     ADProb = TracerAdvDiff_QG.Problem(;prob = QGProbs[i], delay_time = delay_time, nsubs = nsubs, κ = κ)
     ADSol, ADClock, ADVars, ADParams, ADGrid = ADProb.sol, ADProb.clock, ADProb.vars, ADProb.params, ADProb.grid
     #Set the Gaussian blob initial condition
-    #μIC = [0, 0]
-    #Σ = [1 0; 0 1]
-    #IC = GaussianBlobIC(μIC, Σ, ADGrid)
+    μIC = [0, 0]
+    Σ = [1 0; 0 1]
+    IC = GaussianBlobIC(μIC, Σ, ADGrid)
 
     #Set the Gaussian strip initial condition
-    μIC = 0
-    σ² = 1
-    IC = GaussianStripIC(μIC, σ², ADGrid)
+    #μIC = 0
+    #σ² = 1
+    #IC = GaussianStripIC(μIC, σ², ADGrid)
 
     #Set QGPV as initial condition
     #IC = QGPVIC(QGProbs[i])
