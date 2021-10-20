@@ -57,7 +57,7 @@ upperlinfit = plot(t, fit[1, 1] .+ fit[2, 1] .* t,
                     line = (:dash))
 plot!(upperlinfit, t, ensemble_avg[:, 1], 
     label = "Ensemble data")
-savefig(upperlinfit, "upperlinfitblob.png")
+#savefig(upperlinfit, "upperlinfitblob.png")
 
 lowerlinfit = plot(t, fit[1, 2] .+ fit[2, 2] .* t, 
                     title = "Lower layer linear best fit of the growth of \n the ensemble average area",
@@ -68,7 +68,9 @@ lowerlinfit = plot(t, fit[1, 2] .+ fit[2, 2] .* t,
                     line = (:dash))
 plot!(lowerlinfit, t, ensemble_avg[:, 2], 
     label = "Ensemble data")
-savefig(lowerlinfit, "lowerlinfitblob.png")
+#savefig(lowerlinfit, "lowerlinfitblob.png")
+
+K_linfit = fit[2, :] ./ (4 * π)
 
 ## Tracer plots
 tracer_plots = tracer_plot(data[1]; plot_freq = 500)

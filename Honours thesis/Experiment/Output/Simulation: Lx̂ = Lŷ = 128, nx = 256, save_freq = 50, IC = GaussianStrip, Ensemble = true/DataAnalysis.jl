@@ -42,11 +42,12 @@ fullplot = plot(upperplot, lowerplot, layout = (2, 1), size = (800, 800))
 #savefig(fullplot, "Gaussianband_128dom_td6000.png")
 
 ## Diffusivity
-ΔA² = ens_sec_mom[end, :] - ens_sec_mom[41, :]
-Δt = t[end] - t[41]
+ΔA² = ens_sec_mom[61, :] - ens_sec_mom[21, :]
+Δt = t[61] - t[21]
 Lₓ = data[1]["grid/Lx"]
 K = ΔA² / (Lₓ^2 * 8 * Δt)
 
+nondim2dim(data[1])
 ## Linear best fit
 fit = [ones(length(t)) t] \ ens_sec_mom
 
@@ -71,6 +72,8 @@ lowerlinfit = plot(t, fit[1, 2] .+ fit[2, 2] .* t,
 plot!(lowerlinfit, t, ens_sec_mom[:, 2], 
     label = "Ensemble data")
 savefig(lowerlinfit, "lowerlinfitband.png")
+
+K_linfit = fit[2, :] ./ (Lₓ^2 * 8)
 
 ## Plots of the tracer
 tracer_plots = tracer_plot(data[1]; plot_freq = 500)
