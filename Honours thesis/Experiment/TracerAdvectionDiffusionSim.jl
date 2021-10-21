@@ -26,7 +26,7 @@ include("PackageSetup.jl")
 
 #Import a flow on a square domain with updated params that translate to accurate values for U = 0.02.
 #include("Flows/NewParamsSquare/Square_new_params_32domain_64res.jl")
-include("Flows/NewParamsSquare/Square_new_params_64domain_128res.jl")
+#include("Flows/NewParamsSquare/Square_new_params_64domain_128res.jl")
 #include("Flows/NewParamsSquare/Square_new_params_128domain_256res.jl")
 #include("Flows/NewParamsSquare/Square_new_params_256domain_512res.jl")
 

@@ -15,6 +15,6 @@ plot(t, second_mom, label = false)
 
 ## First QGPV experiment so look at what it looks like
 QGPV_plot = tracer_plot(data)
-upperplots = plot(QGPV_plot[:, 1]...)
+upperplots = plot(QGPV_plot[:, 1]..., size = (1200, 1200))
 lowerplots = plot(QGPV_plot[:, 2]...)
 plot(upperplots, lowerplots, layout = (2, 1), size = (1200, 1200))

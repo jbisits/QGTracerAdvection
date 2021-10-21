@@ -73,6 +73,7 @@ plot!(lowerlinfit, t, ens_sec_mom[:, 2],
     label = "Ensemble data")
 savefig(lowerlinfit, "lowerlinfitband.png")
 
+Lₓ = data[1]["grid/Lx"]
 K_linfit = fit[2, :] ./ (Lₓ^2 * 8)
 
 ## Plots of the tracer
