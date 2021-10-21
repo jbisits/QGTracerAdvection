@@ -83,6 +83,6 @@ upperlayerblobIC = plot(tracer_plots[1, 1], size = (900, 400))
 savefig(upperlayerblobIC, "blobIC.png")
 
 ## Ensemble plots
-ens_plots = tracer_plot(ens_conc; plot_freq = 500)
+ens_plots = tracer_plot(ensemble_conc; plot_freq = 500)
 plot(ens_plots[:, 1]..., size = (1400, 1400))
 plot(ens_plots[:, 2]..., size = (1400, 1400))
