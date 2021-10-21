@@ -1,7 +1,8 @@
 cd(joinpath(SimPath, "Output/Simulation: Lx̂ = Lŷ = 128, nx = 256, save_freq = 50, IC = GaussianStrip, Ensemble = true"))
 
-## New flow params for delay_time = Δt * 6000, seed = 1234
-data = Array{Dict{String, Any}}(undef, 10)
+## New flow params for delay_time = Δt * 6000, 
+# first 10 seed 1234, 10-20 seed 4321
+data = Array{Dict{String, Any}}(undef, 20)
 for i ∈ 1:length(data)
     if i == 1
         file = joinpath(pwd(), "SimulationData.jld2")
@@ -19,17 +20,17 @@ upperplot = plot(t, sec_mom[:, 1, 1],
                 title = "Upper layer second moment of area growth \n for Gaussian band initial condition",
                 xlabel = "t",
                 ylabel = "σ²ₐ",
-                label = "Member 1",
+                label = "Ensemble member",
                 legend = :bottomright)
 lowerplot = plot(t, sec_mom[:, 2, 1],
                 title = "Lower layer second moment of area growth \n for Gaussian band initial condition",
                 xlabel = "t",
                 ylabel = "σ²ₐ",
-                label = "Member 1",
+                label = "Ensemble member",
                 legend = :bottomright)
 for i ∈ 2:length(data)
-    plot!(upperplot, t, sec_mom[:, 1, i], label = "Member "*string(i)) 
-    plot!(lowerplot, t, sec_mom[:, 2, i], label = "Member "*string(i)) 
+    plot!(upperplot, t, sec_mom[:, 1, i], label = false) 
+    plot!(lowerplot, t, sec_mom[:, 2, i], label = false) 
 end
 
 ens_conc = ensemble_concentration(data)
@@ -84,3 +85,8 @@ lowerlayerband = plot(tracer_plots[:, 2]..., size = (1400, 1400))
 savefig(lowerlayerband, "lowerlayerbandtracer.png")
 upperlayerbandIC = plot(tracer_plots[1, 1], size = (800, 400))
 #savefig(upperlayerbandIC, "upperlayerbandIC.png")
+
+## Plots of ensemble Concentration
+ens_plots = tracer_plot(ens_conc; plot_freq = 500)
+plot(ens_plots[:, 1]..., size = (1400, 1400))
+plot(ens_plots[:, 2]..., size = (1400, 1400))

@@ -51,9 +51,9 @@ for i ∈ 1:ADSims
     #IC = GaussianBlobIC(μIC, Σ, ADGrid)
 
     #Set the Gaussian strip initial condition
-    #μIC = 0
-    #σ² = 1
-    #IC = GaussianStripIC(μIC, σ², ADGrid)
+    μIC = 0
+    σ² = 1
+    IC = GaussianStripIC(μIC, σ², ADGrid)
 
     #Set QGPV as initial condition
     #IC = QGPVIC(QGProbs[i])

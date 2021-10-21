@@ -1,8 +1,9 @@
 #Change to correct directory
 cd(joinpath(SimPath, "Output/Simulation: Lx̂ = Lŷ = 128, nx = 256, save_freq = 50, IC = GaussianBlob, Ensemble = true"))
 
-## Load in the data for delay_time = Δt * 6000 with the new parameters, seed = 1234
-data = Array{Dict{String, Any}}(undef, 10)
+## Load in the data for delay_time = Δt * 6000 with the new parameters, 
+#seed = 1234 for first 10, seed = 4321 for 10-20
+data = Array{Dict{String, Any}}(undef, 20)
 for i ∈ 1:length(data)
     if i == 1
         file = joinpath(pwd(), "SimulationData.jld2")
@@ -16,20 +17,20 @@ end
 t = time_vec(data[1])
 first_moms = first_moment(data)
 first_mom_upper = plot(t, first_moms[:, 1, 1], 
-                        label = "Member 1", 
+                        label = "Ensemble member", 
                         title = "Upper layer average area growth for Gaussian blob initial condition",
                         xlabel = "t",
                         ylabel = "⟨A⟩",
                         legend = :topleft)
 first_mom_lower = plot(t, first_moms[:, 2, 1], 
-                        label = "Member 1", 
+                        label = "Ensemble member", 
                         title = "Lower layer average area growth for Gaussian blob initial condition",
                         xlabel = "t",
                         ylabel = "⟨A⟩",
                         legend = :topleft)
 for i ∈ 2:length(data)
-    plot!(first_mom_upper, t, first_moms[:, 1, i], label = "Memeber "*string(i))
-    plot!(first_mom_lower, t, first_moms[:, 2, i], label = "Memeber "*string(i))
+    plot!(first_mom_upper, t, first_moms[:, 1, i], label = false)
+    plot!(first_mom_lower, t, first_moms[:, 2, i], label = false)
 end
 
 ensemble_conc = ensemble_concentration(data)
@@ -80,3 +81,8 @@ lowerlayerblob = plot(tracer_plots[:, 2]..., size = (1400, 1400))
 savefig(lowerlayerblob, "lowerlayertracerblob.png")
 upperlayerblobIC = plot(tracer_plots[1, 1], size = (900, 400))
 savefig(upperlayerblobIC, "blobIC.png")
+
+## Ensemble plots
+ens_plots = tracer_plot(ens_conc; plot_freq = 500)
+plot(ens_plots[:, 1]..., size = (1400, 1400))
+plot(ens_plots[:, 2]..., size = (1400, 1400))
