@@ -46,14 +46,14 @@ for i ∈ 1:ADSims
     ADProb = TracerAdvDiff_QG.Problem(;prob = QGProbs[i], delay_time = delay_time, nsubs = nsubs, κ = κ)
     ADSol, ADClock, ADVars, ADParams, ADGrid = ADProb.sol, ADProb.clock, ADProb.vars, ADProb.params, ADProb.grid
     #Set the Gaussian blob initial condition
-    #μIC = [0, 0]
-    #Σ = [1 0; 0 1]
-    #IC = GaussianBlobIC(μIC, Σ, ADGrid)
+    μIC = [0, 0]
+    Σ = [1 0; 0 1]
+    IC = GaussianBlobIC(μIC, Σ, ADGrid)
 
     #Set the Gaussian strip initial condition
-    μIC = 0
-    σ² = 1
-    IC = GaussianStripIC(μIC, σ², ADGrid)
+    #μIC = 0
+    #σ² = 1
+    #IC = GaussianStripIC(μIC, σ², ADGrid)
 
     #Set QGPV as initial condition
     #IC = QGPVIC(QGProbs[i])

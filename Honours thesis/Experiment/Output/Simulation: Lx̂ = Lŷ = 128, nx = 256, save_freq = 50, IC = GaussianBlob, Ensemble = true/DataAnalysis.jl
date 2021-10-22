@@ -2,8 +2,8 @@
 cd(joinpath(SimPath, "Output/Simulation: Lx̂ = Lŷ = 128, nx = 256, save_freq = 50, IC = GaussianBlob, Ensemble = true"))
 
 ## Load in the data for delay_time = Δt * 6000 with the new parameters, 
-#seed = 1234 for first 10, seed = 4321 for 10-20
-data = Array{Dict{String, Any}}(undef, 20)
+#seed = 1234 for first 10, seed = 4321 for 10-20, seed = 2341 for 20-30
+data = Array{Dict{String, Any}}(undef, 30)
 for i ∈ 1:length(data)
     if i == 1
         file = joinpath(pwd(), "SimulationData.jld2")
