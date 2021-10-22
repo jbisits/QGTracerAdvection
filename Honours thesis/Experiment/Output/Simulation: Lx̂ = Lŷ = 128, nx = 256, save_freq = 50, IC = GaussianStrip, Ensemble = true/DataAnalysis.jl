@@ -88,5 +88,7 @@ upperlayerbandIC = plot(tracer_plots[1, 1], size = (800, 400))
 
 ## Plots of ensemble Concentration
 ens_plots = tracer_plot(ens_conc; plot_freq = 500)
-plot(ens_plots[:, 1]..., size = (1400, 1400))
-plot(ens_plots[:, 2]..., size = (1400, 1400))
+upperbandense = plot(ens_plots[:, 1]..., size = (1400, 1400))
+savefig(upperbandense,"upperbandense.png")
+lowerbandense = plot(ens_plots[:, 2]..., size = (1400, 1400))
+savefig(lowerbandense,"lowerbandense.png")
