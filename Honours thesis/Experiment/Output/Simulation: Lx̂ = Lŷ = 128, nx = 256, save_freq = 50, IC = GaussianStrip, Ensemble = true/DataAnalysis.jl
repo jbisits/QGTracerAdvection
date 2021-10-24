@@ -40,7 +40,7 @@ plot!(upperplot, t, ens_sec_mom[:, 1], label = "Ensemble", line = (:dash, :black
 plot!(lowerplot, t, ens_sec_mom[:, 2], label = "Ensemble", line = (:dash, :black, 2))
 
 fullplot = plot(upperplot, lowerplot, layout = (2, 1), size = (800, 800))
-#savefig(fullplot, "Gaussianband_128dom_td6000.png")
+savefig(fullplot, "Gaussianband_128dom_td6000.png")
 
 ## Diffusivity
 ΔA² = ens_sec_mom[61, :] - ens_sec_mom[21, :]
@@ -77,6 +77,8 @@ savefig(lowerlinfit, "lowerlinfitband.png")
 Lₓ = data[1]["grid/Lx"]
 K_linfit = fit[2, :] ./ (Lₓ^2 * 8)
 
+dims = nondim2dim(data[1])
+K_linfit_dims = @. K_linfit * dims["Ld"] * 0.02
 ## Plots of the tracer
 tracer_plots = tracer_plot(data[1]; plot_freq = 500)
 upperlayerband = plot(tracer_plots[:, 1]..., size = (1400, 1400))
