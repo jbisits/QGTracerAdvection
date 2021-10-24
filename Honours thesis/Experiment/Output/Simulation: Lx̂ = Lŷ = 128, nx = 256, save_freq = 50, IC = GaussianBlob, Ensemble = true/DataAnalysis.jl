@@ -40,7 +40,7 @@ plot!(first_mom_upper, t, ensemble_avg[:, 1], label = "Ensemble average", line =
 plot!(first_mom_lower, t, ensemble_avg[:, 2], label = "Ensemble average", line = (:dash, 2, :black))
 
 fullplot = plot(first_mom_upper, first_mom_lower, layout = (2, 1), size= (800, 800))
-savefig(fullplot, "Gaussianblob_128dom_td6000.png")
+#savefig(fullplot, "Gaussianblob_128dom_td6000.png")
 ## Diffusivity
 Δt = t[41] - t[1]
 ΔA = ensemble_avg[41, :] .- ensemble_avg[1, :]
@@ -58,7 +58,7 @@ upperlinfit = plot(t, fit[1, 1] .+ fit[2, 1] .* t,
                     line = (:dash))
 plot!(upperlinfit, t, ensemble_avg[:, 1], 
     label = "Ensemble data")
-savefig(upperlinfit, "upperlinfitblob.png")
+#savefig(upperlinfit, "upperlinfitblob.png")
 
 lowerlinfit = plot(t, fit[1, 2] .+ fit[2, 2] .* t, 
                     title = "Lower layer linear best fit of the growth of \n the ensemble average area",
@@ -69,12 +69,13 @@ lowerlinfit = plot(t, fit[1, 2] .+ fit[2, 2] .* t,
                     line = (:dash))
 plot!(lowerlinfit, t, ensemble_avg[:, 2], 
     label = "Ensemble data")
-savefig(lowerlinfit, "lowerlinfitblob.png")
+#savefig(lowerlinfit, "lowerlinfitblob.png")
 
 K_linfit = fit[2, :] ./ (4 * π)
 
 dims = nondim2dim(data[1])
 K_linfit_dim = @. K_linfit * dims["Ld"] * 0.02
+
 ## Tracer plots
 tracer_plots = tracer_plot(data[1]; plot_freq = 500)
 upperlayerblob = plot(tracer_plots[:, 1]..., size = (1400, 1400))

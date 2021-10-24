@@ -40,7 +40,7 @@ plot!(upperplot, t, ens_sec_mom[:, 1], label = "Ensemble", line = (:dash, :black
 plot!(lowerplot, t, ens_sec_mom[:, 2], label = "Ensemble", line = (:dash, :black, 2))
 
 fullplot = plot(upperplot, lowerplot, layout = (2, 1), size = (800, 800))
-savefig(fullplot, "Gaussianband_128dom_td6000.png")
+#savefig(fullplot, "Gaussianband_128dom_td6000.png")
 
 ## Diffusivity
 ΔA² = ens_sec_mom[61, :] - ens_sec_mom[21, :]
@@ -61,7 +61,7 @@ upperlinfit = plot(t, fit[1, 1] .+ fit[2, 1] .* t,
                     line = (:dash))
 plot!(upperlinfit, t, ens_sec_mom[:, 1], 
     label = "Ensemble data")
-savefig(upperlinfit, "upperlinfitband.png")
+#savefig(upperlinfit, "upperlinfitband.png")
 
 lowerlinfit = plot(t, fit[1, 2] .+ fit[2, 2] .* t, 
                     title = "Lower layer linear best fit of the growth of \n the ensemble second moment of area",
@@ -72,7 +72,7 @@ lowerlinfit = plot(t, fit[1, 2] .+ fit[2, 2] .* t,
                     line = (:dash))
 plot!(lowerlinfit, t, ens_sec_mom[:, 2], 
     label = "Ensemble data")
-savefig(lowerlinfit, "lowerlinfitband.png")
+#savefig(lowerlinfit, "lowerlinfitband.png")
 
 Lₓ = data[1]["grid/Lx"]
 K_linfit = fit[2, :] ./ (Lₓ^2 * 8)
