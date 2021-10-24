@@ -17,6 +17,8 @@ heatmap(x, y, QGPV_init[:, :, 1]')
 
 histogram(reshape(QGPV_init[:, :, 1], :), xlabel = "PV", ylabel = "ΔA")
 
+histogram(reshape(QGPV_init[:, :, 1], :), xlabel = "PV", ylabel = "ΔA", normalize = :pdf)
+
 ## The histogram above looks quite Gaussian so could fit a Gaussian then normalise the PV data using the fitted values.
 
 PV_1dGaussfit = fit(Normal, reshape(QGPV_init[:, :, 1], :))
@@ -27,6 +29,8 @@ PV_1dGaussfit = fit(Normal, reshape(QGPV_init[:, :, 1], :))
 
 QGPV_init_norm = @. (QGPV_init - μ) / σ
 heatmap(x, y, QGPV_init_norm[:, :, 1]')
+
+hist_1d_norm = histogram(reshape(QGPV_init_norm[:, :, 1], :), xlabel = "PV", ylabel = "ΔA", normalize = :pdf)
 
 ## Try meridional strips of Gaussians on the normalised data
 QGPV_bandfit = similar(QGPV_init)
@@ -40,3 +44,5 @@ end
 heatmap(x, y, QGPV_bandfit[:, :, 1]')
 # Does look like a band..
 # Then a case of unnormalising to see how PV has been advected?
+
+## Or could try covariance matrix?
