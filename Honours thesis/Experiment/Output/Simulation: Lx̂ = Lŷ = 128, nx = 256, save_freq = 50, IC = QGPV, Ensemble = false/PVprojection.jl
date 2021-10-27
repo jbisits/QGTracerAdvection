@@ -45,4 +45,18 @@ heatmap(x, y, QGPV_bandfit[:, :, 1]')
 # Does look like a band..
 # Then a case of unnormalising to see how PV has been advected?
 
-## Or could try covariance matrix?
+## Or could try Multivariate normal fit. No luck here..
+
+using PDMatsExtras
+
+μ = mean(QGPV_init[:, :, 1]) #|> vec
+Σ = PSDMat(cov(QGPV_init[:, :, 1], dims = 2))
+test_norm = MvNormal(μ, Σ)
+
+fit_norm(x, y) = pdf(test_norm, [x, y])
+
+xgrid = x .* ones(length(y))'
+ygrid = y' .* ones(length(x))
+fit_norm(xgrid, ygrid)
+
+#heatmap(x, y, )
