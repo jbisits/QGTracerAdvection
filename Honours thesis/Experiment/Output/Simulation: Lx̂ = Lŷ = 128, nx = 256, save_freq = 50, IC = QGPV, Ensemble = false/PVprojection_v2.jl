@@ -46,13 +46,13 @@ conc_init = conc["snapshots/Concentration/"*string(0)]
 heatmap(x, y, conc_init[:, :, 1]', color = :deep, 
         xlabel = "x", ylabel = "y", colorbar_title = "Concentration")
 
-#' Instead of the meridional gridpoints use the PV values that area a function of meridional gridpoints
+#' Instead of the meridional gridpoints use the meridional coordinate $\tilde{y}$
 
 heatmap(x, sorted_PV, conc_init[:, :, 1]', color = :deep, 
         title = "Concentration as a function of PV (or ỹ)",
         xlabel = "x", ylabel = "ỹ", colorbar_title = "Concentration", size = (600, 400))
 
 #' The tracer concentration is a function of $x$ and $\tilde{y}$.
-#' Is the right idea?
+#' Is this the right idea?
 #' Then can take some values of PV say $(q_{1}, q_{2}) = (140, 160)$ and look at how the tracer evolves?
 #' I think I might have missed something though as all I have done is rescale the meridional axis!
