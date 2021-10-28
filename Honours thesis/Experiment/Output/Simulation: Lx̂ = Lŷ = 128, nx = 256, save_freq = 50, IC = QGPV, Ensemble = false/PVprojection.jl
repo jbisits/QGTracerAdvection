@@ -38,7 +38,8 @@ plot(Δy_sum, PV_hist.edges[1], xlabel = "Δy", ylabel = "ỹ = PV(y)", label = 
 # Can then link this to C by ∫Cdy over (q₁, q₂), so that eventually get C(q) all the concentration over some PV values.
 # But have ỹ(PV) = ∫dy for q < q_*.
 
-# Need to find two tracer concentration values.
+# Need to find two tracer concentration values. 
+# From the plot above take Δy = 50:200 and see what happens.
 
 ## 
 heatmap(x, y, QGPV_init[:, :, 1]') #Heatmap shows the meridional gradient of PV.
