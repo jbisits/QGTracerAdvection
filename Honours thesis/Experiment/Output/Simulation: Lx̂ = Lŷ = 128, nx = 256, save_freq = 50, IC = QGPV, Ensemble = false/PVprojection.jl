@@ -9,7 +9,7 @@ file = joinpath(pwd(), "SimulationData.jld2")
 #Load in the data
 data = load(file)
 
-QGPV_init = data["snapshots/Concentration/"*string(0)]
+QGPV_init = data["snapshots/Concentration/"*string(2000)]
 
 x = data["grid/x"]
 y = data["grid/y"]
@@ -26,20 +26,47 @@ histogram(reshape(QGPV_init[:, :, 1], :), xlabel = "PV", ylabel = "ΔA")
 PV_hist = fit(Histogram, QGPV_init[1, :, 1])
 plot(PV_hist, xlabel = "PV", ylabel = "Δy", label = "Count of Δy")
 
-#Cumulatively sum the weights
+## Cumulatively sum the weights
 Δy_sum = similar(PV_hist.weights)
 cumsum!(Δy_sum, PV_hist.weights)
 Δy_sum = vcat(0, Δy_sum)
 plot(Δy_sum, PV_hist.edges[1], xlabel = "Δy", ylabel = "ỹ = PV(y)", label = false)
 
-# Now have a function PV(y) which can be thought of as the quasi-meridional coordinate ỹ.
+# This could also be done using the sort method I think. Looks a little better?
+sorted_PV = sort(QGPV_init[1, :, 1])
+plot(y, sorted_PV, xlabel = "y", ylabel = "ỹ = q(y)", label = false)
+
+# Now have a function PV = q(y) which can be thought of as the quasi-meridional coordinate ỹ.
 # Want to connect this to tracer concentration experiments by C(ỹ). 
 # This is done by finding some values q₁ < q₂ and summing all the concentration over these values.
 # Can then link this to C by ∫Cdy over (q₁, q₂), so that eventually get C(q) all the concentration over some PV values.
 # But have ỹ(PV) = ∫dy for q < q_*.
 
-# Need to find two tracer concentration values. 
-# From the plot above take Δy = 50:200 and see what happens.
+# Take PV between (q₁, q₂) = (120, 180).
+q₁, q₂ = 120, 180
+PV_vals = findall((sorted_PV .>= q₁ ) .& (sorted_PV .<= q₂))
+
+# Now want to relate these values of PV to concentration from an advection-diffusion simulation.
+## Load in some concentration data from a blob run
+conc_path = joinpath(SimPath, "Output/Simulation: Lx̂ = Lŷ = 128, nx = 256, save_freq = 50, IC = GaussianBlob, Ensemble = true/SimulationData.jld2")
+conc = load(conc_path)
+
+conc_init = conc["snapshots/Concentration/"*string(0)]
+heatmap(x, y, conc_init[:, :, 1]', color = :deep)
+
+conc_PV = conc_init[:, PV_vals, 1]
+heatmap(x, sorted_PV[PV_vals], conc_PV')
+
+conc_PV = reshape(conc_init[:, PV_vals, 1], :)
+Δx = conc["grid/Lx"] / conc["grid/nx"]
+Δy = conc["grid/Ly"] / conc["grid/ny"]
+ΔA = Δx * Δy
+
+C_q = ΔA * sum( [conc_PV[i] for i in 1:length(conc_PV)] ) / ΔA
+
+ỹ_q = sum( 1:length(PV_vals) )
+
+
 
 ## 
 heatmap(x, y, QGPV_init[:, :, 1]') #Heatmap shows the meridional gradient of PV.

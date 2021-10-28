@@ -35,7 +35,7 @@ include("Flows/NewParamsSquare/Square_new_params_128domain_256res.jl")
 #include("Flows/NewParamsRectangle/Rectangle_new_params_64_256dom.jl")
 
 nsubs  = 1            #Set the number of steps the simulation takes at each iteration.         
-nsteps = 4000          #Set the total amount of time steps the advection-diffusion simulation should run for
+nsteps = 2000          #Set the total amount of time steps the advection-diffusion simulation should run for
 
 #κ = 0.01
 κ = 0.03 #updated diffusivity
