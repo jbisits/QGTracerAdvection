@@ -1,5 +1,6 @@
 # Project the PV of a simulation into the tracer field.
 # Take a snapshot of the PV then apply some function to it map it into the concentration field. 
+# Method two the one I will first try to get going is to project the concentration field into PV
 
 ## Load in the PV. This is only run for 10 steps. Just wanted the initial condition
 cd(joinpath(SimPath, "Output/Simulation: Lx̂ = Lŷ = 128, nx = 256, save_freq = 50, IC = QGPV, Ensemble = false"))
@@ -12,11 +13,46 @@ QGPV_init = data["snapshots/Concentration/"*string(0)]
 
 x = data["grid/x"]
 y = data["grid/y"]
+Lₓ = data["grid/Lx"]
+nx = data["grid/nx"]
 
 heatmap(x, y, QGPV_init[:, :, 1]')
 
 histogram(reshape(QGPV_init[:, :, 1], :), xlabel = "PV", ylabel = "ΔA")
 
+## PV has a background gradient so is a quasi meridional coordinate. Want to generate PV()
+
+## Try first just on a single meridional strip, so histogram is Δy ~ PV
+PV_hist = fit(Histogram, QGPV_init[1, :, 1])
+plot(PV_hist, xlabel = "PV", ylabel = "Δy", label = "Count of Δy")
+
+#Cumulatively sum the weights
+Δy_sum = similar(PV_hist.weights)
+cumsum!(Δy_sum, PV_hist.weights)
+Δy_sum = vcat(0, Δy_sum)
+plot(Δy_sum, PV_hist.edges[1], xlabel = "Δy", ylabel = "ỹ = PV(y)", label = false)
+
+# Now have a function PV(y) which can be thought of as the quasi-meridional coordinate ỹ.
+# Want to connect this to tracer concentration experiments by C(ỹ). 
+# This is done by finding some values q₁ < q₂ and summing all the concentration over these values.
+# Can then link this to C by ∫Cdy over (q₁, q₂), so that eventually get C(q) all the concentration over some PV values.
+# But have ỹ(PV) = ∫dy for q < q_*.
+
+# Need to find two tracer concentration values.
+
+## 
+heatmap(x, y, QGPV_init[:, :, 1]') #Heatmap shows the meridional gradient of PV.
+PV_hist = fit(Histogram, reshape(QGPV_init[:, :, 1], :))
+plot(PV_hist, xlabel = "PV", ylabel = "ΔA")
+
+# Want histogram of Δy ~ PV and have ΔA ~ PV. Divide by zonal resolution
+PVy_weights = PV_hist.weights ./ nx
+PVy_hist = fit(Histogram, PVy_weights, PV_hist.edges[1])
+plot(PVy_hist)
+
+
+
+##########################################################################################################################################
 histogram(reshape(QGPV_init[:, :, 1], :), xlabel = "PV", ylabel = "ΔA", normalize = :pdf)
 
 ## The histogram above looks quite Gaussian so could fit a Gaussian then normalise the PV data using the fitted values.
