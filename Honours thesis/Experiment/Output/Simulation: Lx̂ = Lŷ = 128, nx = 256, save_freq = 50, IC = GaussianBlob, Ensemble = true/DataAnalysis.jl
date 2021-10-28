@@ -91,3 +91,12 @@ upperblobens = plot(ens_plots[:, 1]..., size = (1400, 1400))
 savefig(upperblobens, "upperblobens.png")
 lowerblobens = plot(ens_plots[:, 2]..., size = (1400, 1400))
 savefig(lowerblobens, "lowerblobens.png")
+
+## Histogram of initial concentration
+
+init_conc = data[1]["snapshots/Concentration/"*string(0)]
+fit_1dconc = fit(Normal, reshape(init_conc[:, :, 1], :))
+fit_1dconc.σ * 500
+norm_init_conc = @. (init_conc[:, :, 1] - fit_1dconc.μ ) / (fit_1dconc.σ * 500)
+
+histogram(reshape(norm_init_conc, :))

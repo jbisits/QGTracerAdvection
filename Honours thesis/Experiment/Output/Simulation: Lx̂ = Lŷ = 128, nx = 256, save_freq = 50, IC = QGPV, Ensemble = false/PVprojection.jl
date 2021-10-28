@@ -45,18 +45,17 @@ heatmap(x, y, QGPV_bandfit[:, :, 1]')
 # Does look like a band..
 # Then a case of unnormalising to see how PV has been advected?
 
-## Or could try Multivariate normal fit. No luck here..
 
-using PDMatsExtras
+## By normalising the area is symmetrically about the origin with width 1 (or very close to..)
+PV_normfitGaussian = fit(Normal, reshape(QGPV_init_norm[:, :, 1], :))
 
-μ = mean(QGPV_init[:, :, 1]) #|> vec
-Σ = PSDMat(cov(QGPV_init[:, :, 1], dims = 2))
-test_norm = MvNormal(μ, Σ)
+#Can I now use this information to generate the MV Gaussian? Below is not much use..
 
-fit_norm(x, y) = pdf(test_norm, [x, y])
+μ = [0, 0]
+Σ = [500 0; 0 500]
+testfit = MvNormal(μ, Σ)
+generated_vals = [pdf(testfit, [X, Y]) for X in x, Y in y]
 
-xgrid = x .* ones(length(y))'
-ygrid = y' .* ones(length(x))
-fit_norm(xgrid, ygrid)
+heatmap(x, y, generated_vals')
 
-#heatmap(x, y, )
+histogram(reshape(generated_vals, :))
