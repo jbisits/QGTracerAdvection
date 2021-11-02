@@ -35,7 +35,7 @@ include("Flows/NewParamsSquare/Square_new_params_128domain_256res.jl")
 #include("Flows/NewParamsRectangle/Rectangle_new_params_64_256dom.jl")
 
 nsubs  = 1            #Set the number of steps the simulation takes at each iteration.         
-nsteps = 2000          #Set the total amount of time steps the advection-diffusion simulation should run for
+nsteps = 15000          #Set the total amount of time steps the advection-diffusion simulation should run for
 
 #κ = 0.01
 κ = 0.03 #updated diffusivity
@@ -56,10 +56,11 @@ ADSol, ADClock, ADVars, ADParams, ADGrid = ADProb.sol, ADProb.clock, ADProb.vars
 #σ² = 1
 #IC = GaussianStripIC(μIC, σ², ADGrid)
 
-#IC = PointSourceIC([64, 64], 1, ADGrid)
+#Set the point source initial condition
+IC = PointSourceIC([128, 128], 10, ADGrid)
 
 #Set the QGPV initial condition
-IC = QGPVIC(QGProb)
+#IC = QGPVIC(QGProb)
 
 QGset_c!(ADProb, IC.C₀)
 save_freq = 50
