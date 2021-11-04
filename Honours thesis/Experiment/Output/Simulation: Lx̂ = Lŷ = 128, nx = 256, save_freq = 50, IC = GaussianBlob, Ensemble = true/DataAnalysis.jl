@@ -2,8 +2,8 @@
 cd(joinpath(SimPath, "Output/Simulation: Lx̂ = Lŷ = 128, nx = 256, save_freq = 50, IC = GaussianBlob, Ensemble = true"))
 
 ## Load in the data for delay_time = Δt * 6000 with the new parameters, 
-#seed = 1234 for first 10, seed = 4321 for 10-20, seed = 2341 for 20-30
-data = Array{Dict{String, Any}}(undef, 30)
+#seed = 1234 for first 10, seed = 4321 for 10-20, seed = 2341 for 20-30, seed = 3142 for 30-40
+data = Array{Dict{String, Any}}(undef, 40)
 for i ∈ 1:length(data)
     if i == 1
         file = joinpath(pwd(), "SimulationData.jld2")
@@ -41,6 +41,7 @@ plot!(first_mom_lower, t, ensemble_avg[:, 2], label = "Ensemble average", line =
 
 fullplot = plot(first_mom_upper, first_mom_lower, layout = (2, 1), size= (800, 800))
 #savefig(fullplot, "Gaussianblob_128dom_td6000.png")
+
 ## Diffusivity
 Δt = t[41] - t[1]
 ΔA = ensemble_avg[41, :] .- ensemble_avg[1, :]
@@ -93,7 +94,7 @@ lowerblobens = plot(ens_plots[:, 2]..., size = (1400, 1400))
 savefig(lowerblobens, "lowerblobens.png")
 
 ## Diffusivity of each ensemble member 
-j = 21
+j = 32
 first_mom_upper = plot(t, first_moms[:, 1, j], 
                         label = "Ensemble member", 
                         title = "Upper layer average area growth for Gaussian blob initial condition",
@@ -107,17 +108,20 @@ first_mom_lower = plot(t, first_moms[:, 2, j],
                         ylabel = "⟨A⟩",
                         legend = :topleft)
 
-Δt_mem = t[end] - t[round(Int64, end / 2)]
-ΔA_mem = first_moms[end, :, :] .- first_moms[round(Int64, end / 2), :, :]
+Δt_mem = t[end] - t[round(Int64, 3*end / 4)]
+ΔA_mem = first_moms[end, :, :] .- first_moms[round(Int64, 3*end / 4), :, :]
 
 K_ens = ΔA_mem ./ (4 * π * Δt_mem)
 
 K_ens_dim = @. K_ens * dims["Ld"] * 0.02
 
+#Upper layer
 histogram(K_ens_dim[1, :], xlabel = "Diffusivity m²s⁻¹ ", normalize = :probability, label = false)
 scatter!([K_linfit_dim[1]], [0], label = "Ensemble average diffusivity")
 scatter!([findmin(K_ens_dim[1, :])[1]], [0], label = "Member with min diffisivity")
 scatter!([findmax(K_ens_dim[1, :])[1]], [0], label = "Member with max diffisivity")
+
+#Lower layer
 histogram(K_ens_dim[2, :], xlabel = "Diffusivity m²s⁻¹ ", normalize = :probability, label = false)
 scatter!([K_linfit_dim[2]], [0], label = "Ensemble average diffusivity")
 scatter!([findmin(K_ens_dim[2, :])[1]], [0], label = "Member with min diffisivity")
