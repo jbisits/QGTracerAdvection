@@ -94,3 +94,38 @@ upperbandense = plot(ens_plots[:, 1]..., size = (1400, 1400))
 savefig(upperbandense,"upperbandense.png")
 lowerbandense = plot(ens_plots[:, 2]..., size = (1400, 1400))
 savefig(lowerbandense,"lowerbandense.png")
+
+## Difusivity of each ensemble member 
+
+j = 10
+upperplot = plot(t, sec_mom[:, 1, j],
+                title = "Upper layer second moment of area growth \n for Gaussian band initial condition",
+                xlabel = "t",
+                ylabel = "σ²ₐ",
+                label = "Ensemble member",
+                legend = :bottomright)
+lowerplot = plot(t, sec_mom[:, 2, j],
+                title = "Lower layer second moment of area growth \n for Gaussian band initial condition",
+                xlabel = "t",
+                ylabel = "σ²ₐ",
+                label = "Ensemble member",
+                legend = :bottomright)
+
+#Looks like for upper layer after time = 5 in upper layer linear, lower layer after time = 10.
+#Might be easiest to take t = 10 to end as that way only need one calculation.
+
+Δt_mem = t[end] - t[round(Int64, end / 2)]
+ΔA_mem = sec_mom[end, :, :] - sec_mom[round(Int64, end / 2), :, :]
+
+K_ens = ΔA_mem ./ (Lₓ^2 * 8 * Δt_mem)
+
+K_ens_dim = @. K_ens * dims["Ld"] * 0.02
+
+histogram(K_ens_dim[1, :], xlabel = "Diffusivity m²s⁻¹ ", normalize = :probability, label = false)
+scatter!([K_linfit_dims[1]], [0], label = "Ensemble average diffusivity")
+scatter!([findmin(K_ens_dim[1, :])[1]], [0], label = "Member with min diffisivity")
+scatter!([findmax(K_ens_dim[1, :])[1]], [0], label = "Member with max diffisivity")
+histogram(K_ens_dim[2, :], xlabel = "Diffusivity m²s⁻¹ ", normalize = :probability, label = false)
+scatter!([K_linfit_dims[2]], [0], label = "Ensemble average diffusivity")
+scatter!([findmin(K_ens_dim[2, :])[1]], [0], label = "Member with min diffisivity")
+scatter!([findmax(K_ens_dim[2, :])[1]], [0], label = "Member with max diffisivity")

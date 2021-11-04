@@ -92,11 +92,33 @@ savefig(upperblobens, "upperblobens.png")
 lowerblobens = plot(ens_plots[:, 2]..., size = (1400, 1400))
 savefig(lowerblobens, "lowerblobens.png")
 
-## Histogram of initial concentration
+## Diffusivity of each ensemble member 
+j = 21
+first_mom_upper = plot(t, first_moms[:, 1, j], 
+                        label = "Ensemble member", 
+                        title = "Upper layer average area growth for Gaussian blob initial condition",
+                        xlabel = "t",
+                        ylabel = "⟨A⟩",
+                        legend = :topleft)
+first_mom_lower = plot(t, first_moms[:, 2, j], 
+                        label = "Ensemble member", 
+                        title = "Lower layer average area growth for Gaussian blob initial condition",
+                        xlabel = "t",
+                        ylabel = "⟨A⟩",
+                        legend = :topleft)
 
-init_conc = data[1]["snapshots/Concentration/"*string(0)]
-fit_1dconc = fit(Normal, reshape(init_conc[:, :, 1], :))
-fit_1dconc.σ * 500
-norm_init_conc = @. (init_conc[:, :, 1] - fit_1dconc.μ ) / (fit_1dconc.σ * 500)
+Δt_mem = t[end] - t[round(Int64, end / 2)]
+ΔA_mem = first_moms[end, :, :] .- first_moms[round(Int64, end / 2), :, :]
 
-histogram(reshape(norm_init_conc, :))
+K_ens = ΔA_mem ./ (4 * π * Δt_mem)
+
+K_ens_dim = @. K_ens * dims["Ld"] * 0.02
+
+histogram(K_ens_dim[1, :], xlabel = "Diffusivity m²s⁻¹ ", normalize = :probability, label = false)
+scatter!([K_linfit_dim[1]], [0], label = "Ensemble average diffusivity")
+scatter!([findmin(K_ens_dim[1, :])[1]], [0], label = "Member with min diffisivity")
+scatter!([findmax(K_ens_dim[1, :])[1]], [0], label = "Member with max diffisivity")
+histogram(K_ens_dim[2, :], xlabel = "Diffusivity m²s⁻¹ ", normalize = :probability, label = false)
+scatter!([K_linfit_dim[2]], [0], label = "Ensemble average diffusivity")
+scatter!([findmin(K_ens_dim[2, :])[1]], [0], label = "Member with min diffisivity")
+scatter!([findmax(K_ens_dim[2, :])[1]], [0], label = "Member with max diffisivity")
