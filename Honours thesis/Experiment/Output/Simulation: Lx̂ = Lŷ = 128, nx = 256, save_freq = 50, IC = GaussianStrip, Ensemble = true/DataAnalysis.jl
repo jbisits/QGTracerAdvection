@@ -1,8 +1,8 @@
 cd(joinpath(SimPath, "Output/Simulation: Lx̂ = Lŷ = 128, nx = 256, save_freq = 50, IC = GaussianStrip, Ensemble = true"))
 
 ## New flow params for delay_time = Δt * 6000, 
-# first 10 seed 1234, 10-20 seed 4321, 20-30 seed 2341
-data = Array{Dict{String, Any}}(undef, 30)
+# first 10 seed 1234, 10-20 seed 4321, 20-30 seed 2341, 30-40 seed 3142, 40-50 seed 3241
+data = Array{Dict{String, Any}}(undef, 40)
 for i ∈ 1:length(data)
     if i == 1
         file = joinpath(pwd(), "SimulationData.jld2")
