@@ -220,9 +220,10 @@ Turn the saved concentration data into an animation.
 """
 function tracer_animate(data::Dict{String, Any})
 
+    nlayers = data["params/nlayers"]
     nsteps = data["clock/nsteps"]
     Lx, Ly = data["grid/Lx"], data["grid/Ly"]
-    x, y = data["grid/x"], data["grid/y"]=
+    x, y = data["grid/x"], data["grid/y"] 
     plotargs = (
                 color = :deep,
                 xlabel = "x̂",
@@ -234,13 +235,14 @@ function tracer_animate(data::Dict{String, Any})
                 ) 
 
     save_freq = data["save_freq"]
-
+    plot_freq = 1
     if save_freq <=  10
         plot_freq = 10 * save_freq
     else
         plot_freq = save_freq
     end
-    tracer_plot = Array{Plots.Plot{Plots.GRBackend}}(undef, nlayers)
+    plot_steps = 0:plot_freq:nsteps
+    tracer_plot = Array{Plots.Plot{Plots.GRBackend}}(undef, length(plot_steps), nlayers)
 
     TracerAnimation = @animate for i ∈ 0:plot_freq:nsteps
 

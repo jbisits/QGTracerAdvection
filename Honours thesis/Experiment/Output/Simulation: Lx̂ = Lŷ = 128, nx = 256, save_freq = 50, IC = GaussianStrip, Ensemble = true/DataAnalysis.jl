@@ -1,8 +1,8 @@
 cd(joinpath(SimPath, "Output/Simulation: Lx̂ = Lŷ = 128, nx = 256, save_freq = 50, IC = GaussianStrip, Ensemble = true"))
 
 ## New flow params for delay_time = Δt * 6000, 
-# first 10 seed 1234, 10-20 seed 4321
-data = Array{Dict{String, Any}}(undef, 20)
+# first 10 seed 1234, 10-20 seed 4321, 20-30 seed 2341, 30-40 seed 3142, 40-50 seed 3241
+data = Array{Dict{String, Any}}(undef, 50)
 for i ∈ 1:length(data)
     if i == 1
         file = joinpath(pwd(), "SimulationData.jld2")
@@ -77,6 +77,8 @@ savefig(lowerlinfit, "lowerlinfitband.png")
 Lₓ = data[1]["grid/Lx"]
 K_linfit = fit[2, :] ./ (Lₓ^2 * 8)
 
+dims = nondim2dim(data[1])
+K_linfit_dims = @. K_linfit * dims["Ld"] * 0.02
 ## Plots of the tracer
 tracer_plots = tracer_plot(data[1]; plot_freq = 500)
 upperlayerband = plot(tracer_plots[:, 1]..., size = (1400, 1400))
@@ -92,3 +94,52 @@ upperbandense = plot(ens_plots[:, 1]..., size = (1400, 1400))
 savefig(upperbandense,"upperbandense.png")
 lowerbandense = plot(ens_plots[:, 2]..., size = (1400, 1400))
 savefig(lowerbandense,"lowerbandense.png")
+
+## Difusivity of each ensemble member 
+
+j = 10
+upperplot = plot(t, sec_mom[:, 1, j],
+                title = "Upper layer second moment of area growth \n for Gaussian band initial condition",
+                xlabel = "t",
+                ylabel = "σ²ₐ",
+                label = "Ensemble member",
+                legend = :bottomright)
+lowerplot = plot(t, sec_mom[:, 2, j],
+                title = "Lower layer second moment of area growth \n for Gaussian band initial condition",
+                xlabel = "t",
+                ylabel = "σ²ₐ",
+                label = "Ensemble member",
+                legend = :bottomright)
+
+#Looks like for upper layer after time = 5 in upper layer linear, lower layer after time = 10.
+#Might be easiest to take t = 10 to end as that way only need one calculation.
+
+Δt_mem = t[end] - t[round(Int64, end / 2)]
+ΔA_mem = sec_mom[end, :, :] - sec_mom[round(Int64, end / 2), :, :]
+
+K_ens = ΔA_mem ./ (Lₓ^2 * 8 * Δt_mem)
+
+K_ens_dim = @. K_ens * dims["Ld"] * 0.02
+
+upper_diff_hist_band = histogram(K_ens_dim[1, :], 
+                                xlabel = "Diffusivity m²s⁻¹ ", 
+                                ylabel = "Proportion of members",
+                                title = "Histogram of ensemble members \n binned by diffusivity (upper layer)",
+                                normalize = :probability, 
+                                label = false, 
+                                legend = :topleft)
+scatter!(upper_diff_hist_band, [K_linfit_dims[1]], [0], label = "Ensemble average\n diffusivity")
+scatter!(upper_diff_hist_band, [findmin(K_ens_dim[1, :])[1]], [0], label = "Member with \n minimum diffisivity")
+scatter!(upper_diff_hist_band, [findmax(K_ens_dim[1, :])[1]], [0], label = "Member with \n maximum diffisivity")
+savefig(upper_diff_hist_band, "upper_diff_hist_band.png")
+lower_diff_hist_band = histogram(K_ens_dim[2, :], 
+                                xlabel = "Diffusivity m²s⁻¹ ", 
+                                ylabel = "Proportion of members",
+                                title = "Histogram of ensemble members \n binned by diffusivity (upper layer)",
+                                normalize = :probability, 
+                                label = false, 
+                                legend = :topright)
+scatter!([K_linfit_dims[2]], [0], label = "Ensemble average\n diffusivity")
+scatter!([findmin(K_ens_dim[2, :])[1]], [0], label = "Member with \n minimum diffisivity")
+scatter!([findmax(K_ens_dim[2, :])[1]], [0], label = "Member with \n maximum diffisivity")
+savefig(lower_diff_hist_band, "lower_diff_hist_band.png")
