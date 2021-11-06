@@ -2,7 +2,7 @@ cd(joinpath(SimPath, "Output/Simulation: Lx̂ = Lŷ = 128, nx = 256, save_freq 
 
 ## New flow params for delay_time = Δt * 6000, 
 # first 10 seed 1234, 10-20 seed 4321, 20-30 seed 2341, 30-40 seed 3142, 40-50 seed 3241
-data = Array{Dict{String, Any}}(undef, 40)
+data = Array{Dict{String, Any}}(undef, 50)
 for i ∈ 1:length(data)
     if i == 1
         file = joinpath(pwd(), "SimulationData.jld2")
@@ -61,7 +61,7 @@ upperlinfit = plot(t, fit[1, 1] .+ fit[2, 1] .* t,
                     line = (:dash))
 plot!(upperlinfit, t, ens_sec_mom[:, 1], 
     label = "Ensemble data")
-#savefig(upperlinfit, "upperlinfitband.png")
+savefig(upperlinfit, "upperlinfitband.png")
 
 lowerlinfit = plot(t, fit[1, 2] .+ fit[2, 2] .* t, 
                     title = "Lower layer linear best fit of the growth of \n the ensemble second moment of area",
@@ -72,7 +72,7 @@ lowerlinfit = plot(t, fit[1, 2] .+ fit[2, 2] .* t,
                     line = (:dash))
 plot!(lowerlinfit, t, ens_sec_mom[:, 2], 
     label = "Ensemble data")
-#savefig(lowerlinfit, "lowerlinfitband.png")
+savefig(lowerlinfit, "lowerlinfitband.png")
 
 Lₓ = data[1]["grid/Lx"]
 K_linfit = fit[2, :] ./ (Lₓ^2 * 8)
@@ -121,11 +121,25 @@ K_ens = ΔA_mem ./ (Lₓ^2 * 8 * Δt_mem)
 
 K_ens_dim = @. K_ens * dims["Ld"] * 0.02
 
-histogram(K_ens_dim[1, :], xlabel = "Diffusivity m²s⁻¹ ", normalize = :probability, label = false)
-scatter!([K_linfit_dims[1]], [0], label = "Ensemble average diffusivity")
-scatter!([findmin(K_ens_dim[1, :])[1]], [0], label = "Member with min diffisivity")
-scatter!([findmax(K_ens_dim[1, :])[1]], [0], label = "Member with max diffisivity")
-histogram(K_ens_dim[2, :], xlabel = "Diffusivity m²s⁻¹ ", normalize = :probability, label = false)
-scatter!([K_linfit_dims[2]], [0], label = "Ensemble average diffusivity")
-scatter!([findmin(K_ens_dim[2, :])[1]], [0], label = "Member with min diffisivity")
-scatter!([findmax(K_ens_dim[2, :])[1]], [0], label = "Member with max diffisivity")
+upper_diff_hist_band = histogram(K_ens_dim[1, :], 
+                                xlabel = "Diffusivity m²s⁻¹ ", 
+                                ylabel = "Proportion of members",
+                                title = "Histogram of ensemble members \n binned by diffusivity (upper layer)",
+                                normalize = :probability, 
+                                label = false, 
+                                legend = :topleft)
+scatter!(upper_diff_hist_band, [K_linfit_dims[1]], [0], label = "Ensemble average\n diffusivity")
+scatter!(upper_diff_hist_band, [findmin(K_ens_dim[1, :])[1]], [0], label = "Member with \n minimum diffisivity")
+scatter!(upper_diff_hist_band, [findmax(K_ens_dim[1, :])[1]], [0], label = "Member with \n maximum diffisivity")
+savefig(upper_diff_hist_band, "upper_diff_hist_band.png")
+lower_diff_hist_band = histogram(K_ens_dim[2, :], 
+                                xlabel = "Diffusivity m²s⁻¹ ", 
+                                ylabel = "Proportion of members",
+                                title = "Histogram of ensemble members \n binned by diffusivity (upper layer)",
+                                normalize = :probability, 
+                                label = false, 
+                                legend = :topright)
+scatter!([K_linfit_dims[2]], [0], label = "Ensemble average\n diffusivity")
+scatter!([findmin(K_ens_dim[2, :])[1]], [0], label = "Member with \n minimum diffisivity")
+scatter!([findmax(K_ens_dim[2, :])[1]], [0], label = "Member with \n maximum diffisivity")
+savefig(lower_diff_hist_band, "lower_diff_hist_band.png")
