@@ -48,9 +48,9 @@ savefig(fullplot, "Gaussianblob_128dom_td6000.png")
 K = ΔA ./ (4 * π * Δt)
 
 ## Linear fit
-fit = [ones(length(t)) t] \ ensemble_avg
+ens_fit = [ones(length(t)) t] \ ensemble_avg
 
-upperlinfit = plot(t, fit[1, 1] .+ fit[2, 1] .* t, 
+upperlinfit = plot(t, ens_fit[1, 1] .+ ens_fit[2, 1] .* t, 
                     title = "Upper layer linear best fit of the growth of \n the ensemble average area",
                     label = "Best fit of ensemble data", 
                     xlabel = "t",
@@ -59,9 +59,9 @@ upperlinfit = plot(t, fit[1, 1] .+ fit[2, 1] .* t,
                     line = (:dash))
 plot!(upperlinfit, t, ensemble_avg[:, 1], 
     label = "Ensemble data")
-savefig(upperlinfit, "upperlinfitblob.png")
+#savefig(upperlinfit, "upperlinfitblob.png")
 
-lowerlinfit = plot(t, fit[1, 2] .+ fit[2, 2] .* t, 
+lowerlinfit = plot(t, ens_fit[1, 2] .+ ens_fit[2, 2] .* t, 
                     title = "Lower layer linear best fit of the growth of \n the ensemble average area",
                     label = "Best fit of ensemble data", 
                     xlabel = "t",
@@ -70,9 +70,9 @@ lowerlinfit = plot(t, fit[1, 2] .+ fit[2, 2] .* t,
                     line = (:dash))
 plot!(lowerlinfit, t, ensemble_avg[:, 2], 
     label = "Ensemble data")
-savefig(lowerlinfit, "lowerlinfitblob.png")
+#savefig(lowerlinfit, "lowerlinfitblob.png")
 
-K_linfit = fit[2, :] ./ (4 * π)
+K_linfit = ens_fit[2, :] ./ (4 * π)
 
 dims = nondim2dim(data[1])
 K_linfit_dim = @. K_linfit * dims["Ld"] * 0.02
@@ -108,28 +108,28 @@ first_mom_lower = plot(t, first_moms[:, 2, j],
                         ylabel = "⟨A⟩",
                         legend = :topleft)
 
-Δt_mem = t[end] - t[round(Int64, end / 2)]
-ΔA_mem = first_moms[end, :, :] .- first_moms[round(Int64, end / 2), :, :]
+Δt_mem = t[end] - t[round(Int64, 3*end / 4)]
+ΔA_mem = first_moms[end, :, :] .- first_moms[round(Int64, 3*end / 4), :, :]
 
 K_ens = ΔA_mem ./ (4 * π * Δt_mem)
 
 K_ens_dim = @. K_ens * dims["Ld"] * 0.02
 
 #Upper layer
-upper_diff_hist_blob = histogram(K_ens_dim[1, :], 
+upper_diff_hist_blob = histogram(K_ens_dim[1, :], nbins = 4,
                                 xlabel = "Diffusivity m²s⁻¹ ", 
                                 ylabel = "Proportion of members",
                                 title = "Histogram of ensemble members \n binned by diffusivity (upper layer)",
                                 normalize = :probability, 
                                 label = false, 
-                                legend = :topleft)
+                                legend = :topright)
 scatter!(upper_diff_hist_blob, [K_linfit_dim[1]], [0], label = "Ensemble average\ndiffusivity")
 scatter!(upper_diff_hist_blob, [findmin(K_ens_dim[1, :])[1]], [0], label = "Member with\nminimum diffisivity")
 scatter!(upper_diff_hist_blob, [findmax(K_ens_dim[1, :])[1]], [0], label = "Member with\nmaximum diffisivity")
 savefig(upper_diff_hist_blob, "upper_diff_hist_band.png")
 
 #Lower layer
-lower_diff_hist_blob = histogram(K_ens_dim[2, :], 
+lower_diff_hist_blob = histogram(K_ens_dim[2, :], nbins = 5,
                                 xlabel = "Diffusivity m²s⁻¹ ", 
                                 ylabel = "Proportion of members",
                                 title = "Histogram of ensemble members \n binned by diffusivity (upper layer)",
