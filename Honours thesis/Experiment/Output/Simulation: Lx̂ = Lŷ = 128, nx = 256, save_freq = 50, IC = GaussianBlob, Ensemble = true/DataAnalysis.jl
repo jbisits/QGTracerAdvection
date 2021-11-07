@@ -83,7 +83,7 @@ upperlayerblob = plot(tracer_plots[:, 1]..., size = (1400, 1400))
 savefig(upperlayerblob, "upperlayertracerblob.png")
 lowerlayerblob = plot(tracer_plots[:, 2]..., size = (1400, 1400))
 savefig(lowerlayerblob, "lowerlayertracerblob.png")
-upperlayerblobIC = plot(tracer_plots[1, 1], size = (900, 400))
+upperlayerblobIC = plot(tracer_plots[1, 1], size = (800, 400))
 savefig(upperlayerblobIC, "blobIC.png")
 
 ## Ensemble plots
