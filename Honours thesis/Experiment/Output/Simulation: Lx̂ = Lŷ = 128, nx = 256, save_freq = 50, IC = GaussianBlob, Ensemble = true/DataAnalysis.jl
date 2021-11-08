@@ -130,6 +130,18 @@ savefig(upper_diff_hist_blob_plot, "upper_diff_hist_blob.png")
 
 mean(K_ens_dim[1, :])
 std(K_ens_dim[1, :])
+describe(K_ens_dim[1, :])
+lower_bound, upper_bound = K_linfit_dim[1] - 310, K_linfit_dim[1] + 310
+temp = findall(K_ens_dim[1, :] .>= lower_bound)
+findall(K_ens_dim[1, temp] .<= upper_bound)
+
+err_val = [100, 200, 300, 400, 500]
+no_of_mems = Array{Float64}(undef, length(err_val))
+for i in 1:length(err_val)
+    lower_bound, upper_bound = K_linfit_dim[1] - err_val[i], K_linfit_dim[1] + err_val[i]
+    temp = findall(K_ens_dim[1, :] .>= lower_bound)
+    no_of_mems[i] = length(findall(K_ens_dim[1, temp] .<= upper_bound))
+end
 
 #Lower layer
 lower_diff_hist_blob = fit(Histogram, K_ens_dim[2, :])
