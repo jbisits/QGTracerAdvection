@@ -93,6 +93,9 @@ savefig(upperblobens, "upperblobens.png")
 lowerblobens = plot(ens_plots[:, 2]..., size = (1400, 1400))
 savefig(lowerblobens, "lowerblobens.png")
 
+## Single and ensmeble plot for upper and lower layer
+upper_ens_single = plot(tracer_plots[end, 1], ens_plots[end, 1], size = (1200, 600))
+savefig(upper_ens_single, "upper_ens_single.png")
 ## Diffusivity of each ensemble member 
 j = 32
 first_mom_upper = plot(t, first_moms[:, 1, j], 
