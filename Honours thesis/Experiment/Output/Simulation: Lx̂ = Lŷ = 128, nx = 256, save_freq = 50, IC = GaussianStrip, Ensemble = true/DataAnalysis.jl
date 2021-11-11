@@ -169,3 +169,56 @@ lowerlayer_normpdf = [pdf(lowerlayer_normfit, x) for x ∈ lower_vals]
 plot(lower_vals, lowerlayer_normpdf, label = "Fitted normal to \nlower layer diffusivity\nestiamtes", legend = :topright)
 scatter!([K_linfit_dim[2]], [0], label = "Ensemble average\ndiffusivity")
 scatter!([lowerlayer_normfit.μ], [0], label = "Mean of diffusivity\nestimates")
+
+## Bootstrap the ensemble members to form error for ensemble average
+using StatsBase
+
+N = 1000 
+sample = 30
+sample_vec = Array{Int64}(undef, sample)
+sample_vals = 1:length(data)
+ens_diff = Array{Float64}(undef, N, 2)
+#=
+for n ∈ 1:N
+
+    sample_vec = StatsBase.sample(sample_vals, sample, replace = false)
+    data_sample = data[sample_vec]
+    ens_conc_sample = ensemble_concentration(data_sample)
+    ens_sec_mom_sample = second_moment(ens_conc_sample)
+    ens_fit_sample = [ones(length(t)) t] \ ens_sec_mom_sample
+    ens_diff[n, :] =  ens_fit_sample[2, :]   
+
+end=# 
+
+Lₓ = data[1]["grid/Lx"]
+ens_diff_dim =  ens_diff ./ (Lₓ^2 * 8)   
+ens_diff_dim = @. ens_diff_dim * dims["Ld"] * 0.02
+histogram(ens_diff_dim[:, 1])
+std(ens_diff_dim[:, 1])
+histogram(ens_diff_dim[:, 2])
+std(ens_diff_dim[:, 2])
+
+#This is a big thing to run so have saved to .jld2
+file = "bootstrap_band.jld2"
+jldopen(file, "a+") do path
+    path["bootstap"] = ens_diff_dim
+end
+
+## Count number of members
+bootsrap = load("bootstrap_band.jld2")
+ens_diff_dim = bootsrap["bootstap"]
+
+σ_ensemble = std(ens_diff_dim, dims = 1)
+
+err_val = σ_ensemble .* [1:10 1:10]
+no_of_mems = similar(err_val)
+
+for i in 1:length(err_val[:, 1])
+
+    for j in 1:2
+        lower_bound, upper_bound = K_linfit_dim[j] - err_val[i, j], K_linfit_dim[j] + err_val[i, j]
+        no_of_mems[i, j] = length(findall(lower_bound .<=  K_ens_dim[j, :] .<= upper_bound))
+    end
+end
+
+no_of_mems
