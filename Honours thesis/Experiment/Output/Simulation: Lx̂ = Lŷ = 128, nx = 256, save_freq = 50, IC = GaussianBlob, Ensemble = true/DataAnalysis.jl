@@ -116,6 +116,7 @@ first_mom_lower = plot(t, first_moms[:, 2, j],
 
 K_ens = ΔA_mem ./ (4 * π * Δt_mem)
 
+dims = nondim2dim(data[1])
 K_ens_dim = @. K_ens * dims["Ld"] * 0.02
 
 #Upper layer
@@ -161,3 +162,22 @@ savefig(lower_diff_hist_blob_plot, "lower_diff_hist_blob.png")
 
 mean(K_ens_dim[2, :])
 std(K_ens_dim[2, :])
+
+## Or could fit Gaussian's and plot where the ensembel average diffusivity is
+#Upper layer
+upperlayer_normfit = fit(Normal, K_ens_dim[1, :])
+upper_vals = minimum(K_ens_dim[1, :]):maximum(K_ens_dim[1, :])
+upperlayer_normpdf = [pdf(upperlayer_normfit, x) for x ∈ upper_vals]
+
+plot(upper_vals, upperlayer_normpdf, label = "Fitted normal to \nupper layer diffusivity\nestiamtes", legend = :topleft)
+scatter!([K_linfit_dim[1]], [0], label = "Ensemble average\ndiffusivity")
+scatter!([upperlayer_normfit.μ], [0], label = "Mean of diffusivity\nestimates")
+
+#Lower layer
+lowerlayer_normfit = fit(Normal, K_ens_dim[2, :])
+lower_vals = minimum(K_ens_dim[2, :]):maximum(K_ens_dim[2, :])
+lowerlayer_normpdf = [pdf(lowerlayer_normfit, x) for x ∈ lower_vals]
+
+plot(lower_vals, lowerlayer_normpdf, label = "Fitted normal to \nlower layer diffusivity\nestiamtes", legend = :topright)
+scatter!([K_linfit_dim[2]], [0], label = "Ensemble average\ndiffusivity")
+scatter!([lowerlayer_normfit.μ], [0], label = "Mean of diffusivity\nestimates")
