@@ -40,7 +40,7 @@ plot!(first_mom_upper, t, ensemble_avg[:, 1], label = "Ensemble average", line =
 plot!(first_mom_lower, t, ensemble_avg[:, 2], label = "Ensemble average", line = (:dash, 2, :black))
 
 fullplot = plot(first_mom_upper, first_mom_lower, layout = (2, 1), size= (800, 800))
-savefig(fullplot, "Gaussianblob_128dom_td6000.png")
+#savefig(fullplot, "Gaussianblob_128dom_td6000.png")
 
 ## Diffusivity
 Δt = t[41] - t[1]
@@ -80,22 +80,23 @@ K_linfit_dim = @. K_linfit * dims["Ld"] * 0.02
 ## Tracer plots
 tracer_plots = tracer_plot(data[1]; plot_freq = 500)
 upperlayerblob = plot(tracer_plots[:, 1]..., size = (1400, 1400))
-savefig(upperlayerblob, "upperlayertracerblob.png")
+#savefig(upperlayerblob, "upperlayertracerblob.png")
 lowerlayerblob = plot(tracer_plots[:, 2]..., size = (1400, 1400))
-savefig(lowerlayerblob, "lowerlayertracerblob.png")
+#savefig(lowerlayerblob, "lowerlayertracerblob.png")
 upperlayerblobIC = plot(tracer_plots[1, 1], size = (800, 400))
-savefig(upperlayerblobIC, "blobIC.png")
+#savefig(upperlayerblobIC, "blobIC.png")
 
 ## Ensemble plots
 ens_plots = tracer_plot(ensemble_conc; plot_freq = 500)
 upperblobens = plot(ens_plots[:, 1]..., size = (1400, 1400))
-savefig(upperblobens, "upperblobens.png")
+#savefig(upperblobens, "upperblobens.png")
 lowerblobens = plot(ens_plots[:, 2]..., size = (1400, 1400))
-savefig(lowerblobens, "lowerblobens.png")
+#savefig(lowerblobens, "lowerblobens.png")
 
 ## Single and ensmeble plot for upper and lower layer
 upper_ens_single = plot(tracer_plots[end, 1], ens_plots[end, 1], size = (1200, 600))
-savefig(upper_ens_single, "upper_ens_single.png")
+#savefig(upper_ens_single, "upper_ens_single.png")
+
 ## Diffusivity of each ensemble member 
 j = 32
 first_mom_upper = plot(t, first_moms[:, 1, j], 
@@ -120,7 +121,8 @@ dims = nondim2dim(data[1])
 K_ens_dim = @. K_ens * dims["Ld"] * 0.02
 
 #Upper layer
-upper_diff_hist_blob = fit(Histogram, K_ens_dim[1, :])
+upper_diff_hist_blob = fit(Histogram, K_ens_dim[1, :], nbins = 12)
+upper_diff_hist_blob_norm = normalize(upper_diff_hist_blob; mode = :probability)
 upper_diff_hist_blob_plot = plot(upper_diff_hist_blob,
                                 xlabel = "Diffusivity m²s⁻¹ ", 
                                 ylabel = "Number of members",
@@ -132,27 +134,9 @@ scatter!(upper_diff_hist_blob_plot, [findmin(K_ens_dim[1, :])[1]], [0], label = 
 scatter!(upper_diff_hist_blob_plot, [findmax(K_ens_dim[1, :])[1]], [0], label = "Member with\nmaximum diffisivity")
 savefig(upper_diff_hist_blob_plot, "upper_diff_hist_blob.png")
 
-mean(K_ens_dim[1, :])
-std(K_ens_dim[1, :])
-describe(K_ens_dim[1, :])
-
-lower_bound, upper_bound = K_linfit_dim[1] - std(ens_diff_dim[:, 1]),  K_linfit_dim[1] + std(ens_diff_dim[:, 1])
-temp = findall(K_ens_dim[1, :] .>= lower_bound)
-findall(K_ens_dim[1, temp] .<= upper_bound)
-findall(lower_bound .<= K_ens_dim[1, temp] .<= upper_bound)
-
-σ_ensemble = std(ens_diff_dim[:, 1])
-
-err_val = [100, 200, 300, 400, 500]
-no_of_mems = Array{Float64}(undef, length(err_val))
-for i in 1:length(err_val)
-    lower_bound, upper_bound = K_linfit_dim[1] - err_val[i], K_linfit_dim[1] + err_val[i]
-    temp = findall(K_ens_dim[1, :] .>= lower_bound)
-    no_of_mems[i] = length(findall(K_ens_dim[1, temp] .<= upper_bound))
-end
-
 #Lower layer
-lower_diff_hist_blob = fit(Histogram, K_ens_dim[2, :])
+lower_diff_hist_blob = fit(Histogram, K_ens_dim[2, :], nbins = 8)
+lower_diff_hist_blob_norm = normalize(lower_diff_hist_blob; mode = :probability)
 lower_diff_hist_blob_plot = plot(lower_diff_hist_blob,
                             xlabel = "Diffusivity m²s⁻¹ ", 
                             ylabel = "Number of members",
@@ -164,8 +148,126 @@ scatter!(lower_diff_hist_blob_plot, [findmin(K_ens_dim[2, :])[1]], [0], label = 
 scatter!(lower_diff_hist_blob_plot, [findmax(K_ens_dim[2, :])[1]], [0], label = "Member with\nmaximum diffisivity")
 savefig(lower_diff_hist_blob_plot, "lower_diff_hist_blob.png")
 
-mean(K_ens_dim[2, :])
-std(K_ens_dim[2, :])
+#Summary stats 
+μ_members = mean(K_ens_dim, dims = 2)
+σ_members = std(K_ens_dim, dims = 2)
+
+## Bootstrap the ensemble members to form error for ensemble average
+
+N = 1000 
+sample = 30
+sample_vec = Array{Int64}(undef, sample)
+sample_vals = 1:length(data)
+ens_diff = Array{Float64}(undef, N, 2)
+#= uncomment to run
+for n ∈ 1:N
+
+    sample_vec = StatsBase.sample(sample_vals, sample, replace = false)
+    data_sample = data[sample_vec]
+    ens_conc_sample = ensemble_concentration(data_sample)
+    ensemble_avg_sample = first_moment(ens_conc_sample)
+    ens_fit_sample = [ones(length(t)) t] \ ensemble_avg_sample
+    ens_diff[n, :] =  ens_fit_sample[2, :]   
+
+end
+=#
+samples_diff =  ens_diff ./ (4*π)   
+dims = nondim2dim(data[1])
+samples_diff = @. samples_diff * dims["Ld"] * 0.02
+
+histogram(samples_diff[:, 1])
+std(samples_diff[:, 1])
+histogram(samples_diff[:, 2])
+std(samples_diff[:, 2])
+
+
+#This is a big thing to run so have saved to .jld2
+
+file = "bootstrap_blob.jld2"
+jldopen(file, "a+") do path
+    path["bootstap"] = samples_diff
+end
+
+## Bootstrap results.
+bootsrap = load("bootstrap_blob.jld2")
+samples_diff = bootsrap["bootstap"]
+
+μ_samples = mean(samples_diff, dims = 1)
+σ_samples = std(samples_diff, dims = 1)
+
+upper_bootstrap_hist = fit(Histogram, samples_diff[:, 1])
+upper_bootstrap_hist = normalize(upper_bootstrap_hist; mode = :probability)
+
+lower_bootstrap_hist = fit(Histogram, samples_diff[:, 2])
+lower_bootstrap_hist = normalize(lower_bootstrap_hist; mode = :probability)
+
+#Upper layer
+bootstrap_members_hist_upper = plot(upper_diff_hist_blob_norm, 
+                                    xlabel = "Diffusivity m²s⁻¹", 
+                                    ylabel = "Proportion of members",
+                                    label = "Ensemble members",
+                                    #title = "Diffusivity of each ensemble member and the bootstrapped \nsamples for the upper layer of the Gaussian blob",
+                                    size = (800, 600),
+                                    legend = :topleft)
+plot!(bootstrap_members_hist_upper, upper_bootstrap_hist, label = "Bootstrapped samples")
+scatter!(bootstrap_members_hist_upper, [μ_members[1]], [0], 
+        markersize = 6,
+        label = "Average diffusivity of\nensemble members")
+scatter!(bootstrap_members_hist_upper, [μ_members[1] - σ_members[1], μ_members[1] + σ_members[1]], [0, 0], 
+        markersize = 6,
+        label = "± one standard deviation\nof ensemble members")
+scatter!(bootstrap_members_hist_upper, [μ_samples[1]], [0],
+        marker = :star,
+        markersize = 6,
+        label = "Average diffusivity of\nbootstrap samples")
+scatter!(bootstrap_members_hist_upper, [μ_samples[1] - σ_samples[1], μ_samples[1] + σ_samples[1]], [0, 0], 
+        marker = :star,
+        markersize = 6,
+        label = "± one standard deviation\nof bootstrap samples")
+savefig(bootstrap_members_hist_upper, "upper_blob_mem_boot.png")
+
+n = 1:-0.1:0.1
+upper_samples_inrange = Array{Int64}(undef, length(n))
+
+for i ∈ 1:length(n)
+    upper_samples_inrange[i] = length(findall(μ_members[1] -  n[i] * σ_members[1] .<= samples_diff[:, 1] .<= μ_members[1] + n[i] * σ_members[1]))
+end
+[n upper_samples_inrange]
+
+#Lower layer
+bootstrap_members_hist_lower = plot(lower_diff_hist_blob_norm, 
+                                    xlabel = "Diffusivity m²s⁻¹", 
+                                    ylabel = "Proportion of members",
+                                    label = "Ensemble members",
+                                    #title = "Diffusivity of each ensemble member and the bootstrapped \nsamples for the lower layer of the Gaussian blob",
+                                    size = (800, 600))
+plot!(bootstrap_members_hist_lower, lower_bootstrap_hist, label = "Bootstrapped samples")
+scatter!(bootstrap_members_hist_lower, [μ_members[2]], [0], 
+        markersize = 6,
+        label = "Average diffusivity of\nensemble members")
+scatter!(bootstrap_members_hist_lower, [μ_members[2] - σ_members[2], μ_members[2] + σ_members[2]], [0, 0], 
+        markersize = 6,
+        label = "± one standard deviation\nof ensemble members")
+scatter!(bootstrap_members_hist_lower, [μ_samples[2]], [0],
+        marker = :star,
+        markersize = 6,
+        label = "Average diffusivity of\nbootstrap samples")
+scatter!(bootstrap_members_hist_lower, [μ_samples[2] - σ_samples[2], μ_samples[2] + σ_samples[2]], [0, 0], 
+        marker = :star,
+        markersize = 6,
+        label = "± one standard deviation\nof bootstrap samples")
+savefig(bootstrap_members_hist_lower, "lower_blob_mem_boot.png")
+
+n = 1:-0.1:0.1
+lower_samples_inrange = Array{Int64}(undef, length(n))
+
+for i ∈ 1:length(n)
+    lower_samples_inrange[i] = length(findall(μ_members[2] -  n[i] * σ_members[2] .<= samples_diff[:, 2] .<= μ_members[2] + n[i] * σ_members[2]))
+end
+[n lower_samples_inrange]
+
+##############################################################################################################
+#Old/unused
 
 ## Or could fit Gaussian's and plot where the ensembel average diffusivity is
 #Upper layer
@@ -186,48 +288,21 @@ plot(lower_vals, lowerlayer_normpdf, label = "Fitted normal to \nlower layer dif
 scatter!([K_linfit_dim[2]], [0], label = "Ensemble average\ndiffusivity")
 scatter!([lowerlayer_normfit.μ], [0], label = "Mean of diffusivity\nestimates")
 
-## Bootstrap the ensemble members to form error for ensemble average
 
-N = 1000 
-sample = 30
-sample_vec = Array{Int64}(undef, sample)
-sample_vals = 1:length(data)
-ens_diff = Array{Float64}(undef, N, 2)
-
-for n ∈ 1:N
-
-    sample_vec = StatsBase.sample(sample_vals, sample, replace = false)
-    data_sample = data[sample_vec]
-    ens_conc_sample = ensemble_concentration(data_sample)
-    ensemble_avg_sample = first_moment(ens_conc_sample)
-    ens_fit_sample = [ones(length(t)) t] \ ensemble_avg_sample
-    ens_diff[n, :] =  ens_fit_sample[2, :]   
-
+err_val = [100, 200, 300, 400, 500]
+no_of_mems = Array{Float64}(undef, length(err_val))
+for i in 1:length(err_val)
+    lower_bound, upper_bound = K_linfit_dim[1] - err_val[i], K_linfit_dim[1] + err_val[i]
+    temp = findall(K_ens_dim[1, :] .>= lower_bound)
+    no_of_mems[i] = length(findall(K_ens_dim[1, temp] .<= upper_bound))
 end
 
-ens_diff_dim =  ens_diff ./ (4*π)   
-dims = nondim2dim(data[1])
-ens_diff_dim = @. ens_diff_dim * dims["Ld"] * 0.02
+lower_bound, upper_bound = K_linfit_dim[1] - std(samples_diff[:, 1]),  K_linfit_dim[1] + std(samples_diff[:, 1])
+temp = findall(K_ens_dim[1, :] .>= lower_bound)
+findall(K_ens_dim[1, temp] .<= upper_bound)
+findall(lower_bound .<= K_ens_dim[1, temp] .<= upper_bound)
 
-histogram(ens_diff_dim[:, 1])
-std(ens_diff_dim[:, 1])
-histogram(ens_diff_dim[:, 2])
-std(ens_diff_dim[:, 2])
-
-
-#This is a big thing to run so have saved to .jld2
-file = "bootstrap_blob.jld2"
-jldopen(file, "a+") do path
-    path["bootstap"] = ens_diff_dim
-end
-
-## Count number of members
-bootsrap = load("bootstrap_blob.jld2")
-ens_diff_dim = bootsrap["bootstap"]
-
-σ_ensemble = std(ens_diff_dim, dims = 1)
-
-err_val = σ_ensemble .* [1:10 1:10]
+err_val = σ_samples .* [1:10 1:10]
 no_of_mems = similar(err_val)
 
 for i in 1:length(err_val[:, 1])
