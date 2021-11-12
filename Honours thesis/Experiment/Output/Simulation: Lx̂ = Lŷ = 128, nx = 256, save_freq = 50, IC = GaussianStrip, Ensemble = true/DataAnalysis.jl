@@ -202,7 +202,7 @@ bootstrap_members_hist_upper = plot(upper_diff_hist_band_norm,
                                     xlabel = "Diffusivity m²s⁻¹", 
                                     ylabel = "Proportion of members",
                                     label = "Ensemble members",
-                                    title = "Diffusivity of each ensemble member and the bootstrapped \nsamples for the upper layer of the Gaussian band",
+                                    #title = "Diffusivity of each ensemble member and the bootstrapped \nsamples for the upper layer of the Gaussian band",
                                     size = (800, 600))
 plot!(bootstrap_members_hist_upper, upper_bootstrap_hist, label = "Bootstrapped samples")
 scatter!(bootstrap_members_hist_upper, [μ_members[1]], [0], 
@@ -233,7 +233,7 @@ bootstrap_members_hist_lower = plot(lower_diff_hist_band_norm,
                                     xlabel = "Diffusivity m²s⁻¹", 
                                     ylabel = "Proportion of members",
                                     label = "Ensemble members",
-                                    title = "Diffusivity of each ensemble member and the bootstrapped \nsamples for the lower layer of the Gaussian band",
+                                    #title = "Diffusivity of each ensemble member and the bootstrapped \nsamples for the lower layer of the Gaussian band",
                                     size = (800, 600))
 plot!(bootstrap_members_hist_lower, lower_bootstrap_hist, label = "Bootstrapped samples")
 scatter!(bootstrap_members_hist_lower, [μ_members[2]], [0], 
