@@ -262,7 +262,7 @@ scatter!(bootstrap_members_hist_lower, [μ_samples[2] - σ_samples[2], μ_sample
         label = "± one standard deviation\nof bootstrap samples")
 savefig(bootstrap_members_hist_lower, "lower_band_mem_boot.png")
 
-n = 1:-0.1:0.1
+n = 1.1:-0.1:0.1
 lower_samples_inrange = Array{Int64}(undef, length(n))
 
 for i ∈ 1:length(n)
@@ -276,8 +276,8 @@ end
 lower_diff = K_linfit_dim[2]
 σ_lower = σ_members[2]
 μ_lower = μ_members[2]
-lower_lim, upper_lim = μ_lower - σ_lower, μ_lower + σ_lower
-lower_per, upper_per = 100 * lower_lim / upper_diff, 100 *upper_lim / upper_diff
+lower_lim, upper_lim = μ_lower - 1.1*σ_lower, μ_lower + 1.1*σ_lower
+lower_per, upper_per = 100 * lower_lim / lower_diff, 100 * upper_lim / lower_diff
 
 ##################################################################################################
 #Old/unused code

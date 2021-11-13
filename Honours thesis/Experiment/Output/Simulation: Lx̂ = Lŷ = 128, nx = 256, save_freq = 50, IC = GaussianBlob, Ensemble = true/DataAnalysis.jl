@@ -282,7 +282,7 @@ lower_diff = K_linfit_dim[2]
 σ_lower = 0.7 * σ_members[2]
 μ_lower = μ_members[2]
 lower_lim, upper_lim = μ_lower - σ_lower, μ_lower + σ_lower
-lower_per, upper_per = 100 * lower_lim / upper_diff, 100 *upper_lim / upper_diff
+lower_per, upper_per = 100 * lower_lim / lower_diff, 100 *upper_lim / lower_diff
 
 ##############################################################################################################
 #Old/unused
