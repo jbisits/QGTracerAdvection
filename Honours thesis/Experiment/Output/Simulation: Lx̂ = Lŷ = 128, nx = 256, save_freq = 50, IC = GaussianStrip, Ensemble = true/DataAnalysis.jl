@@ -79,6 +79,7 @@ K_linfit = ens_fit[2, :] ./ (Lₓ^2 * 8)
 
 dims = nondim2dim(data[1])
 K_linfit_dim = @. K_linfit * dims["Ld"] * 0.02
+
 ## Plots of the tracer
 tracer_plots = tracer_plot(data[1]; plot_freq = 500)
 upperlayerband = plot(tracer_plots[:, 1]..., size = (1400, 1400))
@@ -232,8 +233,9 @@ end
 # Percentage increase/decrease of ensemble average that captures all of the ensemble members.
 # The upper layer captures all the samples from bootstrap in ± 0.6σ so we use this.
 
+sd_mul = 1
 upper_diff = K_linfit_dim[1]
-σ_upper = 0.6 * σ_members[1]
+σ_upper = sd_mul * σ_members[1]
 μ_upper = μ_members[1]
 lower_lim, upper_lim = μ_upper - σ_upper, μ_upper + σ_upper
 lower_per, upper_per = 100 * lower_lim / upper_diff, 100 *upper_lim / upper_diff
@@ -274,9 +276,9 @@ end
 # The upper layer captures all the samples from bootstrap in ± σ so we use this.
 
 lower_diff = K_linfit_dim[2]
-σ_lower = σ_members[2]
+σ_lower = sd_mul * σ_members[2]
 μ_lower = μ_members[2]
-lower_lim, upper_lim = μ_lower - 1.1*σ_lower, μ_lower + 1.1*σ_lower
+lower_lim, upper_lim = μ_lower - σ_lower, μ_lower + σ_lower
 lower_per, upper_per = 100 * lower_lim / lower_diff, 100 * upper_lim / lower_diff
 
 ##################################################################################################

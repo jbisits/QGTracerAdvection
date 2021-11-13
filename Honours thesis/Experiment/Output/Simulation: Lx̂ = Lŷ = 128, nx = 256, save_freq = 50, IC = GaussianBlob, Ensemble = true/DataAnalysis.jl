@@ -237,8 +237,9 @@ end
 # Percentage increase/decrease of ensemble average that captures all of the ensemble members.
 # The upper layer captures all the samples from bootstrap in ± 0.7σ so we use this.
 
+std_mul = 1
 upper_diff = K_linfit_dim[1]
-σ_upper = 0.7 * σ_members[1]
+σ_upper = std_mul  * σ_members[1]
 μ_upper = μ_members[1]
 lower_lim, upper_lim = μ_upper - σ_upper, μ_upper + σ_upper
 lower_per, upper_per = 100 * lower_lim / upper_diff, 100 *upper_lim / upper_diff
@@ -278,8 +279,9 @@ end
 # Percentage increase/decrease of ensemble average that captures all of the ensemble members.
 # The upper layer captures all the samples from bootstrap in ± 0.7σ so we use this.
 
+std_mul = 1
 lower_diff = K_linfit_dim[2]
-σ_lower = 0.7 * σ_members[2]
+σ_lower = std_mul * σ_members[2]
 μ_lower = μ_members[2]
 lower_lim, upper_lim = μ_lower - σ_lower, μ_lower + σ_lower
 lower_per, upper_per = 100 * lower_lim / lower_diff, 100 *upper_lim / lower_diff
