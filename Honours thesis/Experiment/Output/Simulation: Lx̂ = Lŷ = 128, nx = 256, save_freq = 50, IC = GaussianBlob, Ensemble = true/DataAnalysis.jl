@@ -81,17 +81,44 @@ K_linfit_dim = @. K_linfit * dims["Ld"] * 0.02
 tracer_plots = tracer_plot(data[1]; plot_freq = 500)
 upperlayerblob = plot(tracer_plots[:, 1]..., size = (1400, 1400))
 #savefig(upperlayerblob, "upperlayertracerblob.png")
+final_blob = plot(tracer_plots[end, 1], size = (1000, 600))
+savefig(final_blob, "final_blob.png")
 lowerlayerblob = plot(tracer_plots[:, 2]..., size = (1400, 1400))
 #savefig(lowerlayerblob, "lowerlayertracerblob.png")
 upperlayerblobIC = plot(tracer_plots[1, 1], size = (800, 400))
 #savefig(upperlayerblobIC, "blobIC.png")
 
+## Transformed single plots 
+final_sample = sort(abs.(reshape(data[1]["snapshots/Concentration/4000"][:, :, 1], :)), rev = true)
+ordered_conc_data_sample = plot(area, final_sample, 
+                        xlabel = "A", 
+                        ylabel = "Concentration",
+                        title = "Concentration data ordered higest to lowest",
+                        label = false)
+savefig(ordered_conc_data_sample, "ordered_conc_data_sample.png")
+
 ## Ensemble plots
 ens_plots = tracer_plot(ensemble_conc; plot_freq = 500)
 upperblobens = plot(ens_plots[:, 1]..., size = (1400, 1400))
+last_plot = plot(ens_plots[end, 1], size = (1200, 500))
+savefig(last_plot, "last_plot.png")
 #savefig(upperblobens, "upperblobens.png")
 lowerblobens = plot(ens_plots[:, 2]..., size = (1400, 1400))
 #savefig(lowerblobens, "lowerblobens.png")
+
+## Transfromed ensemble plots
+initial_conc = sort(reshape(ensemble_conc["snapshots/Concentration/0"][:, :, 1], :), rev = true)
+final_conc = sort(reshape(ensemble_conc["snapshots/Concentration/4000"][:, :, 1], :), rev = true)
+
+area = 1:length(initial_conc)
+
+plot(area, initial_conc)
+ordered_conc_data = plot(area, final_conc, 
+                        xlabel = "A", 
+                        ylabel = "Concentration",
+                        title = "Concentration data ordered higest to lowest",
+                        label = false)
+
 
 ## Single and ensmeble plot for upper and lower layer
 upper_ens_single = plot(tracer_plots[end, 1], ens_plots[end, 1], size = (1200, 600))
@@ -209,17 +236,22 @@ bootstrap_members_hist_upper = plot(upper_diff_hist_blob_norm,
                                     #title = "Diffusivity of each ensemble member and the bootstrapped \nsamples for the upper layer of the Gaussian blob",
                                     size = (800, 600),
                                     legend = :topleft)
+savefig(bootstrap_members_hist_upper, "bootstrap_members_hist_upper.png")
 plot!(bootstrap_members_hist_upper, upper_bootstrap_hist, label = "Bootstrapped samples")
+savefig(bootstrap_members_hist_upper, "bootstrap_members_hist_upper.png")
 scatter!(bootstrap_members_hist_upper, [μ_members[1]], [0], 
         markersize = 6,
         label = "Average diffusivity of\nensemble members")
+savefig(bootstrap_members_hist_upper, "bootstrap_members_hist_upper.png")
 scatter!(bootstrap_members_hist_upper, [μ_members[1] - σ_members[1], μ_members[1] + σ_members[1]], [0, 0], 
         markersize = 6,
         label = "± one standard deviation\nof ensemble members")
+savefig(bootstrap_members_hist_upper, "bootstrap_members_hist_upper_mean_sd.png")
 scatter!(bootstrap_members_hist_upper, [μ_samples[1]], [0],
         marker = :star,
         markersize = 6,
         label = "Average diffusivity of\nbootstrap samples")
+savefig(bootstrap_members_hist_upper, "bootstrap_members_hist_upper.png")
 scatter!(bootstrap_members_hist_upper, [μ_samples[1] - σ_samples[1], μ_samples[1] + σ_samples[1]], [0, 0], 
         marker = :star,
         markersize = 6,
