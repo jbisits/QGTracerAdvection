@@ -167,7 +167,7 @@ lower_diff_hist_blob_norm = normalize(lower_diff_hist_blob; mode = :probability)
 lower_diff_hist_blob_plot = plot(lower_diff_hist_blob,
                             xlabel = "Diffusivity m²s⁻¹ ", 
                             ylabel = "Number of members",
-                            title = "Histogram of ensemble members \n binned by diffusivity (upper layer)",
+                            title = "Histogram of ensemble members \n binned by diffusivity (lower layer)",
                             label = false, 
                             legend = :topright)
 scatter!(lower_diff_hist_blob_plot, [K_linfit_dim[2]], [0], label = "Ensemble average\ndiffusivity")
