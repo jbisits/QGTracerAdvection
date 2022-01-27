@@ -10,7 +10,7 @@ begin @everywhere SimPath = joinpath("/Users/Joey/Desktop/ThesisCode/QG_tracer_a
     #Define number of tracer advection simulations
     ADSims = 2
     #Import a flow that has already been set up from the Flows folder. For an ensemble use an array of flows
-    include("Flows/EnsembleFlow_128domain_256res.jl")
+    include("Flows/EnsembleSquare/EnsembleFlow_32domain_64res.jl")
 
     nsubs  = 1           #Set the number of steps the simulation takes at each iteration. This is also the frequency that data is saved at.         
     nsteps = 1000         #Set the total amount of time steps the advection-diffusion simulation should run for
