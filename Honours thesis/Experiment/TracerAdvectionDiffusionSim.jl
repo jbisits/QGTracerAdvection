@@ -2,7 +2,7 @@
 
 ## Load all packages
 #Change to the correct directory (if it was not already correct for some reason)
-SimPath = joinpath("/Users/Joey/Desktop/ThesisCode/QG_tracer_advection", "Honours thesis/Experiment")
+SimPath = joinpath(pwd(), "Honours thesis/Experiment")
 cd(SimPath)
 #Load in all the required packages for the simulation
 include("PackageSetup.jl")
