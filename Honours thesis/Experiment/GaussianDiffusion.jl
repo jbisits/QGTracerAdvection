@@ -53,6 +53,9 @@ jldopen(ADOutput.path, "a+") do path
     path["save_freq"] = save_freq
     path["params/nlayers"] = 1
 end
+########################################################################################################
+
+# Analysis of data
 
 ## Plots of diffusion problem
 
@@ -63,26 +66,43 @@ data = load(file)
 tracer_plots = tracer_plot(data)
 plot(tracer_plots..., size = (1200, 1200))
 
+inital_tracer = plot(tracer_plots[1],
+                    colorbar_title = " \nConcentration",
+                    thickness_scaling = 1.6,
+                    right_margin = 2Plots.mm,
+                    title = "Initial tracer \nconcentration over grid")
+final_tracer = plot(tracer_plots[end],
+                    colorbar_title = "  \nConcentration",
+                    thickness_scaling = 1.5,
+                    right_margin = 3Plots.mm,
+                    title = "Final tracer \nconcentration over grid")
+
+# Ordered concentration plots
 conc_area_plot = concarea_plot(data)
 plot(conc_area_plot..., size = (1200, 1200))
-plot(conc_area_plot[1], 
-    xlabel = "A",
-    title = "Initial ordered concentration")
-plot(conc_area_plot[end], 
-    xlabel = "A",
-    title = "Final ordered concentration")
 
-# Average area growth plot
+initial_conc = plot(conc_area_plot[1], 
+                    xlabel = "A",
+                    title = "Initial ordered concentration")
+final_conc = plot(conc_area_plot[end], 
+                    xlabel = "A",
+                    title = "Final ordered concentration")
+
+
+full_tracer_plot = plot(inital_tracer, final_tracer, initial_conc, final_conc, size = (800, 800))
+savefig(full_tracer_plot, "diff_expt.png")
+## Average area growth plot
 t = time_vec(data)
 first_moms = first_moment(data)
 
-plot(t, first_moms,
- xlabel = "t",
- ylabel = "⟨A⟩(t)",
- label = false,
- title = "Growth of average area of tracer\npatch during diffusion experiment"
-)
+av_area_plot = plot(t, first_moms,
+                xlabel = "t",
+                ylabel = "⟨A⟩(t)",
+                label = false,
+                title = "Growth of average area of tracer\npatch during diffusion experiment"
+                )
 
+savefig(av_area_plot, "diff_av_area.png")
 Δt = t[end] - t[1]
 ΔA = first_moms[end] - first_moms[1]
 κ_est = ΔA / (4 * π * Δt) 
