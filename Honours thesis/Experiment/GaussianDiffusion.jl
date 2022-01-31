@@ -59,7 +59,7 @@ end
 
 ## Plots of diffusion problem
 
-file = joinpath(pwd(), "Output/Simulation: Lx̂ = Lŷ = 16, nx = 128, save_freq = 50, IC = GaussianBlob, Ensemble = false/SimulationData.jld2")
+file = joinpath(SimPath, "Output/Simulation: Lx̂ = Lŷ = 16, nx = 128, save_freq = 50, IC = GaussianBlob, Ensemble = false/SimulationData.jld2")
 data = load(file)
 
 # Tracer plots

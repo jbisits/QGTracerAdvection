@@ -51,7 +51,7 @@ K = ΔA ./ (4 * π * Δt)
 ens_fit = [ones(length(t)) t] \ ensemble_avg
 
 upperlinfit = plot(t, ens_fit[1, 1] .+ ens_fit[2, 1] .* t, 
-                    title = "Upper layer linear best fit of the growth of \n the ensemble average area",
+                    title = "Upper layer linear best fit of the growth\n of the ensemble average area",
                     label = "Best fit of ensemble data", 
                     xlabel = "t",
                     ylabel = "⟨A⟩",
@@ -62,7 +62,7 @@ plot!(upperlinfit, t, ensemble_avg[:, 1],
 #savefig(upperlinfit, "upperlinfitblob.png")
 
 lowerlinfit = plot(t, ens_fit[1, 2] .+ ens_fit[2, 2] .* t, 
-                    title = "Lower layer linear best fit of the growth of \n the ensemble average area",
+                    title = "Lower layer linear best fit of the growth\n of the ensemble average area",
                     label = "Best fit of ensemble data", 
                     xlabel = "t",
                     ylabel = "⟨A⟩",
@@ -71,6 +71,9 @@ lowerlinfit = plot(t, ens_fit[1, 2] .+ ens_fit[2, 2] .* t,
 plot!(lowerlinfit, t, ensemble_avg[:, 2], 
     label = "Ensemble data")
 #savefig(lowerlinfit, "lowerlinfitblob.png")
+
+upper_lower_linfit_plot = plot(upperlinfit, lowerlinfit, layout = (2, 1), size = (500, 600))
+savefig(upper_lower_linfit_plot, "linearfits.png")
 
 K_linfit = ens_fit[2, :] ./ (4 * π)
 
@@ -85,7 +88,9 @@ final_blob = plot(tracer_plots[end, 1], size = (1000, 600))
 savefig(final_blob, "final_blob.png")
 lowerlayerblob = plot(tracer_plots[:, 2]..., size = (1400, 1400))
 #savefig(lowerlayerblob, "lowerlayertracerblob.png")
-upperlayerblobIC = plot(tracer_plots[1, 1], size = (800, 400))
+upperlayerblobIC = plot(tracer_plots[1, 1], 
+                        title = "Initial tracer concentration",
+                        colorbar_title = " \nConcentration")
 #savefig(upperlayerblobIC, "blobIC.png")
 
 ## Transformed single plots 
@@ -174,6 +179,9 @@ scatter!(lower_diff_hist_blob_plot, [K_linfit_dim[2]], [0], label = "Ensemble av
 scatter!(lower_diff_hist_blob_plot, [findmin(K_ens_dim[2, :])[1]], [0], label = "Member with\nminimum diffisivity")
 scatter!(lower_diff_hist_blob_plot, [findmax(K_ens_dim[2, :])[1]], [0], label = "Member with\nmaximum diffisivity")
 savefig(lower_diff_hist_blob_plot, "lower_diff_hist_blob.png")
+
+blob_hist_plot = plot(upper_diff_hist_blob_plot, lower_diff_hist_blob_plot, layout = (2, 1), size = (800, 900))
+savefig(blob_hist_plot, "blob_hist.png")
 
 #Summary stats 
 μ_members = mean(K_ens_dim, dims = 2)
@@ -298,7 +306,10 @@ scatter!(bootstrap_members_hist_lower, [μ_samples[2] - σ_samples[2], μ_sample
         marker = :star,
         markersize = 6,
         label = "± one standard deviation\nof bootstrap samples")
-savefig(bootstrap_members_hist_lower, "lower_blob_mem_boot.png")
+#savefig(bootstrap_members_hist_lower, "lower_blob_mem_boot.png")
+
+boot_hist_plot = plot(bootstrap_members_hist_upper, bootstrap_members_hist_lower, layout = (2, 1), size = (800, 900))
+savefig(boot_hist_plot, "boot_hist.png")
 
 n = 1:-0.1:0.1
 lower_samples_inrange = Array{Int64}(undef, length(n))
@@ -366,3 +377,14 @@ for i in 1:length(err_val[:, 1])
 end
 
 no_of_mems
+
+## Generate a subset of the data over the grid and see how well area diagnostic performs
+
+first_moments_subset = first_moment(ensemble_conc, 1, 2)
+
+plot(t, ensemble_avg, legend = :topleft)
+plot!(t, first_moments_subset)
+
+Δt = t[41] - t[1]
+ΔA = first_moments_subset[41, :] .- first_moments_subset[1, :]
+K = ΔA ./ (4 * π * Δt)

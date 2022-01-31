@@ -356,6 +356,79 @@ function first_moment(data::Array{Dict{String, Any}})
     return  first_mom
 end
 """
+Adds argument so the data is subset meridionally and zonally
+"""
+function first_moment(data::Dict{String, Any}, zonal_subset::Int64, meridional_subset::Int64)
+
+    nlayers = data["params/nlayers"]
+    nsteps = data["clock/nsteps"]
+    saved_steps = data["save_freq"]
+    plot_steps = 0:saved_steps:nsteps
+    first_mom = Array{Float64}(undef, length(plot_steps), nlayers)
+    Δx = data["grid/Lx"] / (data["grid/nx"] / zonal_subset)
+    Δy = data["grid/Ly"] / (data["grid/ny"] / meridional_subset)
+    x_length = length(data["snapshots/Concentration/0"][:, 1, 1])
+    y_length = length(data["snapshots/Concentration/0"][1, :, 1])
+ 
+    for i ∈ plot_steps
+
+        for j ∈ 1:nlayers
+
+            data_subset = [data["snapshots/Concentration/"*string(i)][x, y, j] 
+                                for x ∈ 1:zonal_subset:x_length, y ∈ 1:meridional_subset:y_length]
+            C = abs.(reshape(data_subset, :)) #Absolute value avoids the negative values
+            sort!(C, rev = true)
+            N = length(C)
+            ΣkCₖ =  (Δx * Δy) * sum( [k * C[k] for k ∈ 1:N] )
+            ΣCₖ = sum(C)
+            l = round(Int, i/saved_steps) + 1
+            first_mom[l, j] = ΣkCₖ / ΣCₖ
+
+        end
+                    
+    end
+
+    return first_mom
+
+end
+
+function first_moment(data::Array{Dict{String, Any}}, zonal_subset::Int64, meridional_subset::Int64)
+
+    nlayers = data[1]["params/nlayers"]
+    nsteps = data[1]["clock/nsteps"]
+    saved_steps = data[1]["save_freq"]
+    plot_steps = 0:saved_steps:nsteps
+    first_mom = Array{Float64}(undef, length(plot_steps), nlayers, length(data))
+    Δx = data[1]["grid/Lx"] / (data[1]["grid/nx"] / zonal_subset)
+    Δy = data[1]["grid/Ly"] / (data[1]["grid/ny"] / meridional_subset)
+    x_length = length(data[1]["snapshots/Concentration/0"][:, 1, 1])
+    y_length = length(data[1]["snapshots/Concentration/0"][1, :, 1])
+
+    for i ∈ 1:length(data)
+
+        for j ∈ plot_steps
+
+            for l ∈ 1:nlayers
+
+                data_subset = [data[i]["snapshots/Concentration/"*string(j)][x, y, l] 
+                                for x ∈ 1:zonal_subset:x_length, y ∈ 1:meridional_subset:y_length]
+                C = abs.(reshape(data_subset, :))#Absolute value avoids the negative values
+                sort!(C, rev = true)
+                N = length(C)
+                ΣkCₖ =  (Δx * Δy) * sum( [k * C[k] for k ∈ 1:N] )
+                ΣCₖ = sum(C)
+                m = round(Int, j/saved_steps) + 1
+                first_mom[m, l, i] = ΣkCₖ / ΣCₖ
+
+            end
+
+        end
+
+    end
+
+    return  first_mom
+end
+"""
     function second_moment(data::Dict{Union{String, Any}}
 Caclutate the second moment of the area from tracer data.
 """
