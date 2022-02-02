@@ -16,6 +16,10 @@ end
 ##
 t = time_vec(data[1])
 first_moms = first_moment(data)
+ensemble_conc = ensemble_concentration(data)
+ensemble_avg = first_moment(ensemble_conc)
+
+## Average area growth (members and ensemble)
 first_mom_upper = plot(t, first_moms[:, 1, 1], 
                         label = "Ensemble member", 
                         title = "Upper layer average area growth for Gaussian blob initial condition",
@@ -32,9 +36,6 @@ for i ∈ 2:length(data)
     plot!(first_mom_upper, t, first_moms[:, 1, i], label = false)
     plot!(first_mom_lower, t, first_moms[:, 2, i], label = false)
 end
-
-ensemble_conc = ensemble_concentration(data)
-ensemble_avg = first_moment(ensemble_conc)
 
 plot!(first_mom_upper, t, ensemble_avg[:, 1], label = "Ensemble average", line = (:dash, 2, :black))
 plot!(first_mom_lower, t, ensemble_avg[:, 2], label = "Ensemble average", line = (:dash, 2, :black))
@@ -329,6 +330,57 @@ lower_diff = K_linfit_dim[2]
 lower_lim, upper_lim = μ_lower - σ_lower, μ_lower + σ_lower
 lower_per, upper_per = 100 * lower_lim / lower_diff, 100 *upper_lim / lower_diff
 
+## Generate a subset of the data over the grid and see how well area diagnostic performs
+
+first_moments_subset = first_moment(ensemble_conc, 5 * 8, 4)
+
+plot(t, first_moments_subset, 
+    xlabel = "t",
+    ylabel = "⟨A⟩",
+    title = "Subset of ensemble data to compute ⟨A⟩",
+    label = ["Upper layer" "Lower layer"],
+    legend = :topleft)
+
+plot(t, ensemble_avg, 
+    xlabel = "t",
+    ylabel = "⟨A⟩",
+    title = "Ensemble data and subset of\nensemble data to compute ⟨A⟩",
+    label = "Full data",
+    legend = :topleft)
+plot!(t, first_moments_subset, label = "Subset of data")
+
+Δt = t[41] - t[1]
+ΔA = first_moments_subset[41, :] .- first_moments_subset[1, :]
+K_subset = ΔA ./ (4 * π * Δt)
+
+K_sub_dim = @. K_subset * dims["Ld"] * 0.02
+
+# Linear fits to the subset data
+
+ens_fit_sub = [ones(length(t)) t] \ first_moments_subset
+
+upperlinfit = plot(t, ens_fit_sub[1, 1] .+ ens_fit_sub[2, 1] .* t, 
+                    title = "Upper layer linear best fit of the growth\n of subset ensemble average area",
+                    label = "Best fit of subset ensemble data", 
+                    xlabel = "t",
+                    ylabel = "⟨A⟩",
+                    legend = :bottomright, 
+                    line = (:dash))
+plot!(t, first_moments_subset[:, 1], 
+    label = "Subset ensemble data")
+#savefig(upperlinfit, "upperlinfitblob.png")
+
+plot(t, ens_fit_sub[1, 2] .+ ens_fit_sub[2, 2] .* t, 
+                    title = "Lower layer linear best fit of the growth\n of subset ensemble average area",
+                    label = "Best fit of subset ensemble data", 
+                    xlabel = "t",
+                    ylabel = "⟨A⟩",
+                    legend = :bottomright, 
+                    line = (:dash))
+plot!(t, first_moments_subset[:, 2], 
+    label = "Subset ensemble data")
+    
+K_sub_dim = @. ( ens_fit_sub[2, :] / (4 * π) ) * dims["Ld"] * 0.02
 ##############################################################################################################
 #Old/unused
 
@@ -377,14 +429,3 @@ for i in 1:length(err_val[:, 1])
 end
 
 no_of_mems
-
-## Generate a subset of the data over the grid and see how well area diagnostic performs
-
-first_moments_subset = first_moment(ensemble_conc, 1, 2)
-
-plot(t, ensemble_avg, legend = :topleft)
-plot!(t, first_moments_subset)
-
-Δt = t[41] - t[1]
-ΔA = first_moments_subset[41, :] .- first_moments_subset[1, :]
-K = ΔA ./ (4 * π * Δt)

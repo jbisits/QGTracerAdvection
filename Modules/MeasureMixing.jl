@@ -89,7 +89,7 @@ function hist_plot(data::Dict{String, Any}; plot_freq = 1000, number_of_bins = 0
             else
                 hist = fit(Histogram, concentration, nbins = number_of_bins)
             end
-        hist = normalize(hist, mode = :probability)
+        hist = normalize(hist; mode = :probability)
         k = round(Int, i / plot_freq) + 1
         histograms[k, j] = plot(hist,
                             label = false, 
@@ -302,6 +302,7 @@ function first_moment(data::Dict{String, Any})
     first_mom = Array{Float64}(undef, length(plot_steps), nlayers)
     Δx = data["grid/Lx"] / data["grid/nx"]
     Δy = data["grid/Ly"] / data["grid/ny"]
+    ΔA = Δx * Δy
  
     for i ∈ plot_steps
 
@@ -310,7 +311,7 @@ function first_moment(data::Dict{String, Any})
             C = abs.(reshape(data["snapshots/Concentration/"*string(i)][:, :, j], :)) #Absolute value avoids the negative values
             sort!(C, rev = true)
             N = length(C)
-            ΣkCₖ =  (Δx * Δy) * sum( [k * C[k] for k ∈ 1:N] )
+            ΣkCₖ = ΔA * sum( [k * C[k] for k ∈ 1:N] )
             ΣCₖ = sum(C)
             l = round(Int, i/saved_steps) + 1
             first_mom[l, j] = ΣkCₖ / ΣCₖ
@@ -332,6 +333,7 @@ function first_moment(data::Array{Dict{String, Any}})
     first_mom = Array{Float64}(undef, length(plot_steps), nlayers, length(data))
     Δx = data[1]["grid/Lx"] / data[1]["grid/nx"]
     Δy = data[1]["grid/Ly"] / data[1]["grid/ny"]
+    ΔA = Δx * Δy
 
     for i ∈ 1:length(data)
 
@@ -342,7 +344,7 @@ function first_moment(data::Array{Dict{String, Any}})
                 C = abs.(reshape(data[i]["snapshots/Concentration/"*string(j)][:, :, l], :))#Absolute value avoids the negative values
                 sort!(C, rev = true)
                 N = length(C)
-                ΣkCₖ =  (Δx * Δy) * sum( [k * C[k] for k ∈ 1:N] )
+                ΣkCₖ = ΔA * sum( [k * C[k] for k ∈ 1:N] )
                 ΣCₖ = sum(C)
                 m = round(Int, j/saved_steps) + 1
                 first_mom[m, l, i] = ΣkCₖ / ΣCₖ
@@ -367,6 +369,7 @@ function first_moment(data::Dict{String, Any}, zonal_subset::Int64, meridional_s
     first_mom = Array{Float64}(undef, length(plot_steps), nlayers)
     Δx = data["grid/Lx"] / (data["grid/nx"] / zonal_subset)
     Δy = data["grid/Ly"] / (data["grid/ny"] / meridional_subset)
+    ΔA = Δx * Δy
     x_length = length(data["snapshots/Concentration/0"][:, 1, 1])
     y_length = length(data["snapshots/Concentration/0"][1, :, 1])
  
@@ -379,7 +382,7 @@ function first_moment(data::Dict{String, Any}, zonal_subset::Int64, meridional_s
             C = abs.(reshape(data_subset, :)) #Absolute value avoids the negative values
             sort!(C, rev = true)
             N = length(C)
-            ΣkCₖ =  (Δx * Δy) * sum( [k * C[k] for k ∈ 1:N] )
+            ΣkCₖ = ΔA * sum( [k * C[k] for k ∈ 1:N] )
             ΣCₖ = sum(C)
             l = round(Int, i/saved_steps) + 1
             first_mom[l, j] = ΣkCₖ / ΣCₖ
@@ -401,6 +404,7 @@ function first_moment(data::Array{Dict{String, Any}}, zonal_subset::Int64, merid
     first_mom = Array{Float64}(undef, length(plot_steps), nlayers, length(data))
     Δx = data[1]["grid/Lx"] / (data[1]["grid/nx"] / zonal_subset)
     Δy = data[1]["grid/Ly"] / (data[1]["grid/ny"] / meridional_subset)
+    ΔA = Δx * Δy
     x_length = length(data[1]["snapshots/Concentration/0"][:, 1, 1])
     y_length = length(data[1]["snapshots/Concentration/0"][1, :, 1])
 
@@ -415,7 +419,7 @@ function first_moment(data::Array{Dict{String, Any}}, zonal_subset::Int64, merid
                 C = abs.(reshape(data_subset, :))#Absolute value avoids the negative values
                 sort!(C, rev = true)
                 N = length(C)
-                ΣkCₖ =  (Δx * Δy) * sum( [k * C[k] for k ∈ 1:N] )
+                ΣkCₖ = ΔA * sum( [k * C[k] for k ∈ 1:N] )
                 ΣCₖ = sum(C)
                 m = round(Int, j/saved_steps) + 1
                 first_mom[m, l, i] = ΣkCₖ / ΣCₖ
