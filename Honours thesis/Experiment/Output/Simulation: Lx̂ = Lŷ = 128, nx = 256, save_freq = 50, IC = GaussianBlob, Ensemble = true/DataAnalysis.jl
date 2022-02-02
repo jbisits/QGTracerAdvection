@@ -381,6 +381,7 @@ plot!(t, first_moments_subset[:, 2],
     label = "Subset ensemble data")
     
 K_sub_dim = @. ( ens_fit_sub[2, :] / (4 * π) ) * dims["Ld"] * 0.02
+
 ##############################################################################################################
 #Old/unused
 
