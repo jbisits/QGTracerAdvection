@@ -367,9 +367,11 @@ function first_moment(data::Dict{String, Any}, zonal_subset::Int64, meridional_s
     saved_steps = data["save_freq"]
     plot_steps = 0:saved_steps:nsteps
     first_mom = Array{Float64}(undef, length(plot_steps), nlayers)
-    Δx = data["grid/Lx"] / (data["grid/nx"] / zonal_subset)
-    Δy = data["grid/Ly"] / (data["grid/ny"] / meridional_subset)
-    ΔA = Δx * Δy
+    Δx = data["grid/Lx"] / data["grid/nx"]
+    Δy = data["grid/Ly"] / data["grid/ny"]
+    ΔA = (Δx * zonal_subset) * (Δy * meridional_subset)
+    x_shift = round(Int64, meridional_subset / 2)
+    y_shift = round(Int64, zonal_subset / 2)
     x_length = length(data["snapshots/Concentration/0"][:, 1, 1])
     y_length = length(data["snapshots/Concentration/0"][1, :, 1])
  
@@ -377,8 +379,8 @@ function first_moment(data::Dict{String, Any}, zonal_subset::Int64, meridional_s
 
         for j ∈ 1:nlayers
 
-            data_subset = [data["snapshots/Concentration/"*string(i)][x, y, j] 
-                                for x ∈ 1:zonal_subset:x_length, y ∈ 1:meridional_subset:y_length]
+            data_subset = [data["snapshots/Concentration/"*string(i)][x + x_shift, y + y_shift, j] 
+                                for x ∈ 1:meridional_subset:x_length, y ∈ 1:zonal_subset:y_length]
             C = abs.(reshape(data_subset, :)) #Absolute value avoids the negative values
             sort!(C, rev = true)
             N = length(C)
@@ -402,9 +404,11 @@ function first_moment(data::Array{Dict{String, Any}}, zonal_subset::Int64, merid
     saved_steps = data[1]["save_freq"]
     plot_steps = 0:saved_steps:nsteps
     first_mom = Array{Float64}(undef, length(plot_steps), nlayers, length(data))
-    Δx = data[1]["grid/Lx"] / (data[1]["grid/nx"] / zonal_subset)
-    Δy = data[1]["grid/Ly"] / (data[1]["grid/ny"] / meridional_subset)
-    ΔA = Δx * Δy
+    Δx = data[1]["grid/Lx"] / data[1]["grid/nx"]
+    Δy = data[1]["grid/Ly"] / data[1]["grid/ny"]
+    ΔA = (Δx * zonal_subset) * (Δy * meridional_subset)
+    x_shift = round(Int64, meridional_subset / 2)
+    y_shift = round(Int64, zonal_subset / 2)
     x_length = length(data[1]["snapshots/Concentration/0"][:, 1, 1])
     y_length = length(data[1]["snapshots/Concentration/0"][1, :, 1])
 
@@ -414,8 +418,8 @@ function first_moment(data::Array{Dict{String, Any}}, zonal_subset::Int64, merid
 
             for l ∈ 1:nlayers
 
-                data_subset = [data[i]["snapshots/Concentration/"*string(j)][x, y, l] 
-                                for x ∈ 1:zonal_subset:x_length, y ∈ 1:meridional_subset:y_length]
+                data_subset = [data[i]["snapshots/Concentration/"*string(j)][x + x_shift, y + y_shift, l] 
+                                for x ∈ 1:meridional_subset:x_length, y ∈ 1:zonal_subset:y_length]
                 C = abs.(reshape(data_subset, :))#Absolute value avoids the negative values
                 sort!(C, rev = true)
                 N = length(C)

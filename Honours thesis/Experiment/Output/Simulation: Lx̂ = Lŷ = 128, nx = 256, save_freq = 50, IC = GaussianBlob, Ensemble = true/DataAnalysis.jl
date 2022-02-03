@@ -332,7 +332,7 @@ lower_per, upper_per = 100 * lower_lim / lower_diff, 100 *upper_lim / lower_diff
 
 ## Generate a subset of the data over the grid and see how well area diagnostic performs
 
-first_moments_subset = first_moment(ensemble_conc, 5 * 8, 4)
+first_moments_subset = first_moment(ensemble_conc, 3 * 8, 4)
 
 plot(t, first_moments_subset, 
     xlabel = "t",
