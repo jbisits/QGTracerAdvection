@@ -19,6 +19,8 @@ first_moms = first_moment(data)
 ensemble_conc = ensemble_concentration(data)
 ensemble_avg = first_moment(ensemble_conc)
 
+ϕ = π / 3
+long_degrees = cos(ϕ) * 111.32
 ## Generate a subsets of the data over the grid and see how well area diagnostic performs
 
 first_moments_subset = first_moment(ensemble_conc, 3 * 4, 4)
