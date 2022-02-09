@@ -216,8 +216,7 @@ std(samples_diff[:, 1])
 histogram(samples_diff[:, 2])
 std(samples_diff[:, 2])
 
-
-#This is a big thing to run so have saved to .jld2
+## This is a big thing to run so have saved to .jld2
 
 file = "bootstrap_blob.jld2"
 jldopen(file, "a+") do path
