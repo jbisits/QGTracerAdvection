@@ -22,8 +22,9 @@ ensemble_avg = first_moment(ensemble_conc)
 ϕ = π / 3
 long_degrees = cos(ϕ) * 111.32
 one_degree = 4 # 4 grid cells ≈ 60km which is an overestimate of 1 degree at this latitude (≈ 55km) but what I am using
+
 ## Generate a subsets of the data over the grid and see how well area diagnostic performs
-no_of_degrees = 4
+no_of_degrees = 8
 
 ens_avg_area_subset = first_moment(ensemble_conc, no_of_degrees * one_degree, 4)
 
@@ -124,6 +125,7 @@ plot!(first_mom_lower, t[round(Int64, 3*end / 4):end], member_subset_linfit[j][1
 plot(first_mom_upper, first_mom_lower, layout = (2, 1), size = (800, 800))
 
 ## Extract the slope from the linear fits and find dimensional diffusivity
+member_subset_linfit = [[ones(length(t[round(Int64, 3*end / 4):end])) t[round(Int64, 3*end / 4):end]] \ member_subset_avg_area[round(Int64, 3*end / 4):end, :, k] for k ∈ 1:length(data)]
 member_subset_linfit = [[member_subset_linfit[k][2, 1] for k ∈ 1:length(data)] [member_subset_linfit[k][2, 2] for k ∈ 1:length(data)]]'
 K_subset_member_linfit = member_subset_linfit ./ (4 * π)
 K_subset_member_linfit_dim = @. K_subset_member_linfit * dims["Ld"] * 0.02
@@ -180,7 +182,7 @@ samples_diff_subset =  ens_diff_subset ./ (4 * π)
 dims = nondim2dim(data[1])
 samples_diff_subset = @. samples_diff_subset * dims["Ld"] * 0.02
 
-file = "bootstrap_blob_subset_4degreeszonal.jld2"
+file = "bootstrap_blob_subset_8degreeszonal.jld2"
 jldopen(file, "a+") do path
     path["bootstap"] = samples_diff_subset
 end
@@ -253,6 +255,89 @@ scatter!(bootstrap_members_hist_lower, [μ_samples[2] - σ_samples[2], μ_sample
         marker = :star,
         markersize = 6,
         label = "± one standard deviation\nof bootstrap samples")
+
+# both upper and lower layer
+plot(bootstrap_members_hist_upper, bootstrap_members_hist_lower, layout = (2, 1), size = (1000, 1000))
+
+## bootstrap for 8 degrees zonally
+bootstrap_8degrees = load("bootstrap_blob_subset_8degreeszonal.jld2")
+samples_diff_subset = bootstrap_8degrees["bootstap"]
+
+μ_samples = mean(samples_diff_subset, dims = 1)
+σ_samples = std(samples_diff_subset, dims = 1)
+
+## Upper layer
+upper_bootstrap_hist = fit(Histogram, samples_diff_subset[:, 1])
+upper_bootstrap_hist = normalize(upper_bootstrap_hist; mode = :probability)
+
+#Upper layer
+bootstrap_members_hist_upper = plot(upper_diff_hist_blob_norm, 
+                                    xlabel = "Diffusivity m²s⁻¹", 
+                                    ylabel = "Proportion of members",
+                                    label = "Ensemble members",
+                                    #title = "Diffusivity of each ensemble member and the bootstrapped \nsamples for the upper layer of the Gaussian blob",
+                                    size = (800, 600),
+                                    legend = :topleft)
+#savefig(bootstrap_members_hist_upper, "bootstrap_members_hist_upper.png")
+plot!(bootstrap_members_hist_upper, upper_bootstrap_hist, label = "Bootstrapped samples")
+#savefig(bootstrap_members_hist_upper, "bootstrap_members_hist_upper.png")
+scatter!(bootstrap_members_hist_upper, [μ_members[1]], [0], 
+        markersize = 6,
+        label = "Average diffusivity of\nensemble members")
+#savefig(bootstrap_members_hist_upper, "bootstrap_members_hist_upper.png")
+scatter!(bootstrap_members_hist_upper, [μ_members[1] - σ_members[1], μ_members[1] + σ_members[1]], [0, 0], 
+        markersize = 6,
+        label = "± one standard deviation\nof ensemble members")
+#savefig(bootstrap_members_hist_upper, "bootstrap_members_hist_upper_mean_sd.png")
+scatter!(bootstrap_members_hist_upper, [μ_samples[1]], [0],
+        marker = :star,
+        markersize = 6,
+        label = "Average diffusivity of\nbootstrap samples")
+#savefig(bootstrap_members_hist_upper, "bootstrap_members_hist_upper.png")
+scatter!(bootstrap_members_hist_upper, [μ_samples[1] - σ_samples[1], μ_samples[1] + σ_samples[1]], [0, 0], 
+        marker = :star,
+        markersize = 6,
+        label = "± one standard deviation\nof bootstrap samples")
+#savefig(bootstrap_members_hist_upper, "upper_blob_mem_boot.png")
+
+## Lower layer
+lower_bootstrap_hist = fit(Histogram, samples_diff_subset[:, 2])
+lower_bootstrap_hist = normalize(lower_bootstrap_hist; mode = :probability)
+
+bootstrap_members_hist_lower = plot(lower_diff_hist_blob_norm, 
+                                    xlabel = "Diffusivity m²s⁻¹", 
+                                    ylabel = "Proportion of members",
+                                    label = "Ensemble members",
+                                    #title = "Diffusivity of each ensemble member and the bootstrapped \nsamples for the lower layer of the Gaussian blob",
+                                    size = (800, 600))
+plot!(bootstrap_members_hist_lower, lower_bootstrap_hist, label = "Bootstrapped samples")
+scatter!(bootstrap_members_hist_lower, [μ_members[2]], [0], 
+        markersize = 6,
+        label = "Average diffusivity of\nensemble members")
+scatter!(bootstrap_members_hist_lower, [μ_members[2] - σ_members[2], μ_members[2] + σ_members[2]], [0, 0], 
+        markersize = 6,
+        label = "± one standard deviation\nof ensemble members")
+scatter!(bootstrap_members_hist_lower, [μ_samples[2]], [0],
+        marker = :star,
+        markersize = 6,
+        label = "Average diffusivity of\nbootstrap samples")
+scatter!(bootstrap_members_hist_lower, [μ_samples[2] - σ_samples[2], μ_samples[2] + σ_samples[2]], [0, 0], 
+        marker = :star,
+        markersize = 6,
+        label = "± one standard deviation\nof bootstrap samples")
+
+plot(bootstrap_members_hist_upper, bootstrap_members_hist_lower, layout = (2, 1), size = (1000, 1000))
+
+## Percentage of ensemble average diffusivity
+
+lower, upper = @. μ_members - σ_members, μ_members + σ_members
+lower_per, upper_per = @. 100 * lower / K_sub_dim, 100 * upper / K_sub_dim
+
+# upper layer
+(lower_per[1], upper_per[1])
+
+# lower layer
+(lower_per[2], upper_per[2])
 
 ##################################################################################################################
 ## Alternate (but maybe not as good method with the subset of data) of finding diffusivity using rise over run
