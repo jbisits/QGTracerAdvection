@@ -187,8 +187,8 @@ end
 =#
 
 ## Bootstrap for subset every 4 degrees zonally
-bootstrap = load("bootstrap_blob.jld2")
-samples_diff_subset = bootstrap["bootstap"]
+bootstrap_4degrees = load("bootstrap_blob_subset_4degreeszonal.jld2")
+samples_diff_subset = bootstrap_4degrees["bootstap"]
 
 μ_samples = mean(samples_diff_subset, dims = 1)
 σ_samples = std(samples_diff_subset, dims = 1)
