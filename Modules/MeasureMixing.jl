@@ -229,36 +229,26 @@ function tracer_animate(data::Dict{String, Any})
                 xlabel = "x̂",
                 ylabel = "ŷ",
                 colorbar = true,
-                colorbar_title = "Concentration",
+                colorbar_title = " \nConcentration\n",
                 xlims = (-Lx/2, Lx/2),
                 ylims = (-Ly/2, Ly/2)
                 ) 
 
     save_freq = data["save_freq"]
-    plot_freq = 1
-    if save_freq <=  10
-        plot_freq = 10 * save_freq
-    else
-        plot_freq = save_freq
-    end
-    plot_steps = 0:plot_freq:nsteps
-    tracer_plot = Array{Plots.Plot{Plots.GRBackend}}(undef, length(plot_steps), nlayers)
+    saved_conc = 0:save_freq:nsteps
+    tracer_plots = Array{Plots.Plot{Plots.GRBackend}}(undef, nlayers)
+    plot_layout = @layout Plots.grid(1, 2)
 
-    TracerAnimation = @animate for i ∈ 0:plot_freq:nsteps
+    TracerAnimation = @animate for i ∈ saved_conc
 
         for j ∈ 1:nlayers
-            tracer_plot[j] = heatmap(x, y, data["snapshots/Concentration/"*string(i)][:, :, j]',
-                                title = "Upper layer, C(x,y,t) step = "*string(i); 
+            tracer_plots[j] = heatmap(x, y, data["snapshots/Concentration/"*string(i)][:, :, j]',
+                                title = "Upper layer C(x,y,t)\nstep = "*string(i); 
                                 plotargs...)
-        end 
-
-        if nlayers % 2 == 0
-            plot_layout = (Int(nlayers / 2), 2)
-        else
-            plot_layout = (nlayers, 3)
         end
 
-        plot(tracer_plot..., layout = plot_layout)
+        plot(tracer_plots...)
+
     end
 
     return TracerAnimation

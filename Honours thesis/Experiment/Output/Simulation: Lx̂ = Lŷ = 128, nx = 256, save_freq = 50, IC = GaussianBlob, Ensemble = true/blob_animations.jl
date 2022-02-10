@@ -12,3 +12,19 @@ for i ∈ 1:length(data)
         data[i] = load(file)
     end
 end
+
+## 
+
+ensemble_conc = ensemble_concentration(data)
+
+# The layout of the plots still needs to be fixed! 
+
+## Single member
+
+member_anim = tracer_animate(data[1])
+mp4(member_anim, "member_adv_diff.mp4", fps = 18)
+
+## Ensemble average concentration
+
+ens_anim = tracer_animate(ensemble_conc)
+mp4(ens_anim, "ensemble_adv_diff.mp4", fps = 18)
