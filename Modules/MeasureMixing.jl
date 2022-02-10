@@ -229,25 +229,25 @@ function tracer_animate(data::Dict{String, Any})
                 xlabel = "x̂",
                 ylabel = "ŷ",
                 colorbar = true,
-                colorbar_title = " \nConcentration\n",
+                colorbar_title = " \nConcentration",
                 xlims = (-Lx/2, Lx/2),
-                ylims = (-Ly/2, Ly/2)
+                ylims = (-Ly/2, Ly/2),
+                aspectratio = Lx/Ly
                 ) 
 
     save_freq = data["save_freq"]
     saved_conc = 0:save_freq:nsteps
     tracer_plots = Array{Plots.Plot{Plots.GRBackend}}(undef, nlayers)
-    plot_layout = @layout Plots.grid(1, 2)
 
     TracerAnimation = @animate for i ∈ saved_conc
 
         for j ∈ 1:nlayers
-            tracer_plots[j] = heatmap(x, y, data["snapshots/Concentration/"*string(i)][:, :, j]',
-                                title = "Upper layer C(x,y,t)\nstep = "*string(i); 
+            tracer_plots[j] = heatmap(x, y, abs.(data["snapshots/Concentration/"*string(i)][:, :, j]'),
+                                title = "Layer "*string(j)*" C(x,y,t)\nstep = "*string(i); 
                                 plotargs...)
         end
 
-        plot(tracer_plots...)
+        plot(tracer_plots..., size = (1000, 600))
 
     end
 
