@@ -159,38 +159,9 @@ scatter!(lower_diff_hist_blob_plot, [K_sub_dim[2]], [0], label = "Ensemble avera
 scatter!(lower_diff_hist_blob_plot, [findmin(K_subset_member_linfit_dim[2, :])[1]], [0], label = "Member with\nminimum diffisivity")
 scatter!(lower_diff_hist_blob_plot, [findmax(K_subset_member_linfit_dim[2, :])[1]], [0], label = "Member with\nmaximum diffisivity")
 
-## bootstrap ensemble average for varying subsets of data
-
-N = 1000 
-sample = 30
-sample_vec = Array{Int64}(undef, sample)
-sample_vals = 1:length(data)
-ens_diff_subset = Array{Float64}(undef, N, 2)
-#=
-for n ∈ 1:N
-
-    sample_vec = StatsBase.sample(sample_vals, sample, replace = false)
-    data_sample = data[sample_vec]
-    ens_conc_sample = ensemble_concentration(data_sample)
-    ensemble_avg_sample = first_moment(ens_conc_sample, no_of_degrees * one_degree, 4)
-    ens_fit_sample = [ones(length(t)) t] \ ensemble_avg_sample
-    ens_diff_subset[n, :] =  ens_fit_sample[2, :]   
-
-end
-
-samples_diff_subset =  ens_diff_subset ./ (4 * π)   
-dims = nondim2dim(data[1])
-samples_diff_subset = @. samples_diff_subset * dims["Ld"] * 0.02
-
-file = "bootstrap_blob_subset_8degreeszonal.jld2"
-jldopen(file, "a+") do path
-    path["bootstap"] = samples_diff_subset
-end
-=#
-
 ## Bootstrap for subset every 4 degrees zonally
-bootstrap_4degrees = load("bootstrap_blob_subset_4degreeszonal.jld2")
-samples_diff_subset = bootstrap_4degrees["bootstap"]
+bootstrap = load("bootstrap_blob.jld2")
+samples_diff_subset = bootstrap["bootstap"]
 
 μ_samples = mean(samples_diff_subset, dims = 1)
 σ_samples = std(samples_diff_subset, dims = 1)
@@ -260,8 +231,8 @@ scatter!(bootstrap_members_hist_lower, [μ_samples[2] - σ_samples[2], μ_sample
 plot(bootstrap_members_hist_upper, bootstrap_members_hist_lower, layout = (2, 1), size = (1000, 1000))
 
 ## bootstrap for 8 degrees zonally
-bootstrap_8degrees = load("bootstrap_blob_subset_8degreeszonal.jld2")
-samples_diff_subset = bootstrap_8degrees["bootstap"]
+bootstrap = load("bootstrap_blob.jld2")
+samples_diff_subset = bootstrap["bootstap"]
 
 μ_samples = mean(samples_diff_subset, dims = 1)
 σ_samples = std(samples_diff_subset, dims = 1)
@@ -349,3 +320,34 @@ K_member_subset_ens = ΔA_mem ./ (4 * π * Δt_mem)
 K_member_subset_dim = @. K_member_subset_ens * dims["Ld"] * 0.02
 K_member_subset_dim[:, j]
 ##
+
+## bootstrap ensemble average for varying subsets of data
+
+N = 1000 
+sample = 30
+sample_vec = Array{Int64}(undef, sample)
+sample_vals = 1:length(data)
+ens_diff_subset = Array{Float64}(undef, N, 2)
+#=
+for n ∈ 1:N
+
+    sample_vec = StatsBase.sample(sample_vals, sample, replace = false)
+    data_sample = data[sample_vec]
+    ens_conc_sample = ensemble_concentration(data_sample)
+    ensemble_avg_sample = first_moment(ens_conc_sample, no_of_degrees * one_degree, 4)
+    ens_fit_sample = [ones(length(t)) t] \ ensemble_avg_sample
+    ens_diff_subset[n, :] =  ens_fit_sample[2, :]   
+
+end
+
+samples_diff_subset =  ens_diff_subset ./ (4 * π)   
+dims = nondim2dim(data[1])
+samples_diff_subset = @. samples_diff_subset * dims["Ld"] * 0.02
+
+file = "bootstrap_blob_subset_8degreeszonal.jld2"
+jldopen(file, "a+") do path
+    path["bootstap"] = samples_diff_subset
+end
+=#
+
+# This is not actually necessary as want to compare to the gold standard of the full ensemble average diffusivity.

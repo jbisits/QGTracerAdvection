@@ -396,11 +396,31 @@ function first_moment(data::Array{Dict{String, Any}}, zonal_subset::Int64, merid
     first_mom = Array{Float64}(undef, length(plot_steps), nlayers, length(data))
     Δx = data[1]["grid/Lx"] / data[1]["grid/nx"]
     Δy = data[1]["grid/Ly"] / data[1]["grid/ny"]
-    ΔA = (Δx * zonal_subset) * (Δy * meridional_subset)
-    x_shift = round(Int64, meridional_subset / 2)
-    y_shift = round(Int64, zonal_subset / 2)
+    x_shift = round(Int64, zonal_subset / 2)
+    y_shift = round(Int64, meridional_subset / 2)
     x_length = length(data[1]["snapshots/Concentration/0"][:, 1, 1])
     y_length = length(data[1]["snapshots/Concentration/0"][1, :, 1])
+
+    zonal_vec = []
+    merid_vec = []
+    ΔA = 0
+    if zonal_subset == 0 && meridional_subset == 0
+        zonal_vec = 1:x_length
+        merid_vec = 1:y_length
+        ΔA = Δx * Δy
+    elseif zonal_subset == 0 && meridional_subset != 0
+        zonal_vec = 1:x_length
+        merid_vec = 1:meridional_subset:y_length
+        ΔA = (Δx) * (Δy * meridional_subset)
+    elseif zonal_subset != 0 && meridional_subset == 0
+        zonal_vec = 1:zonal_subset:x_length
+        merid_vec = 1:y_length
+        ΔA = (Δx * zonal_subset) * (Δy)
+    else
+        zonal_vec = 1:zonal_subset:x_length
+        merid_vec = 1:meridional_subset:y_length
+        ΔA = (Δx * zonal_subset) * (Δy * meridional_subset)
+    end
 
     for i ∈ 1:length(data)
 
@@ -409,8 +429,8 @@ function first_moment(data::Array{Dict{String, Any}}, zonal_subset::Int64, merid
             for l ∈ 1:nlayers
 
                 data_subset = [data[i]["snapshots/Concentration/"*string(j)][x + x_shift, y + y_shift, l] 
-                                for x ∈ 1:meridional_subset:x_length, y ∈ 1:zonal_subset:y_length]
-                C = abs.(reshape(data_subset, :))#Absolute value avoids the negative values
+                                for x ∈ zonal_vec, y ∈ merid_vec]
+                C = abs.(reshape(data_subset, :)) # Absolute value avoids the negative values
                 sort!(C, rev = true)
                 N = length(C)
                 ΣkCₖ = ΔA * sum( [k * C[k] for k ∈ 1:N] )
