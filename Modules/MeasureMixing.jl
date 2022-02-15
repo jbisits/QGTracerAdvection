@@ -411,11 +411,11 @@ function first_moment(data::Array{Dict{String, Any}}, zonal_subset::Int64, merid
     elseif zonal_subset == 0 && meridional_subset != 0
         zonal_vec = 1:x_length
         merid_vec = 1:meridional_subset:y_length
-        ΔA = (Δx) * (Δy * meridional_subset)
+        ΔA = Δx * (Δy * meridional_subset)
     elseif zonal_subset != 0 && meridional_subset == 0
         zonal_vec = 1:zonal_subset:x_length
         merid_vec = 1:y_length
-        ΔA = (Δx * zonal_subset) * (Δy)
+        ΔA = (Δx * zonal_subset) * Δy
     else
         zonal_vec = 1:zonal_subset:x_length
         merid_vec = 1:meridional_subset:y_length
