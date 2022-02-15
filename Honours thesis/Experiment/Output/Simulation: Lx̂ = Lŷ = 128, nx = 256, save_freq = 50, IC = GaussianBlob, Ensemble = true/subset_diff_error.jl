@@ -143,3 +143,6 @@ first_moms = first_moment(data, 4 * one_degree, 4 * one_meridional_inc)
 time_inc = 16
 no_of_members = 1
 plot(t[1:time_inc:end], [first_moms[1:time_inc:end, 1, i] for i ∈ 1:no_of_members], label = false)
+
+K = ((first_moms[end, 1, 1] - first_moms[61, 1, 1]) / (t[end] - t[61])) / 4π
+K_dim = K * dims["Ld"] * 0.02
