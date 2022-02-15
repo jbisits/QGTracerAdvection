@@ -35,10 +35,10 @@ K_linfit_dim = @. K_linfit * dims["Ld"] * 0.02
 ######### Varying spatial resolution of data
 
 ## Diffusivity estimates for ensemble members at different subsets of data
-zonal_subset = 0:2:8
-meridional_subset = 0:2:8
+zonal_subset = 1:8
+meridional_subset = 1:8
 member_diffs = Array{Float64}(undef, length(data), 2, length(zonal_subset) * length(meridional_subset))
-#= This is not that fast (though not that slow to run) but quicker to save and open. Of course can still change the way the data is subset.
+# This is not that fast (though not that slow to run) but quicker to save and open. Of course can still change the way the data is subset.
 k = 1
 for i ∈ zonal_subset, j ∈ meridional_subset
     
@@ -51,14 +51,8 @@ for i ∈ zonal_subset, j ∈ meridional_subset
 
 end
 
-file = "member_diff_for_subsets.jld2"
-jldopen(file, "a+") do path
-    path["member_diffs"] = member_diffs
-end
-=#
 ## Average absolute error heatmaps
 
-member_diffs = load("member_diff_for_subsets.jld2")["member_diffs"]
 member_diffs_abs_err = @. abs(member_diffs - K_linfit_dim[1])
 
 av_abs_err = mean(member_diffs_abs_err, dims = 1)
@@ -66,14 +60,14 @@ av_abs_err = mean(member_diffs_abs_err, dims = 1)
 upper_av_err = reshape(av_abs_err[:, 1, :], (length(zonal_subset), length(meridional_subset)))
 lower_av_err = reshape(av_abs_err[:, 2, :], (length(zonal_subset), length(meridional_subset)))
 
-upper_err_plot = heatmap(zonal_subset .* 60, meridional_subset, upper_av_err', 
+upper_err_plot = heatmap(meridional_subset .* 60, zonal_subset, upper_av_err', 
                     xlabel = "Meridional subset (km)",
                     ylabel = "Zonal subset (degrees)",
                     title = "Upper layer absolute error for diffusivity\ncompared to ensemble average diffusivity",
                     colorbar_title = "Average absolute error (m²s⁻¹)",
                     color = :viridis)
 
-lower_err_plot = heatmap(zonal_subset .* 60, meridional_subset, lower_av_err', 
+lower_err_plot = heatmap(meridional_subset .* 60, zonal_subset, lower_av_err', 
                     xlabel = "Meridional subset (km)",
                     ylabel = "Zonal subset (degrees)",
                     title = "Lower layer absolute error for diffusivity\ncompared to ensemble average diffusivity",

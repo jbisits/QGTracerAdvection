@@ -396,23 +396,24 @@ function first_moment(data::Array{Dict{String, Any}}, zonal_subset::Int64, merid
     first_mom = Array{Float64}(undef, length(plot_steps), nlayers, length(data))
     Δx = data[1]["grid/Lx"] / data[1]["grid/nx"]
     Δy = data[1]["grid/Ly"] / data[1]["grid/ny"]
-    x_shift = round(Int64, zonal_subset / 2)
-    y_shift = round(Int64, meridional_subset / 2)
     x_length = length(data[1]["snapshots/Concentration/0"][:, 1, 1])
     y_length = length(data[1]["snapshots/Concentration/0"][1, :, 1])
+
+    x_shift = floor(Int, zonal_subset / (2 * 4)) # 4 is the length of one zonal degree and one meridional inc ≈ 60km.
+    y_shift = floor(Int, meridional_subset / (2 * 4))
 
     zonal_vec = []
     merid_vec = []
     ΔA = 0
-    if zonal_subset == 0 && meridional_subset == 0
+    if zonal_subset == 1 && meridional_subset == 1
         zonal_vec = 1:x_length
         merid_vec = 1:y_length
         ΔA = Δx * Δy
-    elseif zonal_subset == 0 && meridional_subset != 0
+    elseif zonal_subset == 1 && meridional_subset != 1
         zonal_vec = 1:x_length
         merid_vec = 1:meridional_subset:y_length
         ΔA = Δx * (Δy * meridional_subset)
-    elseif zonal_subset != 0 && meridional_subset == 0
+    elseif zonal_subset != 1 && meridional_subset == 1
         zonal_vec = 1:zonal_subset:x_length
         merid_vec = 1:y_length
         ΔA = (Δx * zonal_subset) * Δy
