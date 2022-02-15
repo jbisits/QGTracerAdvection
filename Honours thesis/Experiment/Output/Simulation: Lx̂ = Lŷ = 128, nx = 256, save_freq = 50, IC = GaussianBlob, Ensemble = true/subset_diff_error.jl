@@ -138,3 +138,8 @@ plot!(lower, lower_bootstrap_hist, label = "Gold standard")
 plot(upper, lower, size = (1000, 1000), layout = (2, 1))
 
 ######### Varying temporal resolution of data
+
+first_moms = first_moment(data, 4 * one_degree, 4 * one_meridional_inc)
+time_inc = 16
+no_of_members = 1
+plot(t[1:time_inc:end], [first_moms[1:time_inc:end, 1, i] for i ∈ 1:no_of_members], label = false)
