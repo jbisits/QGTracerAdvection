@@ -145,6 +145,7 @@ first_mom_lower = plot(t, first_moms[:, 2, j],
                         ylabel = "⟨A⟩",
                         legend = :topleft)
 
+# It may be better to replace this calculation with a linear fit as that is what is done everywhere else
 Δt_mem = t[end] - t[round(Int64, 3*end / 4)]
 ΔA_mem = first_moms[end, :, :] .- first_moms[round(Int64, 3*end / 4), :, :]
 

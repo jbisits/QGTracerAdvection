@@ -47,7 +47,7 @@ for i ∈ zonal_subset, j ∈ meridional_subset
     first_moms = first_moment(data, i * one_degree, j * one_meridional_inc)
     member_subset_linfit = [[ones(length(t[linear_time:end])) t[linear_time:end]] \ first_moms[linear_time:end, :, k] for k ∈ 1:length(data)]
     member_subset_linfit = [[member_subset_linfit[k][2, 1] for k ∈ 1:length(data)] [member_subset_linfit[k][2, 2] for k ∈ 1:length(data)]]
-    K_subset_member_linfit = member_subset_linfit ./ (4 * π)
+    K_subset_member_linfit = member_subset_linfit ./ (4π)
     member_diffs[:, :, k] = @. K_subset_member_linfit * dims["Ld"] * 0.02
     k += 1
 
@@ -139,11 +139,41 @@ plot!(lower, lower_bootstrap_hist, label = "Gold standard")
 plot(upper, lower, size = (1000, 1000), layout = (2, 1))
 
 ######### Varying temporal resolution of data
+## First consider how it varies the full spatial data is used for differing teporal subsets
+first_moms = first_moment(data, 16, 4)
+linear_time = round(Int64, (3 * length(t)) / 4)
 
-first_moms = first_moment(data, 4 * one_degree, 4 * one_meridional_inc)
-time_inc = 16
-no_of_members = 1
-plot(t[1:time_inc:end], [first_moms[1:time_inc:end, 1, i] for i ∈ 1:no_of_members], label = false)
+time_inc = 1:20
+time_subset_linfits = Array{Float64}(undef, length(data), 2, length(time_inc))
 
-K = ((first_moms[end, 1, 1] - first_moms[61, 1, 1]) / (t[end] - t[61])) / 4π
-K_dim = K * dims["Ld"] * 0.02
+for i ∈ time_inc
+
+    member_first_moms_linfit = [[ones(length(t[linear_time:i:end])) t[linear_time:i:end]] \ first_moms[linear_time:i:end, :, k] for k ∈ 1:length(data)]
+    member_first_moms_linfit = [[member_first_moms_linfit[k][2, 1] for k ∈ 1:length(data)] [member_first_moms_linfit[k][2, 2] for k ∈ 1:length(data)]]
+    time_subset_linfits[:, :, i] = member_first_moms_linfit ./ (4π)
+
+end
+
+dims = nondim2dim(data[1])
+K_time_subset_linfits = @. time_subset_linfits * dims["Ld"] * 0.02
+
+K_time_subset_linfits_abs_err = @. abs(K_time_subset_linfits - K_linfit_dim[1])
+time_subset_av_abs_err = mean(K_time_subset_linfits_abs_err, dims = 1)
+upper_time_subset = reshape(time_subset_av_abs_err[:, 1, :], :)
+lower_time_subset = reshape(time_subset_av_abs_err[:, 2, :], :)
+plot(plot(time_inc .* 4, upper_time_subset), plot(time_inc .* 4, lower_time_subset), 
+    xlabel = "Time increment (days)",
+    ylabel = "Absolute error of diffusivity (m²s⁻¹)",
+    title = ["Upper layer" "Lower layer"],
+    layout = (2, 1), 
+    size = (800, 800))
+
+## Histograms to see what is happening
+j = 12
+upper_hist = fit(Histogram, K_time_subset_linfits[:, 1, j], nbins = 12)
+lower_hist = fit(Histogram, K_time_subset_linfits[:, 2, j], nbins = 12)
+plot(plot(upper_hist), plot(lower_hist), 
+    xlabel = "Diffusivity (m²s⁻¹)",
+    ylabel = "Number of of members",
+    title = ["Upper layer" "Lower layer"],
+    layout = (2, 1), size = (800, 800))

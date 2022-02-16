@@ -247,7 +247,7 @@ function tracer_animate(data::Dict{String, Any})
                                 plotargs...)
         end
 
-        plot(tracer_plots..., size = (1000, 600))
+        plot(tracer_plots...; plotargs..., size = (1000, 600))
 
     end
 
