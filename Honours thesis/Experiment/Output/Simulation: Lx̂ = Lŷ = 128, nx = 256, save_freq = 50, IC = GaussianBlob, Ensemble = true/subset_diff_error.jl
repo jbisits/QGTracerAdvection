@@ -67,21 +67,27 @@ av_abs_err = mean(member_diffs_abs_err, dims = 1)
 upper_av_err = Transpose(reshape(av_abs_err[:, 1, :], (length(zonal_subset), length(meridional_subset))))
 lower_av_err = Transpose(reshape(av_abs_err[:, 2, :], (length(zonal_subset), length(meridional_subset))))
 
-upper_err_plot = heatmap(meridional_subset .* 60, zonal_subset, upper_av_err', 
+upper_err_plot = heatmap(meridional_subset .* 60, zonal_subset, upper_av_err'#=, 
                     xlabel = "Meridional subset (km)",
                     ylabel = "Zonal subset (degrees)",
                     title = "Upper layer absolute error for diffusivity\ncompared to ensemble average diffusivity",
                     colorbar_title = "Average absolute error (m²s⁻¹)",
-                    color = :viridis)
+                    color = :viridis=#)
 
-lower_err_plot = heatmap(meridional_subset .* 60, zonal_subset, lower_av_err', 
+lower_err_plot = heatmap(meridional_subset .* 60, zonal_subset, lower_av_err'#=, 
+                    xlabel = "Meridional subset (km)",
+                    ylabel = "Zonal subset (degrees)",
+                    title = "Upper layer absolute error for diffusivity\ncompared to ensemble average diffusivity",
+                    colorbar_title = "Average absolute error (m²s⁻¹)",
+                    color = :viridis=#)
+
+err_plot = plot(upper_err_plot, lower_err_plot,
                     xlabel = "Meridional subset (km)",
                     ylabel = "Zonal subset (degrees)",
                     title = "Lower layer absolute error for diffusivity\ncompared to ensemble average diffusivity",
                     colorbar_title = "Average absolute error (m²s⁻¹)",
-                    color = :viridis)
-
-err_plot = plot(upper_err_plot, lower_err_plot, layout = (2, 1), size = (1200, 1200))
+                    color = :viridis,
+                    layout = (2, 1), size = (1200, 1200))
 
 savefig(err_plot, "abs_error_heatmaps.png")
 
