@@ -38,7 +38,7 @@ K_linfit_dim = @. K_linfit * dims["Ld"] * 0.02
 zonal_subset = 0:8
 meridional_subset = 0:8
 member_diffs = Array{Float64}(undef, length(data), 2, length(zonal_subset) * length(meridional_subset))
-# This is not that fast (though not that slow to run) but quicker to save and open. Of course can still change the way the data is subset.
+#= This is not that fast (though not that slow to run) but quicker to save and open. Of course can still change the way the data is subset.
 k = 1
 linear_time = round(Int64, (3 * length(t)) / 4)
 
@@ -57,7 +57,7 @@ file = "member_diffs_subset.jld2"
 jldopen(file, "a+") do path
     path["member_diffs"] = member_diffs
 end
-
+=#
 ## Average absolute error heatmaps
 member_diffs = load("member_diffs_subset.jld2")["member_diffs"]
 member_diffs_abs_err = @. abs(member_diffs - K_linfit_dim[1])
