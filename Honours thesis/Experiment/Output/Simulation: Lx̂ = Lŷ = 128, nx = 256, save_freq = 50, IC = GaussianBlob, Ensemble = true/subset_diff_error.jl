@@ -35,15 +35,17 @@ K_linfit_dim = @. K_linfit * dims["Ld"] * 0.02
 ######### Varying spatial resolution of data
 
 ## Diffusivity estimates for ensemble members at different subsets of data
-zonal_subset = 1:8
-meridional_subset = 1:8
+zonal_subset = 0:8
+meridional_subset = 0:8
 member_diffs = Array{Float64}(undef, length(data), 2, length(zonal_subset) * length(meridional_subset))
 # This is not that fast (though not that slow to run) but quicker to save and open. Of course can still change the way the data is subset.
 k = 1
+linear_time = round(Int64, (3 * length(t)) / 4)
+
 for i ∈ zonal_subset, j ∈ meridional_subset
     
     first_moms = first_moment(data, i * one_degree, j * one_meridional_inc)
-    member_subset_linfit = [[ones(length(t[round(Int64, 3*end / 4):end])) t[round(Int64, 3*end / 4):end]] \ first_moms[round(Int64, 3*end / 4):end, :, k] for k ∈ 1:length(data)]
+    member_subset_linfit = [[ones(length(t[linear_time:end])) t[linear_time:end]] \ first_moms[linear_time:end, :, k] for k ∈ 1:length(data)]
     member_subset_linfit = [[member_subset_linfit[k][2, 1] for k ∈ 1:length(data)] [member_subset_linfit[k][2, 2] for k ∈ 1:length(data)]]
     K_subset_member_linfit = member_subset_linfit ./ (4 * π)
     member_diffs[:, :, k] = @. K_subset_member_linfit * dims["Ld"] * 0.02
@@ -51,14 +53,19 @@ for i ∈ zonal_subset, j ∈ meridional_subset
 
 end
 
-## Average absolute error heatmaps
+file = "member_diffs_subset.jld2"
+jldopen(file, "a+") do path
+    path["member_diffs"] = member_diffs
+end
 
+## Average absolute error heatmaps
+member_diffs = load("member_diffs_subset.jld2")["member_diffs"]
 member_diffs_abs_err = @. abs(member_diffs - K_linfit_dim[1])
 
 av_abs_err = mean(member_diffs_abs_err, dims = 1)
 
-upper_av_err = reshape(av_abs_err[:, 1, :], (length(zonal_subset), length(meridional_subset)))
-lower_av_err = reshape(av_abs_err[:, 2, :], (length(zonal_subset), length(meridional_subset)))
+upper_av_err = Transpose(reshape(av_abs_err[:, 1, :], (length(zonal_subset), length(meridional_subset))))
+lower_av_err = Transpose(reshape(av_abs_err[:, 2, :], (length(zonal_subset), length(meridional_subset))))
 
 upper_err_plot = heatmap(meridional_subset .* 60, zonal_subset, upper_av_err', 
                     xlabel = "Meridional subset (km)",
