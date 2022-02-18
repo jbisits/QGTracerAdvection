@@ -67,7 +67,7 @@ member_diffs_err = @. abs(member_diffs - K_linfit_dim[1])
 av_err = mean(member_diffs_err, dims = 1)
 
 ## RMS error
-av_err = sqrt.( sum((member_diffs .- K_linfit_dim[1]).^2, dims = 1) ./ length(member_diffs[:, 1, 1]) )
+av_err = sqrt.( mean((member_diffs .- K_linfit_dim[1]).^2, dims = 1) )
 
 upper_av_err = reshape(av_err[:, 1, :], (length(zonal_subset), length(meridional_subset)))
 lower_av_err = reshape(av_err[:, 2, :], (length(zonal_subset), length(meridional_subset)))
@@ -82,7 +82,7 @@ err_plot = plot(upper_err_plot, lower_err_plot,
                     xlabel = "Zonal subset (km)",
                     ylabel = "Meridional subset (km)",
                     title = ["Upper layer absolute error for diffusivity\ncompared to ensemble average diffusivity" "Lower layer absolute error for diffusivity\ncompared to ensemble average diffusivity"],
-                    colorbar_title = "Average absolute error (m²s⁻¹)",
+                    colorbar_title = "RMS error of diffusivity (m²s⁻¹)",
                     color = :viridis,
                     layout = (2, 1), size = (1200, 1200))
 
@@ -143,7 +143,7 @@ plot(upper, lower, size = (1000, 1000), layout = (2, 1))
 
 ######### Varying temporal resolution of data
 ## First consider how it varies the full spatial data is used for differing teporal subsets
-first_moms = first_moment(data, 2, 2)
+first_moms = first_moment(data, 16, 16)
 linear_time = 49 # This means there are 33 timesteps which are used for the time subsetting
 
 time_inc = @. 2^(0:5)
