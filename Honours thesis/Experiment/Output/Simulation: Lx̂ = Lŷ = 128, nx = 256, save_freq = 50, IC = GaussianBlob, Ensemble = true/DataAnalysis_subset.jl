@@ -26,7 +26,7 @@ one_degree = 4 # 4 grid cells ≈ 60km which is an overestimate of 1 degree at t
 ## Generate a subsets of the data over the grid and see how well area diagnostic performs
 no_of_degrees = 8
 
-ens_avg_area_subset = first_moment(ensemble_conc, no_of_degrees * one_degree, 4)
+ens_avg_area_subset = first_moment(ensemble_conc, 128, 128)
 
 plot(t, ens_avg_area_subset, 
     xlabel = "t",
@@ -79,17 +79,17 @@ K_sub_dim = @. ( ens_fit_sub[2, :] / (4 * π) ) * dims["Ld"] * 0.02
 
 ## Average area growth for members and ensemble average
 
-member_subset_avg_area = first_moment(data, no_of_degrees * one_degree, 4)
+member_subset_avg_area = first_moment(data, 64, 64)
 
 first_mom_upper = plot(t, member_subset_avg_area[:, 1, 1], 
                         label = "Ensemble member", 
-                        title = "(a) Upper layer average area growth for Gaussian blob initial condition,\ndata is subset every 60km meridionally and every "*string(no_of_degrees)*" degrees zonally",
+                        title = "(a) Upper layer average area growth for Gaussian blob initial condition,\nusing a subset of the data",
                         xlabel = "t",
                         ylabel = "⟨A⟩",
                         legend = :topleft)
 first_mom_lower = plot(t, member_subset_avg_area[:, 2, 1], 
                         label = "Ensemble member", 
-                        title = "(b) Lower layer average area growth for Gaussian blob initial condition,\ndata is subset every 60km meridionally and every "*string(no_of_degrees)*" degrees zonally",
+                        title = "(b) Lower layer average area growth for Gaussian blob initial condition,\nusing a subset of the data",
                         xlabel = "t",
                         ylabel = "⟨A⟩",
                         legend = :topleft)
@@ -118,14 +118,18 @@ first_mom_lower = plot(t, member_subset_avg_area[:, 2, j],
                         ylabel = "⟨A⟩",
                         legend = :topleft)
 
-member_subset_linfit = [[ones(length(t[round(Int64, 3*end / 4):end])) t[round(Int64, 3*end / 4):end]] \ member_subset_avg_area[round(Int64, 3*end / 4):end, :, k] for k ∈ 1:length(data)]
+linear_time = 49 # This means there are 33 timesteps which are used for the time subsetting
+linear_time_vec = t[linear_time:end]         
+member_subset_linfit = [[ones(length(linear_time_vec)) linear_time_vec] \ member_subset_avg_area[linear_time:end, :, k] for k ∈ 1:length(data)]
 
-plot!(first_mom_upper, t[round(Int64, 3*end / 4):end], member_subset_linfit[j][1, 1] .+ member_subset_linfit[j][2, 1] .* t[round(Int64, 3*end / 4):end], label = "Linear fit")
-plot!(first_mom_lower, t[round(Int64, 3*end / 4):end], member_subset_linfit[j][1, 2] .+ member_subset_linfit[j][2, 2] .* t[round(Int64, 3*end / 4):end], label = "Linear fit")
+plot!(first_mom_upper, linear_time_vec, member_subset_linfit[j][1, 1] .+ member_subset_linfit[j][2, 1] .* linear_time_vec, label = "Linear fit")
+plot!(first_mom_lower, linear_time_vec, member_subset_linfit[j][1, 2] .+ member_subset_linfit[j][2, 2] .* linear_time_vec, label = "Linear fit")
 plot(first_mom_upper, first_mom_lower, layout = (2, 1), size = (800, 800))
 
 ## Extract the slope from the linear fits and find dimensional diffusivity
-member_subset_linfit = [[ones(length(t[round(Int64, 3*end / 4):end])) t[round(Int64, 3*end / 4):end]] \ member_subset_avg_area[round(Int64, 3*end / 4):end, :, k] for k ∈ 1:length(data)]
+linear_time = 49 # This means there are 33 timesteps which are used for the time subsetting
+linear_time_vec = t[linear_time:end]
+member_subset_linfit = [[ones(length(linear_time_vec)) linear_time_vec] \ member_subset_avg_area[linear_time:end, :, k] for k ∈ 1:length(data)]
 member_subset_linfit = [[member_subset_linfit[k][2, 1] for k ∈ 1:length(data)] [member_subset_linfit[k][2, 2] for k ∈ 1:length(data)]]'
 K_subset_member_linfit = member_subset_linfit ./ (4 * π)
 K_subset_member_linfit_dim = @. K_subset_member_linfit * dims["Ld"] * 0.02

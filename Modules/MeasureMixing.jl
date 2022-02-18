@@ -399,8 +399,8 @@ function first_moment(data::Array{Dict{String, Any}}, zonal_subset::Int64, merid
     x_length = length(data[1]["snapshots/Concentration/0"][:, 1, 1])
     y_length = length(data[1]["snapshots/Concentration/0"][1, :, 1])
 
-    x_shift = floor(Int, zonal_subset / (2 * 4)) # 4 is the length of one zonal degree and one meridional inc ≈ 60km.
-    y_shift = floor(Int, meridional_subset / (2 * 4))
+    x_shift = round(Int, zonal_subset / 2)
+    y_shift = round(Int, meridional_subset / 2 )
 
     zonal_vec = []
     merid_vec = []
