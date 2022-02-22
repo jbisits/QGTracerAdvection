@@ -409,6 +409,10 @@ function first_moment(data::Array{Dict{String, Any}}, zonal_subset::Int64, merid
     if zonal_subset == 1 && meridional_subset == 1
         x_shift = 0
         y_shift = 0
+    elseif zonal_subset == 1 && meridional_subset != 1
+        x_shift = 0
+    elseif zonal_subset != 1 && meridional_subset == 1
+        y_shift = 0
     end
 
     for i ∈ 1:length(data)

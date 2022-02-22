@@ -31,7 +31,6 @@ K_linfit = ens_linfit[2, :] ./ (4 * π)
 dims = nondim2dim(data[1])
 K_linfit_dim = @. K_linfit * dims["Ld"] * 0.02
 
-
 ######### Varying spatial resolution of data
 
 ## Diffusivity estimates for ensemble members at different subsets of data
@@ -143,7 +142,8 @@ plot(upper, lower, size = (1000, 1000), layout = (2, 1))
 
 ######### Varying temporal resolution of data
 ## First consider how it varies the full spatial data is used for differing teporal subsets
-first_moms = first_moment(data, 16, 16)
+# Use 2ⁿ + 1 timesteps so always computing a beginning to end interval (if needed see my notes for explanation)
+first_moms = first_moment(data)
 linear_time = 49 # This means there are 33 timesteps which are used for the time subsetting
 
 time_inc = @. 2^(0:5)
@@ -162,12 +162,12 @@ dims = nondim2dim(data[1])
 K_time_subset_linfits = @. time_subset_linfits * dims["Ld"] * 0.02
 
 # Absolute error
-#K_time_subset_linfits_abs_err = @. abs(K_time_subset_linfits - K_linfit_dim[1])
+#K_time_subset_linfits_rms_err = @. abs(K_time_subset_linfits - K_linfit_dim[1])
 # RMS error
-K_time_subset_linfits_abs_err = sqrt.( sum((K_time_subset_linfits .- K_linfit_dim[1]).^2, dims = 1) ./ length(K_time_subset_linfits[:, 1, 1]) )
-time_subset_av_err = mean(K_time_subset_linfits_abs_err, dims = 1)
-upper_time_subset = reshape(time_subset_av_err[:, 1, :], :)
-lower_time_subset = reshape(time_subset_av_err[:, 2, :], :)
+K_time_subset_linfits_rms_err = sqrt.( sum((K_time_subset_linfits .- K_linfit_dim[1]).^2, dims = 1) ./ length(K_time_subset_linfits[:, 1, 1]) )
+#time_subset_av_err = mean(K_time_subset_linfits_rms_err, dims = 1)
+upper_time_subset = reshape(K_time_subset_linfits_rms_err[:, 1, :], :)
+lower_time_subset = reshape(K_time_subset_linfits_rms_err[:, 2, :], :)
 plot(plot(time_inc .* 4, upper_time_subset, label = false), plot(time_inc .* 4, lower_time_subset, label = false), 
     xlabel = "Time increment (days)",
     ylabel = "RMS error of diffusivity (m²s⁻¹)",
@@ -184,3 +184,84 @@ plot(plot(upper_hist), plot(lower_hist),
     ylabel = "Number of of members",
     title = ["Upper layer" "Lower layer"],
     layout = (2, 1), size = (800, 800))
+
+######### Look at time varying but use more data 
+## Use 2ⁿ steps to compute which allows more data but is not over the whole interval each time (again see notes for explanation)
+# First just look at one observation from each time increment
+
+first_moms = first_moment(data)
+linear_time = 50 # This means there are 32 timesteps which are used for the time subsetting
+
+time_inc = @. 2^(0:4)
+time_subset_linfits = zeros(Float64, length(data), 2, length(time_inc))
+k = 1
+
+for i ∈ time_inc
+
+    member_first_moms_linfit = [[ones(length(t[linear_time:i:end])) t[linear_time:i:end]] \ first_moms[linear_time:i:end, :, k] for k ∈ 1:length(data)]
+    member_first_moms_linfit = [[member_first_moms_linfit[k][2, 1] for k ∈ 1:length(data)] [member_first_moms_linfit[k][2, 2] for k ∈ 1:length(data)]]
+    time_subset_linfits[:, :, k] = member_first_moms_linfit ./ (4π)
+    k += 1
+
+end
+
+dims = nondim2dim(data[1])
+K_time_subset_linfits = @. time_subset_linfits * dims["Ld"] * 0.02
+
+# RMS error
+K_time_subset_linfits_rms_err = sqrt.( mean((K_time_subset_linfits .- K_linfit_dim[1]).^2, dims = 1) )
+#time_subset_av_err = mean(K_time_subset_linfits_rms_err, dims = 1)
+upper_time_subset = reshape(K_time_subset_linfits_rms_err[:, 1, :], :)
+lower_time_subset = reshape(K_time_subset_linfits_rms_err[:, 2, :], :)
+plot(plot(time_inc .* 4, upper_time_subset, label = false), plot(time_inc .* 4, lower_time_subset, label = false), 
+    xlabel = "Time increment (days)",
+    ylabel = "RMS error of diffusivity (m²s⁻¹)",
+    title = ["Upper layer" "Lower layer"],
+    layout = (2, 1), 
+    size = (800, 800))
+
+## Now taking diffusivity from all subsets within a time incremenet
+# By including all different "starting points" of the vector can look at mulitple
+# observations from each time subset.
+first_moms = first_moment(data)
+linear_time = 50 # This means there are 32 timesteps which are used for the time subsetting
+
+time_inc = @. 2^(0:4)
+
+time_subset_linfits = Array{Union{Missing, Float64}}(missing, time_inc[end] .* length(data), 2, length(time_inc))
+k = 1
+for i ∈ time_inc
+
+    for j ∈ 0:(i - 1)
+
+        member_first_moms_linfit = [[ones(length(t[(linear_time + j):i:end])) t[(linear_time + j):i:end]] \ first_moms[(linear_time + j):i:end, :, k] for k ∈ 1:length(data)]
+        member_first_moms_linfit = [[member_first_moms_linfit[k][2, 1] for k ∈ 1:length(data)] [member_first_moms_linfit[k][2, 2] for k ∈ 1:length(data)]]
+        time_subset_linfits[(1 + j * 50):(50 + j * 50), :, k] = member_first_moms_linfit ./ (4π)
+    
+    end
+
+    k += 1
+
+end
+
+dims = nondim2dim(data[1])
+K_time_subset_linfits = @. time_subset_linfits * dims["Ld"] * 0.02
+
+# RMS error
+K_time_subset_linfits_rms_err = Array{Float64}(undef, 1, 2, length(time_inc))
+
+for i ∈ 1:length(time_inc)
+
+    diffs = [collect(skipmissing(K_time_subset_linfits[:, 1, i])) collect(skipmissing(K_time_subset_linfits[:, 2, i]))]
+    K_time_subset_linfits_rms_err[:, :, i] = sqrt.( mean((diffs .- K_linfit_dim[1]).^ 2, dims = 1 ) )
+
+end
+
+upper_time_subset = reshape(K_time_subset_linfits_rms_err[:, 1, :], :)
+lower_time_subset = reshape(K_time_subset_linfits_rms_err[:, 2, :], :)
+plot(plot(time_inc .* 4, upper_time_subset, label = false), plot(time_inc .* 4, lower_time_subset, label = false), 
+    xlabel = "Time increment (days)",
+    ylabel = "RMS error of diffusivity (m²s⁻¹)",
+    title = ["Upper layer" "Lower layer"],
+    layout = (2, 1), 
+    size = (800, 800))
