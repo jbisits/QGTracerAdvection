@@ -386,7 +386,10 @@ function first_moment(data::Dict{String, Any}, zonal_subset::Int64, meridional_s
     return first_mom
 
 end
-
+"""
+Compute diffusivity for all ensemble members at a single gridpoint within a subset of the domain.
+The gridpoint is the same relative to the centre for each square or rectangular subset taken.
+"""
 function first_moment(data::Array{Dict{String, Any}}, zonal_subset::Int64, meridional_subset::Int64)
 
     nlayers = data[1]["params/nlayers"]
@@ -414,6 +417,50 @@ function first_moment(data::Array{Dict{String, Any}}, zonal_subset::Int64, merid
     elseif zonal_subset != 1 && meridional_subset == 1
         y_shift = 0
     end
+
+    for i ∈ 1:length(data)
+
+        for j ∈ plot_steps
+
+            for l ∈ 1:nlayers
+
+                data_subset = [data[i]["snapshots/Concentration/"*string(j)][x + x_shift, y + y_shift, l] 
+                                for x ∈ zonal_vec, y ∈ merid_vec]
+                C = abs.(reshape(data_subset, :)) # Absolute value avoids the negative values
+                sort!(C, rev = true)
+                N = length(C)
+                ΣkCₖ = ΔA * sum( [k * C[k] for k ∈ 1:N] )
+                ΣCₖ = sum(C)
+                m = round(Int, j/saved_steps) + 1
+                first_mom[m, l, i] = ΣkCₖ / ΣCₖ
+
+            end
+
+        end
+
+    end
+
+    return  first_mom
+end
+"""
+Compute diffusivity for all ensemble members at specified gridpoint in a subset of the domain.
+"""
+function first_moment(data::Array{Dict{String, Any}}, zonal_subset::Int64, meridional_subset::Int64, x_shift::Int64, y_shift::Int64)
+
+    nlayers = data[1]["params/nlayers"]
+    nsteps = data[1]["clock/nsteps"]
+    saved_steps = data[1]["save_freq"]
+    plot_steps = 0:saved_steps:nsteps
+    first_mom = Array{Float64}(undef, length(plot_steps), nlayers, length(data))
+
+    Δx = data[1]["grid/Lx"] / data[1]["grid/nx"]
+    Δy = data[1]["grid/Ly"] / data[1]["grid/ny"]
+    x_length = length(data[1]["snapshots/Concentration/0"][:, 1, 1])
+    y_length = length(data[1]["snapshots/Concentration/0"][1, :, 1])
+
+    zonal_vec = 1:zonal_subset:x_length
+    merid_vec = 1:meridional_subset:y_length
+    ΔA = (Δx * zonal_subset) * (Δy * meridional_subset)
 
     for i ∈ 1:length(data)
 

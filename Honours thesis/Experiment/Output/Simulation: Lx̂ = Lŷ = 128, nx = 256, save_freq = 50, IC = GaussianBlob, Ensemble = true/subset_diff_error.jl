@@ -140,6 +140,47 @@ plot!(lower, lower_bootstrap_hist, label = "Gold standard")
 
 plot(upper, lower, size = (1000, 1000), layout = (2, 1))
 
+## Now compute a diffusivity for all fifty ensemble members at each gridpoint in the subset of the domain.
+
+square_subset = 2 .^ (0:1)
+# This is not that fast (though not that slow to run) but quicker to save and open. Of course can still change the way the data is subset.
+member_diffs = Array{Union{Missing, Float64}}(missing, length(data) * square_subset[end] * 2, 2, length(square_subset))
+k = 1
+linear_time = 49 # This means there are 33 timesteps which are used for the time subsetting
+linear_time_vec = t[linear_time:end]
+
+for i ∈ square_subset
+    
+    x_shift_vec = 0:(i - 1)
+    y_shift_vec = 0:(i - 1)
+
+    j = 0
+    for m ∈ x_shift_vec, n ∈ y_shift_vec
+
+        first_moms = first_moment(data, i, i, m, n)
+        member_subset_linfit = [[ones(length(linear_time_vec)) linear_time_vec] \ first_moms[linear_time:end, :, k] for k ∈ 1:length(data)]
+        member_subset_linfit = [[member_subset_linfit[k][2, 1] for k ∈ 1:length(data)] [member_subset_linfit[k][2, 2] for k ∈ 1:length(data)]]
+        K_subset_member_linfit = member_subset_linfit ./ (4π)
+        member_diffs[(1 + j * 50):(50 + j * 50), :, k] = @. K_subset_member_linfit * dims["Ld"] * 0.02
+        j += 1
+    
+    end
+    k += 1
+
+end
+
+member_diffs
+member_diffs_rms_err = Array{Float64}(undef, 1, 2, length(member_diffs[1, 1, :]))
+
+for i ∈ 1:length(member_diffs[1, 1, :])
+
+    diffs = [collect(skipmissing(member_diffs[:, 1, i])) collect(skipmissing(member_diffs[:, 2, i]))]
+    member_diffs_rms_err[:, :, i] = sqrt.( mean((diffs .- K_linfit_dim[1]).^ 2, dims = 1 ) )
+
+end
+
+member_diffs_rms_err
+
 ######### Varying temporal resolution of data
 ## First consider how it varies the full spatial data is used for differing teporal subsets
 # Use 2ⁿ + 1 timesteps so always computing a beginning to end interval (if needed see my notes for explanation)
