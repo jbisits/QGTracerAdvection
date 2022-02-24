@@ -36,6 +36,7 @@ K_linfit_dim = @. K_linfit * dims["Ld"] * 0.02
 ## Diffusivity estimates for ensemble members at different subsets of data
 zonal_subset = 2 .^ (0:7)
 meridional_subset = 2 .^ (0:7)
+#=
 # This is not that fast (though not that slow to run) but quicker to save and open. Of course can still change the way the data is subset.
 member_diffs = Array{Float64}(undef, length(data), 2, length(zonal_subset) * length(meridional_subset))
 k = 1
@@ -57,7 +58,7 @@ file = "member_diffs_subset.jld2"
 jldopen(file, "a+") do path
     path["member_diffs"] = member_diffs
 end
-
+=#
 ## Average absolute error heatmaps
 member_diffs = load("member_diffs_subset.jld2")["member_diffs"]
 
@@ -71,21 +72,69 @@ av_err = sqrt.( mean((member_diffs .- K_linfit_dim[1]).^2, dims = 1) )
 upper_av_err = reshape(av_err[:, 1, :], (length(zonal_subset), length(meridional_subset)))
 lower_av_err = reshape(av_err[:, 2, :], (length(zonal_subset), length(meridional_subset)))
 
-upper_err_plot = heatmap(zonal_subset .* 15, meridional_subset .* 15, upper_av_err',
+zonal_points_per = 100 .* (zonal_subset ./ 256)
+meridional_points_per = 100 .* (meridional_subset ./ 256)
+
+upper_err_plot = heatmap(zonal_points_per, meridional_points_per, upper_av_err',
                     color = :viridis)
 
-lower_err_plot = heatmap(zonal_subset .* 15, meridional_subset .* 15, lower_av_err',
+lower_err_plot = heatmap(zonal_points_per, meridional_points_per, lower_av_err',
                     color = :viridis)
 
 err_plot = plot(upper_err_plot, lower_err_plot,
-                    xlabel = "Zonal subset (km)",
-                    ylabel = "Meridional subset (km)",
+                    xlabel = "Percentage of zonal gridpoints",
+                    xticks = [0, 5, 12, 25, 50],
+                    ylabel = "Percentage of meridional gridpoints",
+                    yticks = [0, 5, 12, 25, 50],
                     title = ["Upper layer absolute error for diffusivity\ncompared to ensemble average diffusivity" "Lower layer absolute error for diffusivity\ncompared to ensemble average diffusivity"],
                     colorbar_title = "RMS error of diffusivity (m²s⁻¹)",
                     color = :viridis,
-                    layout = (2, 1), size = (1200, 1200))
+                    layout = (2, 1), size = (1200, 1200),
+                    #aspectratio = 1,
+                    #framestyle = :box,
+                    xlims = (0, zonal_points_per[end] + 12),
+                    ylims = (0, meridional_points_per[end] + 12))
 
 savefig(err_plot, "abs_error_heatmaps.png")
+
+## Or can look at different subsets of the area on the heatmap
+area_per = 100 .* ((zonal_subset .* meridional_subset) ./ 256^2)
+
+upper_err_plot = heatmap(area_per, area_per, upper_av_err',
+                    color = :viridis)
+
+lower_err_plot = heatmap(area_per, area_per, lower_av_err',
+                    color = :viridis)
+
+err_plot = plot(upper_err_plot, lower_err_plot,
+                    xlabel = "Percentage of zonal gridpoints",
+                    xticks = ([0, 5, 12, 24], [0, 10, 25, 50]),
+                    ylabel = "Percentage of meridional gridpoints",
+                    yticks = ([0, 5, 12, 24], [0, 10, 25, 50]),
+                    title = ["Upper layer absolute error for diffusivity\ncompared to ensemble average diffusivity" "Lower layer absolute error for diffusivity\ncompared to ensemble average diffusivity"],
+                    colorbar_title = "RMS error of diffusivity (m²s⁻¹)",
+                    color = :viridis,
+                    layout = (2, 1), size = (1200, 1200),
+                    aspectratio = 1,
+                    framestyle = :box,
+                    xlims = (0, area_per[end] + 7),
+                    ylims = (0, area_per[end] + 7))
+
+## Or can look at increase in square subsets only on a plot
+
+upper_square_err = [upper_av_err[i, i] for i ∈ 1:length(upper_av_err[:, 1])]
+lower_square_err = [lower_av_err[i, i] for i ∈ 1:length(lower_av_err[:, 1])]
+
+area_per = 100 .* ((zonal_subset .* meridional_subset) ./ 256^2)
+
+upper_err_square = plot(area_per, upper_square_err, label = false)
+lower_err_square = plot(area_per, lower_square_err, label = false)
+plot(upper_err_square, upper_err_square,
+    xlabel = "Percentage of total area",
+    ylabel = "RMS error from ensemble\nav. diff (m²s⁻¹)",
+    title = ["Upper layer" "Lower layer"],
+    layout = (2, 1),
+    size = (1200, 1200))
 
 ## Histograms of diffusivity estimates with coarser resolution and gold standard ensemble average diffusivity
 
