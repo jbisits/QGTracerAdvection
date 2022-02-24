@@ -355,3 +355,69 @@ plot(plot(time_inc .* 4, upper_time_subset, label = false), plot(time_inc .* 4, 
     title = ["Upper layer" "Lower layer"],
     layout = (2, 1), 
     size = (800, 800))
+
+########### Time and spatial subsets
+## Lastly look at subsets of spatial data that are then subset temporally    
+
+linear_time = 50 # This means there are 32 timesteps which are used for the time subsetting
+time_inc = @. 2^(0:4)
+spatial_subset = @. 2^(0:7)
+
+time_spatial_subset_linfits = Array{Union{Missing, Float64}}(missing, time_inc[end] .* length(data), 2, length(time_inc), length(spatial_subset))
+n = 1
+for m ∈ spatial_subset
+
+    k = 1
+    first_moms = first_moment(data, m, m)
+
+    for i ∈ time_inc
+
+        for j ∈ 0:(i - 1)
+
+            member_first_moms_linfit = [[ones(length(t[(linear_time + j):i:end])) t[(linear_time + j):i:end]] \ first_moms[(linear_time + j):i:end, :, k] for k ∈ 1:length(data)]
+            member_first_moms_linfit = [[member_first_moms_linfit[k][2, 1] for k ∈ 1:length(data)] [member_first_moms_linfit[k][2, 2] for k ∈ 1:length(data)]]
+            time_spatial_subset_linfits[(1 + j * 50):(50 + j * 50), :, k, n] = member_first_moms_linfit ./ (4π)
+        
+        end
+
+        k += 1
+
+    end
+
+    n += 1
+
+end
+
+time_spatial_subset_linfits_dims = @. time_spatial_subset_linfits * dims["Ld"] * 0.02
+ts_rms_err = Array{Float64}(undef, 1, 2, length(time_inc), length(spatial_subset))
+
+for j ∈ 1:length(spatial_subset)
+
+    for i ∈ 1:length(time_inc)
+
+        diffs = [collect(skipmissing(time_spatial_subset_linfits_dims[:, 1, i, j])) collect(skipmissing(time_spatial_subset_linfits_dims[:, 2, i, j]))]
+        ts_rms_err[:, :, i, j] = sqrt.( mean((diffs .- K_linfit_dim[1]).^ 2, dims = 1 ) )
+
+    end
+
+end
+
+ts_rms_err
+
+upper_ts_rms_err = reshape(ts_rms_err[:, 1, :, :], (length(time_inc), length(spatial_subset)))
+lower_ts_rms_err = reshape(ts_rms_err[:, 2, :, :], (length(time_inc), length(spatial_subset)))
+
+area_per = @. 100 * (spatial_subset^2 / 256^2)
+
+upper = heatmap(time_inc .* 4, area_per, upper_ts_rms_err', color = :viridis)
+lower = heatmap(time_inc .* 4, area_per, lower_ts_rms_err', color = :viridis)
+
+plot(upper, lower,
+    xlabel = "Time subsample (days)",
+    xticks = time_inc .* 4,
+    ylabel = "Percentage of total area",
+    yticks = [0, 1.5, 6.25, 25],
+    colorbar_title = "RMS of concentration compared to ens. av (m²s⁻¹)",
+    title = ["Upper layer" "Lower layer"],
+    layout = (2, 1),
+    size = (1200, 1200))
