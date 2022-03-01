@@ -82,18 +82,15 @@ lower_err_plot = heatmap(zonal_points_per, meridional_points_per, lower_av_err',
                     color = :viridis)
 
 err_plot = plot(upper_err_plot, lower_err_plot,
-                    xlabel = "Percentage of zonal gridpoints",
+                    xlabel = "Percentage of zonal gridpoints omitted",
                     xticks = [0, 5, 12, 25, 50],
-                    ylabel = "Percentage of meridional gridpoints",
+                    ylabel = "Percentage of meridional gridpoints omitted",
                     yticks = [0, 5, 12, 25, 50],
                     title = ["Upper layer absolute error for diffusivity\ncompared to ensemble average diffusivity" "Lower layer absolute error for diffusivity\ncompared to ensemble average diffusivity"],
                     colorbar_title = "RMS error of diffusivity (m²s⁻¹)",
                     color = :viridis,
-                    layout = (2, 1), size = (1200, 1200),
-                    #aspectratio = 1,
-                    #framestyle = :box,
-                    xlims = (0, zonal_points_per[end] + 12),
-                    ylims = (0, meridional_points_per[end] + 12))
+                    layout = (2, 1), 
+                    size = (1200, 1200))
 
 savefig(err_plot, "abs_error_heatmaps.png")
 
@@ -107,9 +104,9 @@ lower_err_plot = heatmap(area_per, area_per, lower_av_err',
                     color = :viridis)
 
 err_plot = plot(upper_err_plot, lower_err_plot,
-                    xlabel = "Percentage of zonal gridpoints",
+                    xlabel = "Percentage of zonal gridpoints omitted",
                     xticks = ([0, 5, 12, 24], [0, 10, 25, 50]),
-                    ylabel = "Percentage of meridional gridpoints",
+                    ylabel = "Percentage of meridional gridpoints omitted",
                     yticks = ([0, 5, 12, 24], [0, 10, 25, 50]),
                     title = ["Upper layer absolute error for diffusivity\ncompared to ensemble average diffusivity" "Lower layer absolute error for diffusivity\ncompared to ensemble average diffusivity"],
                     colorbar_title = "RMS error of diffusivity (m²s⁻¹)",
