@@ -69,27 +69,30 @@ av_err = mean(member_diffs_err, dims = 1)
 ## RMS error
 av_err = sqrt.( mean((member_diffs .- K_linfit_dim[1]).^2, dims = 1) )
 
+av_err = 100 .* sqrt.( mean((member_diffs .- K_linfit_dim[1]).^2, dims = 1) ) ./ K_linfit_dim[1]
+
 upper_av_err = reshape(av_err[:, 1, :], (length(zonal_subset), length(meridional_subset)))
 lower_av_err = reshape(av_err[:, 2, :], (length(zonal_subset), length(meridional_subset)))
 
 zonal_points_per = 100 .* (zonal_subset ./ 256)
 meridional_points_per = 100 .* (meridional_subset ./ 256)
 
-upper_err_plot = heatmap(zonal_points_per, meridional_points_per, upper_av_err',
+upper_err_plot = heatmap(zonal_subset, meridional_subset, upper_av_err',
                     color = :viridis)
 
-lower_err_plot = heatmap(zonal_points_per, meridional_points_per, lower_av_err',
+lower_err_plot = heatmap(zonal_subset,meridional_subset, lower_av_err',
                     color = :viridis)
 
 err_plot = plot(upper_err_plot, lower_err_plot,
-                    xlabel = "Percentage of zonal gridpoints omitted",
-                    xticks = [0, 5, 12, 25, 50],
-                    ylabel = "Percentage of meridional gridpoints omitted",
-                    yticks = [0, 5, 12, 25, 50],
+                    xlabel = "Zonal subset",
+                    xticks = zonal_subset,
+                    ylabel = "Meridional subset",
+                    yticks = meridional_subset,
                     title = ["Upper layer absolute error for diffusivity\ncompared to ensemble average diffusivity" "Lower layer absolute error for diffusivity\ncompared to ensemble average diffusivity"],
-                    colorbar_title = "RMS error of diffusivity (m²s⁻¹)",
+                    colorbar_title = "RMS error as percentage of ensemble average diffusivity (m²s⁻¹)",
                     color = :viridis,
                     layout = (2, 1), 
+                    #aspectratio = 1,
                     size = (1200, 1200))
 
 savefig(err_plot, "abs_error_heatmaps.png")
@@ -401,8 +404,8 @@ end
 
 ts_rms_err
 
-upper_ts_rms_err = reshape(ts_rms_err[:, 1, :, :], (length(time_inc), length(spatial_subset)))
-lower_ts_rms_err = reshape(ts_rms_err[:, 2, :, :], (length(time_inc), length(spatial_subset)))
+upper_ts_rms_err = reshape(ts_rms_err[:, 1, :, :], (length(time_inc), length(spatial_subset))) ./ K_linfit_dim[1]
+lower_ts_rms_err = reshape(ts_rms_err[:, 2, :, :], (length(time_inc), length(spatial_subset))) ./ K_linfit_dim[2]
 
 area_per = @. 100 * (spatial_subset^2 / 256^2)
 
