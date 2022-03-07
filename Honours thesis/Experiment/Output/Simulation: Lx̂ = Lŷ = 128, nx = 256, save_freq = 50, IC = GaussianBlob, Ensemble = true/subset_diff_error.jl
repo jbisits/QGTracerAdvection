@@ -54,13 +54,13 @@ for i ∈ zonal_subset, j ∈ meridional_subset
 
 end
 
-file = "member_diffs_subset.jld2"
+file = "spatial_subset_diffs.jld2"
 jldopen(file, "a+") do path
     path["member_diffs"] = member_diffs
 end
 =#
 ## Average absolute error heatmaps
-member_diffs = load("member_diffs_subset.jld2")["member_diffs"]
+member_diffs = load("spatial_subset_diffs.jld2")["member_diffs"]
 
 ## absolute error
 member_diffs_err = @. abs(member_diffs - K_linfit_dim[1]) 
@@ -80,14 +80,16 @@ meridional_points_per = 100 .* (meridional_subset ./ 256)
 upper_err_plot = heatmap(zonal_subset, meridional_subset, upper_av_err',
                     color = :viridis)
 
-lower_err_plot = heatmap(zonal_subset,meridional_subset, lower_av_err',
+lower_err_plot = heatmap(zonal_subset, meridional_subset, lower_av_err',
                     color = :viridis)
 
 err_plot = plot(upper_err_plot, lower_err_plot,
                     xlabel = "Zonal subset",
-                    xticks = zonal_subset,
+                    xscale = :log2,
+                    xticks = (zonal_subset, ["2⁰", "2¹", "2²", "2³", "2⁴" ,"2⁵" ,"2⁶" ,"2⁷"]),
                     ylabel = "Meridional subset",
-                    yticks = meridional_subset,
+                    yscale = :log2,
+                    yticks = (meridional_subset, ["2⁰", "2¹", "2²", "2³", "2⁴" ,"2⁵" ,"2⁶" ,"2⁷"]),
                     title = ["Upper layer absolute error for diffusivity\ncompared to ensemble average diffusivity" "Lower layer absolute error for diffusivity\ncompared to ensemble average diffusivity"],
                     colorbar_title = "RMS error as percentage of ensemble average diffusivity (m²s⁻¹)",
                     color = :viridis,
@@ -362,7 +364,7 @@ plot(plot(time_inc .* 4, upper_time_subset, label = false), plot(time_inc .* 4, 
 linear_time = 50 # This means there are 32 timesteps which are used for the time subsetting
 time_inc = @. 2^(0:4)
 spatial_subset = @. 2^(0:7)
-
+#=
 time_spatial_subset_linfits = Array{Union{Missing, Float64}}(missing, time_inc[end] .* length(data), 2, length(time_inc), length(spatial_subset))
 n = 1
 for m ∈ spatial_subset
@@ -389,6 +391,13 @@ for m ∈ spatial_subset
 end
 
 time_spatial_subset_linfits_dims = @. time_spatial_subset_linfits * dims["Ld"] * 0.02
+
+file = "spatio_temporal_subset_diffs.jld2"
+jldopen(file, "a+") do path
+    path["st_subset_diffs"] = time_spatial_subset_linfits_dims
+end
+=#
+time_spatial_subset_linfits_dims = load("spatio_temporal_subset_diffs.jld2")["st_subset_diffs"]
 ts_rms_err = Array{Float64}(undef, 1, 2, length(time_inc), length(spatial_subset))
 
 for j ∈ 1:length(spatial_subset)
@@ -404,8 +413,8 @@ end
 
 ts_rms_err
 
-upper_ts_rms_err = reshape(ts_rms_err[:, 1, :, :], (length(time_inc), length(spatial_subset))) ./ K_linfit_dim[1]
-lower_ts_rms_err = reshape(ts_rms_err[:, 2, :, :], (length(time_inc), length(spatial_subset))) ./ K_linfit_dim[2]
+upper_ts_rms_err = reshape(ts_rms_err[:, 1, :, :], (length(time_inc), length(spatial_subset)))
+lower_ts_rms_err = reshape(ts_rms_err[:, 2, :, :], (length(time_inc), length(spatial_subset)))
 
 area_per = @. 100 * (spatial_subset^2 / 256^2)
 
