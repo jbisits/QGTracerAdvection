@@ -32,8 +32,9 @@ titles = ["(a) Upper Layer", "(b) Lower layer"]
 ax = [Axis(spatio_temp[i, 1], 
             xlabel = "Time between sample (days)",
             ylabel = "Distance between data samples",
+            xscale = log2,
             yscale = log2,
-            title = titles[i], 
+            title = titles[i],
             aspect = 1) for i ∈ 1:2]
 
 upper_spatio_temp = CairoMakie.heatmap!(ax[1], time_inc .* 4, spatial_subset, upper_ts_rms_err)
