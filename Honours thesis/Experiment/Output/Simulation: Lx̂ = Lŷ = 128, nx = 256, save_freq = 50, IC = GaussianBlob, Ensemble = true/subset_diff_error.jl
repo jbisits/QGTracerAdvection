@@ -69,7 +69,7 @@ av_err = mean(member_diffs_err, dims = 1)
 ## RMS error
 av_err = sqrt.( mean((member_diffs .- K_linfit_dim[1]).^2, dims = 1) )
 
-av_err = 100 .* sqrt.( mean((member_diffs .- K_linfit_dim[1]).^2, dims = 1) ) ./ K_linfit_dim[1]
+#av_err = 100 .* sqrt.( mean((member_diffs .- K_linfit_dim[1]).^2, dims = 1) ) ./ K_linfit_dim[1] Percentage error
 
 upper_av_err = reshape(av_err[:, 1, :], (length(zonal_subset), length(meridional_subset)))
 lower_av_err = reshape(av_err[:, 2, :], (length(zonal_subset), length(meridional_subset)))
@@ -430,3 +430,18 @@ plot(upper, lower,
     title = ["Upper layer" "Lower layer"],
     layout = (2, 1),
     size = (1200, 1200))
+
+## File with all the data I want for plotting 
+file = "subset_data_for_plotting.jld2"
+jldopen(file, "a+") do path
+    path["time_inc"] = time_inc
+    path["zonal_subset"] = zonal_subset
+    path["meridional_subset"] = meridional_subset
+    path["spatial_subset"] = spatial_subset
+    path["upper_spatial_rms_error"] = upper_av_err
+    path["lower_spatial_rms_error"] = lower_av_err
+    path["upper_tempoal_rms_error"] = upper_time_subset
+    path["lower_tempoal_rms_error"] = lower_time_subset
+    path["upper_spatiotemp_rms_error"] = upper_ts_rms_err
+    path["lower_spatiotemp_rms_error"] = lower_ts_rms_err
+end    

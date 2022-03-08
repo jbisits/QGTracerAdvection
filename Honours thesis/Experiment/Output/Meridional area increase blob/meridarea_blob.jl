@@ -17,24 +17,24 @@ first_mom64 = first_moment(data64)
 first_mom128 = first_moment(data128)
 first_mom256 = first_moment(data256)
 
-upperplot = plot(t64, first_mom64[:, 1],
-    title = "Upper layer average area for zonal length x̂ = 64 \n and three meridional lengths",
+upperplot = Plots.plot(t64, first_mom64[:, 1],
+    title = "(a) Upper layer",
     xlabel = "t",
     ylabel = "⟨A⟩",
     label = "Meridional length = 64",
     legend = :bottomright)
-plot!(upperplot, t128, first_mom128[:, 1], label = "Meridional length = 128")
-plot!(upperplot, t256, first_mom256[:, 1], label = "Meridional length = 256")
+Plots.plot!(upperplot, t128, first_mom128[:, 1], label = "Meridional length = 128")
+Plots.plot!(upperplot, t256, first_mom256[:, 1], label = "Meridional length = 256")
 
-lowerplot = plot(t64, first_mom64[:, 2], 
-    title = "Lower layer average area for zonal length x̂ = 64 \n and three meridional lengths",
+lowerplot = Plots.plot(t64, first_mom64[:, 2], 
+    title = "(b) Lower layer",
     xlabel = "t",
     ylabel = "⟨A⟩",
     label = "Meridional length = 64",
     legend = :bottomright)
-plot!(lowerplot, t128, first_mom128[:, 2], label = "Meridional length = 128")
-plot!(lowerplot, t256, first_mom256[:, 2], label = "Meridional length = 256")
+Plots.plot!(lowerplot, t128, first_mom128[:, 2], label = "Meridional length = 128")
+Plots.plot!(lowerplot, t256, first_mom256[:, 2], label = "Meridional length = 256")
 
-fullplot = plot(upperplot, lowerplot, layout = (2, 1), size = (800, 800))
+fullplot = Plots.plot(upperplot, lowerplot, layout = (2, 1), size = (700, 800))
 
 savefig(fullplot, "meridareaincrease_blob.png")

@@ -18,26 +18,26 @@ first_mom64 = first_moment(data64)
 first_mom128 = first_moment(data128)
 first_mom256 = first_moment(data256)
 
-upperplot = plot(t32, first_mom32[:, 1],
-    title = "Upper layer average area on square domains",
+upperplot = Plots.plot(t32, first_mom32[:, 1],
+    title = "(a) Upper layer",
     xlabel = "t",
     ylabel = "⟨A⟩",
     label = "Lx̂ = Lŷ = 32",
     legend = :topleft)
-plot!(upperplot, t64, first_mom64[:, 1], label = "Lx̂ = Lŷ = 64")
-plot!(upperplot, t128, first_mom128[:, 1], label = "Lx̂ = Lŷ = 128")
-plot!(upperplot, t256, first_mom256[:, 1], label = "Lx̂ = Lŷ = 256")
+Plots.plot!(upperplot, t64, first_mom64[:, 1], label = "Lx̂ = Lŷ = 64")
+Plots.plot!(upperplot, t128, first_mom128[:, 1], label = "Lx̂ = Lŷ = 128")
+Plots.plot!(upperplot, t256, first_mom256[:, 1], label = "Lx̂ = Lŷ = 256")
 
-lowerplot = plot(t32, first_mom32[:, 2], 
-    title = "Lower layer average area on square domains",
+lowerplot = Plots.plot(t32, first_mom32[:, 2], 
+    title = "(b) Lower layer",
     xlabel = "t",
     ylabel = "⟨A⟩",
     label = "Lx̂ = Lŷ = 32",
     legend = :topleft)
-plot!(lowerplot, t64, first_mom64[:, 2], label =  "Lx̂ = Lŷ = 64")
-plot!(lowerplot, t128, first_mom128[:, 2], label =  "Lx̂ = Lŷ = 128")
-plot!(lowerplot, t256, first_mom256[:, 2], label =  "Lx̂ = Lŷ = 256")
+Plots.plot!(lowerplot, t64, first_mom64[:, 2], label =  "Lx̂ = Lŷ = 64")
+Plots.plot!(lowerplot, t128, first_mom128[:, 2], label =  "Lx̂ = Lŷ = 128")
+Plots.plot!(lowerplot, t256, first_mom256[:, 2], label =  "Lx̂ = Lŷ = 256")
 
-fullplot = plot(upperplot, lowerplot, layout = (2, 1), size = (800, 800))
+fullplot = Plots.plot(upperplot, lowerplot, layout = (2, 1), size = (700, 800))
 
-#savefig(fullplot, "sqaureareaincrease_blob.png")
+savefig(fullplot, "sqaureareaincrease_blob.png")
