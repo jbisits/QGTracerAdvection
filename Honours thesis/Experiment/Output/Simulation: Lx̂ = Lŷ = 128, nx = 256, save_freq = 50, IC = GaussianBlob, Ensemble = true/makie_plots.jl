@@ -4,6 +4,39 @@
 using CairoMakie
 
 ################################################################################################
+# Diffusion experiments
+################################################################################################
+
+diff_expt_path = joinpath(SimPath, "Output/Simulation: Lx̂ = Lŷ = 16, nx = 128, save_freq = 50, IC = GaussianBlob, Ensemble = false/SimulationData.jld2")
+diff_expt_data = load(diff_expt_path)
+
+diff_expt_plot = Figure(resolution = (1200, 1200))
+
+titles = ["(a) Initial time" "(b) Initial time"; "(c) Final time" "(d) Final time"]
+xlabs = ["x̂", "A"]
+ylabs = ["ŷ", "Concentration"]
+ylims_set = []
+ax = [Axis(diff_expt_plot[i, j],
+            title = titles[i, j],
+            xlabel = xlabs[j],
+            ylabel = ylabs[j],
+            ylims = ylims_set,
+            aspect = 1) for i ∈ 1:2, j ∈ 1:2]
+
+x, y = diff_expt_data["grid/x"], diff_expt_data["grid/y"]
+for i ∈ 0:1
+
+    hm = CairoMakie.heatmap!(ax[1 + i], x, y, diff_expt_data["snapshots/Concentration/"*string(i * 7000)],
+                colormap = :deep)
+    Colorbar(diff_expt_plot[1 + i, 1][1, 2], hm) # color bar hidden
+    colsize!(diff_expt_plot.layout, 1, Aspect(1, 1.0))
+    lines!(ax[3 + i], 1:length(reshape(diff_expt_data["snapshots/Concentration/"*string(i * 7000)], :)), sort(reshape(diff_expt_data["snapshots/Concentration/"*string(i * 7000)], :), rev = true))
+    CairoMakie.ylims!(ax[3 + i], high = maximum(diff_expt_data["snapshots/Concentration/"*string(0)]))
+
+end
+
+diff_expt_plot
+################################################################################################
 # Tracer experiment results and linear fits
 ################################################################################################
 ## Load in the data
@@ -12,24 +45,32 @@ t = first_mom_diff_data["t"]
 member_first_moms = first_mom_diff_data["member_first_moms"]
 ens_av_first_mom = first_mom_diff_data["ens_av_first_mom"]
 ens_fit = first_mom_diff_data["ens_fit"]
+member_diffs = first_mom_diff_data["member_diffs"]
+
+bootstrap_samples = load("bootstrap_blob.jld2")["bootstap"]
 
 ## First moment in time plots
 first_moms_plot = Figure(resolution = (1000, 1000))
 
-titles = ["(a) Upper Layer", "(b) Lower layer"]
+titles = ["(a) Upper Layer" "(b) Upper layer"; "(c) Lower Layer" "(d) Lower layer"]
 ax = [Axis(first_moms_plot[i, j], 
             xlabel = "t (non-dimensional)",
             ylabel = "⟨A⟩ (non-dimensional)",
-            title = titles[i], 
+            title = titles[i, j], 
             aspect = 1) for i ∈ 1:2, j ∈ 1:2]
 
 for i ∈ 1:length(member_first_moms[1, 1, :])
-    lines!(ax[1], t, member_first_moms[:, 1, i])
-    lines!(ax[2], t, member_first_moms[:, 2, i])
+    if i == 1
+        lines!(ax[1], t, member_first_moms[:, 1, i], color = :grey, label = "Ensemble member")
+        lines!(ax[2], t, member_first_moms[:, 2, i], color = :grey, label = "Ensemble member")
+    else
+        lines!(ax[1], t, member_first_moms[:, 1, i], color = :grey)
+        lines!(ax[2], t, member_first_moms[:, 2, i], color = :grey)
+    end
 end
 
-lines!(ax[1], t, ens_av_first_mom[:, 1], linestyle = :dash, linewidth = 6, color = :black)
-lines!(ax[2], t, ens_av_first_mom[:, 2], linestyle = :dash, linewidth = 6, color = :black)
+lines!(ax[1], t, ens_av_first_mom[:, 1], linestyle = :dash, linewidth = 6, color = :black, label = "Ensemble average")
+lines!(ax[2], t, ens_av_first_mom[:, 2], linestyle = :dash, linewidth = 6, color = :black, label = "Ensemble average")
 
 lines!(ax[3], t, ens_av_first_mom[:, 1], label = "Ensemble average")
 lines!(ax[3], t, ens_fit[1, 1] .+ t .* ens_fit[2, 1], 
@@ -42,8 +83,70 @@ lines!(ax[4], t, ens_fit[1, 2] .+ t .* ens_fit[2, 2],
         linewidth = 3,
         label = "Linear fit")
 
-axislegend()
+for i ∈ 1:4
+    axislegend(ax[i], position = :rb)
+end
+
 first_moms_plot
+#save("first_moms.png", first_moms_plot)
+################################################################################################
+# Histograms of diffusivity
+################################################################################################
+## Member diffusivity
+diffs_hist = Figure(resolution = (600, 800))
+
+titles = ["(a) Upper Layer", "(b) Lower layer"]
+ax = [Axis(diffs_hist[i, 1], 
+            xlabel = "Diffusivity (m²s⁻¹)",
+            ylabel = "Prortion of members",
+            title = titles[i]) for i ∈ 1:2]
+
+for i ∈ 1:2
+
+    hist!(ax[i], member_diffs[:, i], normalization = :probability, bins = 10)
+    CairoMakie.scatter!(ax[i], [mean(member_diffs[:, i])], [0], 
+                    label = "Mean diffusivity of ensemble members",
+                    color = :red)
+    CairoMakie.scatter!(ax[i], 
+                        [minimum(member_diffs[:, i])], [0], 
+                        label = "Minimum diffusivity of ensemble members",
+                        color = :orange)
+    CairoMakie.scatter!(ax[i], 
+                        [maximum(member_diffs[:, i])], [0], 
+                        label = "Maximum diffusivity of ensemble members",
+                        color = :green)
+
+end
+Legend(diffs_hist[3, 1], ax[1])
+diffs_hist
+
+## Member diffusivity and bootstrap samples
+bootstrap_hist = Figure(resolution = (600, 800))
+
+titles = ["(a) Upper Layer", "(b) Lower layer"]
+ax = [Axis(bootstrap_hist[i, 1], 
+            xlabel = "Diffusivity (m²s⁻¹)",
+            ylabel = "Prortion of members",
+            title = titles[i]) for i ∈ 1:2]
+
+for i ∈ 1:2
+
+    hist!(ax[i], member_diffs[:, i], normalization = :probability, bins = 10,
+        label = "Diffusivity of ensemble members")
+    CairoMakie.scatter!(ax[i], [mean(member_diffs[:, i])], [0], 
+                    label = "Mean diffusivity of ensemble members",
+                    color = :red)
+    CairoMakie.scatter!(ax[i], 
+                        [mean(member_diffs[:, i]) - std(member_diffs[:, i]), mean(member_diffs[:, i]) + std(member_diffs[:, i])], [0, 0], 
+                        label = "Mean diffusivity ± σ of ensemble members",
+                        color = :green)
+    hist!(ax[i], bootstrap_samples[:, i], normalization = :probability,
+        label = "Bootstrapped diffusivity of ensemble average\nconcentration field")
+
+end
+
+Legend(bootstrap_hist[3, 1], ax[1])
+bootstrap_hist
 ################################################################################################
 # Subset data plots
 ################################################################################################

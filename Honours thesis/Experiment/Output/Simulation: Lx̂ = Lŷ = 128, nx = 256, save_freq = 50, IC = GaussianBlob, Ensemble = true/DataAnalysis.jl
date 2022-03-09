@@ -19,6 +19,12 @@ first_moms = first_moment(data)
 ensemble_conc = ensemble_concentration(data)
 ensemble_avg = first_moment(ensemble_conc)
 
+file = "av_area_diffs_linfits.jld2"
+jldopen(file, "a+") do path
+    path["member_first_moms"] = first_moms
+    path["ens_av_first_mom"] = ensemble_avg
+end
+
 ## Average area growth (members and ensemble)
 first_mom_upper = plot(t, first_moms[:, 1, 1], 
                         label = "Ensemble member", 
@@ -80,6 +86,10 @@ K_linfit = ens_fit[2, :] ./ (4 * π)
 
 dims = nondim2dim(data[1])
 K_linfit_dim = @. K_linfit * dims["Ld"] * 0.02
+
+jldopen(file, "a+") do path
+    path["ens_av_diffs"] = K_linfit_dim
+end
 
 ## Tracer plots
 tracer_plots = tracer_plot(data[1]; plot_freq = 500)
@@ -153,6 +163,19 @@ K_ens = ΔA_mem ./ (4 * π * Δt_mem)
 
 dims = nondim2dim(data[1])
 K_ens_dim = @. K_ens * dims["Ld"] * 0.02
+
+## Or using linear fit from time t = 50 as I do later on
+linear_time = 50 # This means there are 32 timesteps which are used for the time subsetting
+linear_time_vec = t[linear_time:end]
+
+member_subset_linfit = [[ones(length(linear_time_vec)) linear_time_vec] \ first_moms[linear_time:end, :, k] for k ∈ 1:length(data)]
+member_subset_linfit = [[member_subset_linfit[k][2, 1] for k ∈ 1:length(data)] [member_subset_linfit[k][2, 2] for k ∈ 1:length(data)]]
+K_subset_member_linfit = member_subset_linfit ./ (4π)
+member_diffs = @. K_subset_member_linfit * dims["Ld"] * 0.02
+
+jldopen(file, "a+") do path
+    path["member_diffs"] = member_diffs
+end
 
 #Upper layer
 upper_diff_hist_blob = fit(Histogram, K_ens_dim[1, :], nbins = 12)
