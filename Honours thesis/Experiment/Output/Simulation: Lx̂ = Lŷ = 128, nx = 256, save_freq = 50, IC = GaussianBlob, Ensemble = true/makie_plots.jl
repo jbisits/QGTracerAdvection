@@ -3,18 +3,64 @@
 
 using CairoMakie
 
+################################################################################################
+# Tracer experiment results and linear fits
+################################################################################################
+## Load in the data
+first_mom_diff_data = load("av_area_diffs_linfits.jld2")
+t = first_mom_diff_data["t"]
+member_first_moms = first_mom_diff_data["member_first_moms"]
+ens_av_first_mom = first_mom_diff_data["ens_av_first_mom"]
+ens_fit = first_mom_diff_data["ens_fit"]
+
+## First moment in time plots
+first_moms_plot = Figure(resolution = (1000, 1000))
+
+titles = ["(a) Upper Layer", "(b) Lower layer"]
+ax = [Axis(first_moms_plot[i, j], 
+            xlabel = "t (non-dimensional)",
+            ylabel = "⟨A⟩ (non-dimensional)",
+            title = titles[i], 
+            aspect = 1) for i ∈ 1:2, j ∈ 1:2]
+
+for i ∈ 1:length(member_first_moms[1, 1, :])
+    lines!(ax[1], t, member_first_moms[:, 1, i])
+    lines!(ax[2], t, member_first_moms[:, 2, i])
+end
+
+lines!(ax[1], t, ens_av_first_mom[:, 1], linestyle = :dash, linewidth = 6, color = :black)
+lines!(ax[2], t, ens_av_first_mom[:, 2], linestyle = :dash, linewidth = 6, color = :black)
+
+lines!(ax[3], t, ens_av_first_mom[:, 1], label = "Ensemble average")
+lines!(ax[3], t, ens_fit[1, 1] .+ t .* ens_fit[2, 1], 
+        linestyle = :dash, 
+        linewidth = 3,
+        label = "Linear fit")
+lines!(ax[4], t, ens_av_first_mom[:, 2], label = "Ensemble average")
+lines!(ax[4], t, ens_fit[1, 2] .+ t .* ens_fit[2, 2], 
+        linestyle = :dash, 
+        linewidth = 3,
+        label = "Linear fit")
+
+axislegend()
+first_moms_plot
+################################################################################################
+# Subset data plots
+################################################################################################
 ## Load in the data
 
-time_inc = load("subset_data_for_plotting.jld2")["time_inc"]
-zonal_subset = load("subset_data_for_plotting.jld2")["zonal_subset"]
-meridional_subset = load("subset_data_for_plotting.jld2")["meridional_subset"]
-spatial_subset = load("subset_data_for_plotting.jld2")["spatial_subset"]
-upper_spatial_rms_error = load("subset_data_for_plotting.jld2")["upper_spatial_rms_error"]
-lower_spatial_rms_error = load("subset_data_for_plotting.jld2")["lower_spatial_rms_error"]
-upper_tempoal_rms_error = load("subset_data_for_plotting.jld2")["upper_tempoal_rms_error"]
-lower_tempoal_rms_error = load("subset_data_for_plotting.jld2")["lower_tempoal_rms_error"]
-upper_ts_rms_error = load("subset_data_for_plotting.jld2")["upper_spatiotemp_rms_error"]
-lower_ts_rms_error = load("subset_data_for_plotting.jld2")["lower_spatiotemp_rms_error"]
+subset_data = load("subset_data_for_plotting.jld2")
+
+time_inc = subset_data["time_inc"]
+zonal_subset = subset_data["zonal_subset"]
+meridional_subset = subset_data["meridional_subset"]
+spatial_subset = subset_data["spatial_subset"]
+upper_spatial_rms_error = subset_data["upper_spatial_rms_error"]
+lower_spatial_rms_error = subset_data["lower_spatial_rms_error"]
+upper_tempoal_rms_error = subset_data["upper_tempoal_rms_error"]
+lower_tempoal_rms_error = subset_data["lower_tempoal_rms_error"]
+upper_ts_rms_error = subset_data["upper_spatiotemp_rms_error"]
+lower_ts_rms_error = subset_data["lower_spatiotemp_rms_error"]
 
 ## Spatial subset of the data
 spatial = Figure(resolution = (600, 800))
