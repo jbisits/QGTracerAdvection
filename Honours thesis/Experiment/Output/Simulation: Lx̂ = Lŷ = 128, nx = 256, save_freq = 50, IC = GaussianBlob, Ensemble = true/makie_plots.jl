@@ -2,7 +2,9 @@
 # These plots were definitely worth it. If I get on a roll may do the rest here.
 
 using CairoMakie
+
 cd(joinpath(SimPath, "Output/Simulation: Lx̂ = Lŷ = 128, nx = 256, save_freq = 50, IC = GaussianBlob, Ensemble = true"))
+
 ################################################################################################
 # Diffusion experiments
 ################################################################################################
@@ -50,6 +52,7 @@ lines!(ax, t, first_moms_diff_expt[:, 1],
 axislegend(ax, position = :rb)
 av_area_de
 save("av_area_de.png", av_area_de)
+
 ################################################################################################
 # Tracer experiment results and linear fits
 ################################################################################################
@@ -104,6 +107,7 @@ end
 
 first_moms_plot
 #save("first_moms.png", first_moms_plot)
+
 ################################################################################################
 # Histograms of diffusivity
 ################################################################################################
@@ -235,6 +239,11 @@ temporal
 
 save("temporal.png", temporal)
 
+# RMS percentage increase
+
+(upper_tempoal_rms_error[end] - upper_tempoal_rms_error[1]) / upper_tempoal_rms_error[1]
+(lower_tempoal_rms_error[end] - lower_tempoal_rms_error[1]) / lower_tempoal_rms_error[1]
+
 ## Spatio temporal subset of the data
 
 spatio_temp = Figure(resolution = (600, 800))
@@ -261,3 +270,8 @@ colsize!(spatio_temp.layout, 1, Aspect(1, 1.0))
 spatio_temp
 
 save("spatio_temp.png", spatio_temp)
+
+# Percentage increases
+
+@. (upper_ts_rms_error[end, :] - upper_ts_rms_error[1, :]) / upper_ts_rms_error[1, :]
+@. (lower_ts_rms_error[end, :] - lower_ts_rms_error[1, :]) / lower_ts_rms_error[1, :]
