@@ -54,6 +54,26 @@ av_area_de
 save("av_area_de.png", av_area_de)
 
 ################################################################################################
+# Tracer inital concentration
+################################################################################################
+conc_data = load(joinpath(pwd(),"SimulationData.jld2"))
+
+x̂ = conc_data["grid/x"]
+ŷ = conc_data["grid/y"]
+conc = conc_data["snapshots/Concentration/0"][:, :, 1]
+
+IC_conc = Figure(resolution = (500, 400))
+ax = Axis(IC_conc[1, 1],
+            xlabel = "x̂",
+            ylabel = "ŷ")
+
+upper_IC = CairoMakie.heatmap!(ax, x̂, ŷ, conc, colormap = :deep)
+Colorbar(IC_conc[1, 2], upper_IC, label = "Concentration (Ĉ)")
+colsize!(IC_conc.layout, 1, Aspect(1, 1.0))
+
+IC_conc
+save("IC_conc.png", IC_conc)
+################################################################################################
 # Tracer experiment results and linear fits
 ################################################################################################
 ## Load in the data
@@ -192,6 +212,11 @@ lower_tempoal_rms_error = subset_data["lower_tempoal_rms_error"]
 upper_ts_rms_error = subset_data["upper_spatiotemp_rms_error"]
 lower_ts_rms_error = subset_data["lower_spatiotemp_rms_error"]
 
+upper_spatial_per = @. 100 * upper_spatial_rms_error / ens_av_diffs[1]
+lower_spatial_per = @. 100 * lower_spatial_rms_error / ens_av_diffs[2]
+
+upper_ts_per = @. 100 * upper_ts_rms_error / ens_av_diffs[1]
+lower_ts_per = @. 100 * lower_ts_rms_error / ens_av_diffs[2]
 ## Spatial subset of the data
 spatial = Figure(resolution = (600, 800))
 
@@ -209,10 +234,10 @@ ax = [Axis(spatial[i, 1],
             title = titles[i], 
             aspect = 1) for i ∈ 1:2]
 
-upper_spatial = CairoMakie.heatmap!(ax[1], zonal_subset, meridional_subset, upper_spatial_rms_error)
-lower_spatial = CairoMakie.heatmap!(ax[2], zonal_subset, meridional_subset, lower_spatial_rms_error)
-Colorbar(spatial[1, 2], upper_spatial, label = "RMS error of diffusivity from ensemble\nmembers compared to 𝒦 (m²s⁻¹)")
-Colorbar(spatial[2, 2], lower_spatial, label = "RMS error of diffusivity from ensemble\nmembers compared to 𝒦 (m²s⁻¹)")
+upper_spatial = CairoMakie.heatmap!(ax[1], zonal_subset, meridional_subset, upper_spatial_per)
+lower_spatial = CairoMakie.heatmap!(ax[2], zonal_subset, meridional_subset, lower_spatial_per)
+Colorbar(spatial[1, 2], upper_spatial, label = "RMS error as percentage of 𝒦")
+Colorbar(spatial[2, 2], lower_spatial, label = "RMS error as percentage of 𝒦")
 
 colsize!(spatial.layout, 1, Aspect(1, 1.0))
 spatial
@@ -261,10 +286,10 @@ ax = [Axis(spatio_temp[i, 1],
             title = titles[i],
             aspect = 1) for i ∈ 1:2]
 
-upper_spatio_temp = CairoMakie.heatmap!(ax[1], time_inc, spatial_subset, upper_ts_rms_error)
-lower_spatio_temp = CairoMakie.heatmap!(ax[2], time_inc, spatial_subset, lower_ts_rms_error)
-Colorbar(spatio_temp[1, 2], upper_spatio_temp, label = "RMS error of diffusivity from ensemble\nmembers compared to 𝒦 (m²s⁻¹)")
-Colorbar(spatio_temp[2, 2], lower_spatio_temp, label =  "RMS error of diffusivity from ensemble\nmembers compared to 𝒦 (m²s⁻¹)")
+upper_spatio_temp = CairoMakie.heatmap!(ax[1], time_inc, spatial_subset, upper_ts_per)
+lower_spatio_temp = CairoMakie.heatmap!(ax[2], time_inc, spatial_subset, lower_ts_per)
+Colorbar(spatio_temp[1, 2], upper_spatio_temp, label = "RMS error as percentage of 𝒦")
+Colorbar(spatio_temp[2, 2], lower_spatio_temp, label =  "RMS error as percentage of 𝒦")
 
 colsize!(spatio_temp.layout, 1, Aspect(1, 1.0))
 spatio_temp
