@@ -73,6 +73,63 @@ colsize!(IC_conc.layout, 1, Aspect(1, 1.0))
 
 IC_conc
 save("IC_conc.png", IC_conc)
+
+################################################################################################
+# Growth of area
+################################################################################################
+
+## Load in the data
+merid_area_inc = joinpath(SimPath, "Output/Meridional area increase blob")
+files_merid = [joinpath(merid_area_inc, "SimulationData_64_64.jld2"), joinpath(merid_area_inc, "SimulationData_64_128.jld2"), 
+        joinpath(merid_area_inc, "SimulationData_64_256.jld2")]
+
+square_inc = joinpath(SimPath, "Output/Square area increase blob")
+files_square = [joinpath(square_inc, "SimulationData_32.jld2"), joinpath(square_inc, "SimulationData_64.jld2"),
+        joinpath(square_inc, "SimulationData_128.jld2"), joinpath(square_inc, "SimulationData_256.jld2")]
+
+area_inc = Figure(resolution = (800, 800))
+
+titles = ["(a) Upper layer" "(c) Upper layer"; "(b) Lower layer" "(d) Lower layer" ]
+ax = [Axis(area_inc[i, j],
+    title = titles[i, j],
+    xlabel = "t̂",
+    ylabel = "⟨Â⟩",
+) for i ∈ 1:2, j ∈ 1:2]
+
+for i ∈ 1:2
+
+    for files ∈ files_square
+
+        data = load(files)
+        Lx = round(Int, data["grid/Lx"])
+        t = time_vec(data)
+        first_mom_square = first_moment(data)
+        lines!(ax[i], t, first_mom_square[:, i],
+            label = "Lx̂ = Lŷ = "*string(Lx))
+
+    end
+
+end
+
+for i ∈ 3:4
+
+    for files ∈ files_merid
+
+        data = load(files)
+        Ly = round(Int, data["grid/Ly"])
+        t = time_vec(data)
+        first_mom_square = first_moment(data)
+        lines!(ax[i], t, first_mom_square[:, i - 2], 
+        label = "Lŷ = "*string(Ly))
+
+    end
+
+end
+for i ∈ 1:4
+    axislegend(ax[i], position = :lt)
+end
+area_inc
+save("area_inc.png", area_inc)
 ################################################################################################
 # Tracer experiment results and linear fits
 ################################################################################################
