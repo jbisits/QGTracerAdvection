@@ -27,15 +27,15 @@ include("PackageSetup.jl")
 #Import a flow on a square domain with updated params that translate to accurate values for U = 0.02.
 #include("Flows/NewParamsSquare/Square_new_params_32domain_64res.jl")
 #include("Flows/NewParamsSquare/Square_new_params_64domain_128res.jl")
-include("Flows/NewParamsSquare/Square_new_params_128domain_256res.jl")
-#include("Flows/NewParamsSquare/Square_new_params_256domain_512res.jl")
+#include("Flows/NewParamsSquare/Square_new_params_128domain_256res.jl")
+include("Flows/NewParamsSquare/Square_new_params_256domain_512res.jl")
 
 #Import a flow on a rectanglular domain with updated params that translate to accurate values for U = 0.02.
 #include("Flows/NewParamsRectangle/Rectangle_new_params_64_128dom.jl")
 #include("Flows/NewParamsRectangle/Rectangle_new_params_64_256dom.jl")
 
 nsubs  = 1            #Set the number of steps the simulation takes at each iteration.         
-#nsteps = 15000          #Set the total amount of time steps the advection-diffusion simulation should run for
+nsteps = 16000          #Set the total amount of time steps the advection-diffusion simulation should run for
 
 #κ = 0.01
 κ = 0.03 #updated diffusivity
@@ -47,9 +47,9 @@ ADProb = TracerAdvDiff_QG.Problem(;prob = QGProb, delay_time = delay_time, nsubs
 ADSol, ADClock, ADVars, ADParams, ADGrid = ADProb.sol, ADProb.clock, ADProb.vars, ADProb.params, ADProb.grid
 
 #Set the Gaussian blob initial condition
-#μIC = [0, 0]
-#Σ = [1 0; 0 1]
-#IC = GaussianBlobIC(μIC, Σ, ADGrid)
+μIC = [0, 0]
+Σ = [1 0; 0 1]
+IC = GaussianBlobIC(μIC, Σ, ADGrid)
 
 #Set the Gaussian band initial condition
 #μIC = 0
@@ -57,13 +57,13 @@ ADSol, ADClock, ADVars, ADParams, ADGrid = ADProb.sol, ADProb.clock, ADProb.vars
 #IC = GaussianStripIC(μIC, σ², ADGrid)
 
 #Set the point source initial condition
-IC = PointSourceIC([128, 128], 10, ADGrid)
+#IC = PointSourceIC([128, 128], 10, ADGrid)
 
 #Set the QGPV initial condition
 #IC = QGPVIC(QGProb)
 
 QGset_c!(ADProb, IC.C₀)
-save_freq = 50
+save_freq = 100
 filename = CreateFile(ADProb, IC, save_freq, SimPath)
 ADOutput = Output(ADProb, filename, (:Concentration, GetConcentration))
 saveproblem(ADOutput)

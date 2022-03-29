@@ -53,7 +53,7 @@ function Problem(;
 ###################################################################################################
   #Added conditional if input is a GeophysicalFlows.Problem
   if isnothing(prob) == false
-    nlayers = prob.params.nlayers
+    nlayers = 2
     nx = prob.grid.nx
     ny = prob.grid.ny
     Lx = prob.grid.Lx
@@ -66,7 +66,7 @@ function Problem(;
 
   if steadyflow;                   pr = ConstDiffSteadyFlowParams(eta, κ, u, v, grid)
   #################################################################################################
-  elseif isnothing(prob) == false; pr = set_QGFlowParams(eta, κ, prob, delay_time, nsubs, inc_background_flow)
+  elseif isnothing(prob) == false; pr = set_QGFlowParams(nlayers, eta, κ, prob, delay_time, nsubs, inc_background_flow)
   #################################################################################################
   else;                            pr = ConstDiffParams(eta, κ, u, v)
   end
@@ -147,13 +147,13 @@ struct QGFlowParams{T,A,Trfft} <: AbstractQGFlowParams
   background_flow :: Bool #whether or not the background flow is included in the flow
 end
 
-function set_QGFlowParams(eta, κ, prob, delay_time, nsubs, inc_background_flow)
+function set_QGFlowParams(nlayers, eta, κ, prob, delay_time, nsubs, inc_background_flow)
   if isequal(delay_time, 0) == false
     flow_till_delay_time!(prob, delay_time, nsubs)
   end
   uvel = prob.vars.u
   vvel = prob.vars.v
-  nlayers = prob.params.nlayers
+  nlayers = nlayers
   rfftplan = prob.params.rfftplan
   background_flow = inc_background_flow
   
