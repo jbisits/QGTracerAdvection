@@ -401,3 +401,20 @@ for i in 1:length(err_val[:, 1])
 end
 
 no_of_mems
+
+###############################################################
+#Looking at whether or not concentration normalised is pdf
+
+file = joinpath(pwd(), "SimulationData.jld2")
+data = load(file)
+
+nsteps = data["clock/nsteps"]
+saved_steps = data["save_freq"]
+plot_steps = 0:saved_steps:nsteps
+C = [abs.(reshape(data["snapshots/Concentration/"*string(j)][:, :, 1], :)) for j ∈ plot_steps]
+C = sort(abs.(reshape(data["snapshots/Concentration/"*string(0)][:, :, 1], :)), rev = true)
+sum(C)
+Cₚ = C ./ sum(C)
+sum(Cₚ)
+A = 1:length(Cₚ)
+mean_A = sum(A .* Cₚ)
