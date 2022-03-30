@@ -26,7 +26,7 @@ f̂₀ = 150
 ĝ = 10
 
 QGProbs = Array{FourierFlows.Problem}(undef, ADSims)
-seed!(3241) # reset of the random number generator for reproducibility, but change if want different intial conditions
+seed!(1234) # reset of the random number generator for reproducibility, but change if want different intial conditions
 for i ∈ 1:ADSims
     QGProbs[i] = MultiLayerQG.Problem(nlayers, dev; nx=nx, Lx=Lx̂, f₀=f̂₀, g=ĝ, H=Ĥ, ρ=ρ̂, U=Û, dt=Δt̂, stepper=stepper, μ=μ̂, β=β̂, ν=ν̂)
     QGSol, QGClock, QGParams, QGVars, QGrid = QGProbs[i].sol, QGProbs[i].clock, QGProbs[i].params, QGProbs[i].vars, QGProbs[i].grid
