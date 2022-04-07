@@ -13,4 +13,6 @@ for i ∈ 1:length(data)
     end
 end
 
-#This seems to crash so maybe need to setup other methods to read data at the time of processing.
+# Not enough ram to do this all at once so need to change the way things are computed
+# Will use `Glob.jl` to access all the .jld2 files, then compute a diffusivity over the 
+# relevant time interval for each member and create an ensemble average field at the end.
