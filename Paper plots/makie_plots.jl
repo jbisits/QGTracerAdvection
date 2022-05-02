@@ -248,7 +248,7 @@ ax = [Axis(bootstrap_hist[i, 1],
 
 for i ∈ 1:2
 
-    hist!(ax[i], member_diffs[:, i], normalization = :probability, bins = 10,
+    hist!(ax[i], member_diffs[:, i], normalization = :probability, bins = 15,
         label = "Diffusivity of ensemble members")
     CairoMakie.scatter!(ax[i], [mean(member_diffs[:, i])], [0], 
                     label = "Mean diffusivity of ensemble members",
