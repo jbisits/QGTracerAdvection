@@ -4,7 +4,7 @@
 using CairoMakie, JLD2, Statistics
 
 cd(joinpath(pwd(), "Paper plots"))
-
+SimPath = joinpath("..", "Honours thesis/Experiment")
 ################################################################################################
 # Diffusion experiments
 ################################################################################################
@@ -14,23 +14,22 @@ diff_expt_data = load(diff_expt_path)
 
 diff_expt_plot = Figure(resolution = (1200, 1200))
 
-titles = ["(a) Initial time" "(b) Initial time"; "(c) Final time" "(d) Final time"]
-xlabs = ["𝒜", "x̂", ]
+titles = [L"(a) Initial time, $\hat{t} = 0" L"(a) Initial time, $\hat{t} = 0"; L"(a) Final time, $\hat{t} = 14" L"(a) Final time, $\hat{t} = 14"]
+xlabs = ["Amount of area in terms of 𝒜", L"\hat{x}", ]
 xscales = [log10, identity]
-ylabs = ["Concentration", "ŷ"]
+ylabs = [L"Concentration ($\hat{C})", L"\hat{y}"]
 ax = [Axis(diff_expt_plot[i, j],
             title = titles[i, j],
             xlabel = xlabs[j],
             xscale = xscales[j],
-            ylabel = ylabs[j],
-            ylims = ylims_set) for i ∈ 1:2, j ∈ 1:2]
+            ylabel = ylabs[j]) for i ∈ 1:2, j ∈ 1:2]
 
 x, y = diff_expt_data["grid/x"], diff_expt_data["grid/y"]
 for i ∈ 0:1
 
     hm = CairoMakie.heatmap!(ax[3 + i], x, y, diff_expt_data["snapshots/Concentration/"*string(i * 7000)],
                 colormap = :deep)
-    Colorbar(diff_expt_plot[1 + i, 3], hm, label = "Concentration") # color bar hidden
+    Colorbar(diff_expt_plot[1 + i, 3], hm, label = L"Concentration $(\hat{C})$") # color bar hidden
     lines!(ax[1 + i], 1:length(reshape(diff_expt_data["snapshots/Concentration/"*string(i * 7000)], :)), sort(reshape(diff_expt_data["snapshots/Concentration/"*string(i * 7000)], :), rev = true))
     CairoMakie.ylims!(ax[1 + i], high = maximum(diff_expt_data["snapshots/Concentration/"*string(0)]))
 
@@ -79,16 +78,18 @@ save("IC_conc.png", IC_conc)
 # Evolution of tracer patch
 tracer_plots = Figure(resolution = (1200, 1200))
 plot_steps = 0:3000:15000
+plot_steps_mat = reshape(plot_steps, (2, 3))
 plot_times = round.(Int, [conc_data["snapshots/t/"*string(i)] for i ∈ plot_steps])
 plot_times = reshape(plot_times, (3, 2))'
 x̂ = conc_data["grid/x"]
 ŷ = conc_data["grid/y"]
-conc_plot_data = [abs.(conc_data["snapshots/Concentration/"*string(plot_steps_mat[i, j])][:, :, 1]) for i ∈ 1:2, j ∈ 1:3]
+conc_plot_data = [abs.(conc_data["snapshots/Concentration/"*string(plot_steps_mat[j, i])][:, :, 1]) for j ∈ 1:2, i ∈ 1:3]
+plot_letters = ["(a)" "(b)" "(c)"; "(d)" "(e)" "(f)"]
 
 ax = [Axis(tracer_plots[i, j],
         xlabel = L"\hat{x}",
         ylabel = L"\hat{y}",
-        title = L"\hat{t} = %$(string(plot_times[i, j]))",
+        title = L"%$(plot_letters[i, j]) \quad \hat{t} = %$(string(plot_times[i, j]))",
         aspect = 1
         ) for j ∈ 1:3, i ∈ 1:2]
 for (i, axis) in enumerate(ax)
@@ -98,7 +99,17 @@ for (i, axis) in enumerate(ax)
     heatmap!(axis, x̂, ŷ, plot_data, colormap = :deep)
 
 end
+
+for i ∈ 1:2, j ∈ 1:3
+
+    plot_data = conc_plot_data[i, j]
+    clims = (minimum(plot_data), maximum(plot_data))
+    #cticks = round.(range(minimum(plot_data), maximum(plot_data), length = 3); sigdigits = 2)
+    Colorbar(tracer_plots[i, j][2, 1], limits = clims, vertical = false, flipaxis = false)
+
+end
 tracer_plots
+save("tracer_plots.png", tracer_plots)
 ################################################################################################
 # Growth of area
 ################################################################################################
@@ -379,13 +390,113 @@ save("spatio_temp.png", spatio_temp)
 @. round(Int, 100 * (upper_ts_rms_error[end, :] - upper_ts_rms_error[1, :]) / upper_ts_rms_error[1, :])
 @. round(Int, 100 * (lower_ts_rms_error[end, :] - lower_ts_rms_error[1, :]) / lower_ts_rms_error[1, :])
 
-## Check reshape
+#####################################################################################
+## Upper layer error plots 
+#####################################################################################
+# These are just upper layer error plots which will be used in the paper
 
-A = Array{Float64}(undef, 10, 2, 3)
-for i ∈ 1:3
-    A[:, :, i] = [1:10 1:10]
-end
-A
-reshape(A[:, 1, :], 10, 3)
+## Version one, all spatial subsets no non linear colour scale
+upper_err_plot = Figure(resolution = (600, 1200))
 
-spatial_subset
+spat_RMS = upper_err_plot[1, 1]
+temp_RMS = upper_err_plot[2, 1]
+spat_temp_RMS = upper_err_plot[3, 1]
+
+ax = [Axis(spat_RMS[1, 1], 
+            xlabel = "Zonal distance between\ndata samples (km)",
+            xticks = zonal_subset,
+            xtickformat = xs -> [string(x .* 15) for x ∈ zonal_subset],
+            xticklabelrotation = 45.0,
+            ylabel = "Meridional distance between\ndata samples (km)",
+            yticks = meridional_subset,
+            ytickformat = ys -> [string(y .* 15) for y ∈ meridional_subset],
+            xscale = log2, 
+            yscale = log2,
+            title = "(a) RMS error for spatial subsets\nof tracer concetration data", 
+            aspect = 1)]
+
+upper_spatial = CairoMakie.heatmap!(ax[1], zonal_subset, meridional_subset, upper_spatial_per)
+Colorbar(spat_RMS[1, 1][1, 2], upper_spatial, label = "RMS error as percentage of 𝒦")
+
+ax = [Axis(temp_RMS[1, 1], 
+            xlabel = "Time between data sampling (days)",
+            xticks = time_inc,
+            xtickformat = ts -> [string(t .* 8) for t ∈ time_inc],
+            ylabel = "RMS error of diffusivity from ensemble\nmembers compared to 𝒦 (m²s⁻¹)",
+            xscale = log2,
+            title = "(b) RMS error for temporal subsets\nof tracer concetration data",
+            aspect = 1)]
+
+upper_temp = lines!(ax[1], time_inc, upper_tempoal_rms_error)
+
+ax = [Axis(spat_temp_RMS[1, 1], 
+            xlabel = "Time between data sampling (days)",
+            xticks = time_inc,
+            xtickformat = ts -> [string(t .* 8) for t ∈ time_inc],
+            ylabel = "Zonal and meridional distance\nbetween data saplmes (km)",
+            yticks = meridional_subset,
+            ytickformat = ys -> [string(y .* 15) for y ∈ meridional_subset],
+            xscale = log2,
+            yscale = log2,
+            title = "(c) RMS error for spatio-temporal subsets\nof tracer concetration data",
+            aspect = 1,
+            alignmode = Inside())]
+
+upper_spatio_temp = CairoMakie.heatmap!(ax[1], time_inc, meridional_subset, upper_ts_per)
+Colorbar(spat_temp_RMS[1, 1][1, 2], upper_spatio_temp, label = "RMS error as percentage of 𝒦")
+
+upper_err_plot
+
+
+## Version two, remove the largest spatial subset
+
+upper_err_plot = Figure(resolution = (600, 1200))
+
+spat_RMS = upper_err_plot[1, 1]
+temp_RMS = upper_err_plot[2, 1]
+spat_temp_RMS = upper_err_plot[3, 1]
+
+ax = [Axis(spat_RMS[1, 1], 
+            xlabel = "Zonal distance between\ndata samples (km)",
+            xticks = zonal_subset,
+            xtickformat = xs -> [string(x .* 15) for x ∈ zonal_subset[1:end-1]],
+            xticklabelrotation = 45.0,
+            ylabel = "Meridional distance between\ndata samples (km)",
+            yticks = meridional_subset,
+            ytickformat = ys -> [string(y .* 15) for y ∈ meridional_subset[1:end-1]],
+            xscale = log2, 
+            yscale = log2,
+            title = "(a) RMS error for spatial subsets\nof tracer concetration data", 
+            aspect = 1)]
+
+upper_spatial = CairoMakie.heatmap!(ax[1], zonal_subset[1:end-1], meridional_subset[1:end-1], upper_spatial_per[1:end-1, 1:end-1])
+Colorbar(spat_RMS[1, 1][1, 2], upper_spatial, label = "RMS error as percentage of 𝒦")
+
+ax = [Axis(temp_RMS[1, 1], 
+            xlabel = "Time between data sampling (days)",
+            xticks = time_inc,
+            xtickformat = ts -> [string(t .* 8) for t ∈ time_inc],
+            ylabel = "RMS error of diffusivity from ensemble\nmembers compared to 𝒦 (m²s⁻¹)",
+            xscale = log2,
+            title = "(b) RMS error for temporal subsets\nof tracer concetration data",
+            aspect = 1)]
+
+upper_temp = lines!(ax[1], time_inc, upper_tempoal_rms_error)
+
+ax = [Axis(spat_temp_RMS[1, 1], 
+            xlabel = "Time between data sampling (days)",
+            xticks = time_inc,
+            xtickformat = ts -> [string(t .* 8) for t ∈ time_inc],
+            ylabel = "Zonal and meridional distance\nbetween data saplmes (km)",
+            yticks = meridional_subset,
+            ytickformat = ys -> [string(y .* 15) for y ∈ meridional_subset[1:end-1]],
+            xscale = log2,
+            yscale = log2,
+            title = "(c) RMS error for spatio-temporal subsets\nof tracer concetration data",
+            aspect = 1,
+            alignmode = Inside())]
+
+upper_spatio_temp = CairoMakie.heatmap!(ax[1], time_inc, meridional_subset[1:end-1], upper_ts_per[:, 1:end-1])
+Colorbar(spat_temp_RMS[1, 1][1, 2], upper_spatio_temp, label = "RMS error as percentage of 𝒦")
+
+upper_err_plot
