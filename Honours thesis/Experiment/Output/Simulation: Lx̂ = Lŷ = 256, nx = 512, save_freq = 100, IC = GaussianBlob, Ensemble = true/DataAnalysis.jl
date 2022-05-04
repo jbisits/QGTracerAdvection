@@ -20,6 +20,7 @@ end
 using Glob
 
 data_files = glob("*.jld2")
+data_files = data_files[1:50]
 
 ## First moments of ensemble members and ensemble concentration
 
@@ -106,13 +107,14 @@ sample = 30
 sample_vec = Array{Int64}(undef, sample)
 sample_vals = 1:length(data_files)
 ens_diff = Array{Float64}(undef, N, 2)
+t_mat = [ones(length(t)) t]
 
 for n ∈ 1:N
 
     println("Bootstrap "*string(n))
     sample_vec = StatsBase.sample(sample_vals, sample, replace = false)
     data_sample = data_files[sample_vec]
-    ens_conc_sample = deepcopy(load(data_sample[1]))
+    ens_conc_sample = load(data_sample[1])
     for i ∈ 2:length(data_sample)
 
         data = load(data_sample[i])
@@ -134,15 +136,15 @@ for n ∈ 1:N
 
     end
     ensemble_avg_sample = first_moment(ens_conc_sample)
-    ens_fit_sample = [ones(length(t)) t] \ ensemble_avg_sample
+    ens_fit_sample = t_mat \ ensemble_avg_sample
     ens_diff[n, :] =  ens_fit_sample[2, :]   
 
 end
 
 ens_diff = (ens_diff ./ (4*π)) .* 0.02 .* dims["Ld"]
 
-jldopen(file, "a+") do path
-    path["Bootstrap/diff_samples"] = ens_diff
+jldopen("saved_data.jld2", "a+") do path
+    path["Bootstrap/diff_samples_v2"] = ens_diff
 end
 
 ens_diff
@@ -152,6 +154,7 @@ ens_conc = load(data_files[1])
 save_freq = ens_conc["save_freq"]
 nsteps = ens_conc["clock/nsteps"]
 saved_vals = 0:save_freq:nsteps
+dims = nondim2dim(ens_conc)
 
 t = time_vec(ens_conc)
 t̂_16_5 =  findfirst(t .>= 16.5)
@@ -205,38 +208,50 @@ jldopen(file, "a+") do path
 end
 
 ## Temporal subsets, full spatial resolution
+# Info needed
+ens_conc = load(data_files[1])
+save_freq = ens_conc["save_freq"]
+nsteps = ens_conc["clock/nsteps"]
+saved_vals = 0:save_freq:nsteps
+dims = nondim2dim(ens_conc)
+
+t = time_vec(ens_conc)
 
 t̂_16_5 =  findfirst(t .>= 16.5)
 t̂_80 = findfirst(t .>= 80) - 1
 
 time_inc = @. 2^(0:6)
-time_subset_linfits = Array{Union{Missing, Float64}}(undef, length(t), 2, length(time_inc))
-k = 1
+time_subset_linfits = Array{Float64}(undef, length(data_files), 2, length(time_inc))
+# Cannot load all at once so need to use a loop here fir tge first moments
+first_moms = Array{Float64}(undef, length(t), 2, length(data_files))
+l = 1
+for file ∈ data_files
+
+    data = load(file)
+    first_moms[:, :, l] = first_moment(data)
+    l += 1
+
+end
+j = 1
 for i ∈ time_inc
 
-    # Cannot load all at once so need to use a loop here fir tge first moments
-    first_moms = Array{Float64}(undef, length(t), 2, length(data_files))
-    l = 1
-    for file ∈ data_files
-
-        data = load(file)
-        first_moms[:, :, l] = first_moment(data)
-        l += 1
-
-    end
+    @info "Time subset $i"
     # Create the time subset
     linear_phase = t̂_16_5:i:t̂_80
+    @info "Linear phase $linear_phase"
     t̂_linear = t[linear_phase]
     t̂_ones = ones(length(t̂_linear))
     t_fit_mat = [t̂_ones t̂_linear]
     member_first_moms_linfit = [t_fit_mat \ first_moms[linear_phase, :, k] for k ∈ 1:length(data_files)]
     member_first_moms_linfit = [[member_first_moms_linfit[k][2, 1] for k ∈ 1:length(data_files)] [member_first_moms_linfit[k][2, 2] for k ∈ 1:length(data_files)]]
     K_subset_member_lifit = member_first_moms_linfit ./ (4π)
-    time_subset_linfits[1:length(linear_phase), :, k] .= K_subset_member_lifit .* dims["Ld"] .* 0.02
-    k += 1
+    time_subset_linfits[:, :, j] .= K_subset_member_lifit .* dims["Ld"] .* 0.02
+    j += 1
 
 end
 time_subset_linfits
+
+ense_diff = load("saved_data.jld2")["Diffusivity/ens_avg_diff"]
 
 time_RMS = Array{Float64}(undef, 1, 2, length(time_subset_linfits[1, 1, :]))
 for i ∈ 1:length(time_subset_linfits[1, 1, :])
@@ -245,8 +260,69 @@ for i ∈ 1:length(time_subset_linfits[1, 1, :])
 end
 time_RMS
 
-jldopen(file, "a+") do path
+jldopen("saved_data.jld2", "a+") do path
     path["Temporal_subset/RMS_error"] = time_RMS
 end
 
 ## Spatio-temporal subsets
+time_inc = @. 2^(0:6)
+spatial_subset = @. 2^(0:8)
+
+time_spatial_subset_linfits = Array{Union{Missing, Float64}}(missing, length(data_files), 2, length(time_inc), length(spatial_subset))
+n = 1
+for m ∈ spatial_subset
+
+    @info "Spatial subset $m"
+    # Cannot load all at once so need to use a loop here fir tge first moments
+    first_moms = Array{Float64}(undef, length(t), 2, length(data_files))
+    l = 1
+    for file ∈ data_files
+
+        data = load(file)
+        first_moms[:, :, l] = first_moment(data, m, m)
+        l += 1
+
+    end
+
+    k = 1
+    for i ∈ time_inc
+
+        # Create the time subset
+        linear_phase = t̂_16_5:i:t̂_80
+        @info "Time subset $i"
+        t̂_linear = t[linear_phase]
+        t̂_ones = ones(length(t̂_linear))
+        t_fit_mat = [t̂_ones t̂_linear]
+
+        member_first_moms_linfit = [t_fit_mat \ first_moms[linear_phase, :, k] for k ∈ 1:length(data_files)]
+        member_first_moms_linfit = [[member_first_moms_linfit[k][2, 1] for k ∈ 1:length(data_files)] [member_first_moms_linfit[k][2, 2] for k ∈ 1:length(data_files)]]
+        temp = member_first_moms_linfit ./ (4π)
+        time_spatial_subset_linfits[:, :, k, n] = @. temp * dims["Ld"] * 0.02
+
+        k += 1
+
+    end
+
+    n += 1
+
+end
+time_spatial_subset_linfits
+ts_rms_err = Array{Float64}(undef, 1, 2, length(time_inc), length(spatial_subset))
+
+for j ∈ 1:length(spatial_subset)
+
+    for i ∈ 1:length(time_inc)
+
+        diffs = [collect(skipmissing(time_spatial_subset_linfits[:, 1, i, j])) collect(skipmissing(time_spatial_subset_linfits[:, 2, i, j]))]
+        ts_rms_err[:, 1, i, j] = sqrt.( mean((diffs[:, 1] .-  ense_diff[1]).^ 2, dims = 1 ) )
+        ts_rms_err[:, 2, i, j] = sqrt.( mean((diffs[:, 2] .-  ense_diff[2]).^ 2, dims = 1 ) )
+
+    end
+
+end
+
+ts_rms_err
+
+jldopen("saved_data.jld2", "a+") do path
+    path["Spatio_temp_subset/RMS_error"] = ts_rms_err
+end
