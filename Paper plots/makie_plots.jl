@@ -171,8 +171,6 @@ ens_fit = load("saved_data.jld2")["First_moms/Ensemble_avg_lf"]
 member_diffs = load("saved_data.jld2")["Diffusivity/member_diffs"]
 ens_av_diffs = load("saved_data.jld2")["Diffusivity/ens_avg_diff" ]
 
-bootstrap_samples = load("saved_data.jld2")["Bootstrap/diff_samples"]
-
 ## First moment in time plots
 first_moms_plot = Figure(resolution = (500, 1000))
 
@@ -216,6 +214,9 @@ save("first_moms.png", first_moms_plot)
 # Histograms of diffusivity
 ################################################################################################
 ## Member diffusivity
+member_diffs = load("saved_data.jld2")["Diffusivity/member_diffs"]
+bootstrap_samples = load("saved_data.jld2")["Bootstrap/diff_samples"]
+bootstrap_samples_v2 = load("saved_data.jld2")["Bootstrap/diff_samples_v2"]
 diffs_hist = Figure(resolution = (600, 800))
 
 titles = ["(a) Upper Layer", "(b) Lower layer"]
@@ -243,6 +244,7 @@ end
 Legend(diffs_hist[3, 1], ax[1])
 diffs_hist
 save("diffs_hist.png", diffs_hist)
+
 ## Member diffusivity and bootstrap samples
 bootstrap_hist = Figure(resolution = (600, 800))
 
@@ -254,7 +256,7 @@ ax = [Axis(bootstrap_hist[i, 1],
 
 for i ∈ 1:2
 
-    hist!(ax[i], member_diffs[:, i], normalization = :probability, bins = 15,
+    hist!(ax[i], member_diffs[:, i], normalization = :probability, bins = 10,
         label = "Diffusivity of ensemble members")
     CairoMakie.scatter!(ax[i], [mean(member_diffs[:, i])], [0], 
                     label = "Mean diffusivity of ensemble members",
@@ -263,7 +265,7 @@ for i ∈ 1:2
                         [mean(member_diffs[:, i]) - std(member_diffs[:, i]), mean(member_diffs[:, i]) + std(member_diffs[:, i])], [0, 0], 
                         label = "Mean diffusivity ± σ of ensemble members",
                         color = :green)
-    hist!(ax[i], bootstrap_samples[:, i], normalization = :probability,
+    hist!(ax[i], bootstrap_samples_v2[:, i], normalization = :probability,
         label = "Bootstrapped diffusivity of ensemble average\nconcentration field")
 
 end
