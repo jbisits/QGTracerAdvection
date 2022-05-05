@@ -110,7 +110,7 @@ for i ∈ 1:2, j ∈ 1:3
     plot_data = conc_plot_data[i, j]
     clims = (minimum(plot_data), maximum(plot_data))
     #cticks = round.(range(minimum(plot_data), maximum(plot_data), length = 3); sigdigits = 2)
-    Colorbar(tracer_plots[i, j][2, 1], limits = clims, vertical = false, flipaxis = false, colormap = :deep, ticklabelrotation = 45)
+    Colorbar(tracer_plots[i, j][2, 1], limits = clims, vertical = false, flipaxis = false, colormap = :deep, ticklabelrotation = 45.0)
 
 end
 tracer_plots
