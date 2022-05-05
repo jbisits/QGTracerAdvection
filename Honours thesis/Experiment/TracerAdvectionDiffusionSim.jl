@@ -22,20 +22,20 @@ include("PackageSetup.jl")
 #include("Flows/Rectangle/FlowSetup_nondim_32_128domain.jl")
 #include("Flows/Rectangle/FlowSetup_nondim_32_256domain.jl")
 #include("Flows/Rectangle/FlowSetup_nondim_64_128domain.jl")
-#include("Flows/Rectangle/FlowSetup_nondim_64_256domain.jl")
+include("Flows/Rectangle/FlowSetup_nondim_64_256domain.jl")
 
 #Import a flow on a square domain with updated params that translate to accurate values for U = 0.02.
 #include("Flows/NewParamsSquare/Square_new_params_32domain_64res.jl")
 #include("Flows/NewParamsSquare/Square_new_params_64domain_128res.jl")
 #include("Flows/NewParamsSquare/Square_new_params_128domain_256res.jl")
-include("Flows/NewParamsSquare/Square_new_params_256domain_512res.jl")
+#include("Flows/NewParamsSquare/Square_new_params_256domain_512res.jl")
 
 #Import a flow on a rectanglular domain with updated params that translate to accurate values for U = 0.02.
 #include("Flows/NewParamsRectangle/Rectangle_new_params_64_128dom.jl")
 #include("Flows/NewParamsRectangle/Rectangle_new_params_64_256dom.jl")
 
 nsubs  = 1            #Set the number of steps the simulation takes at each iteration.         
-nsteps = 18000          #Set the total amount of time steps the advection-diffusion simulation should run for
+nsteps = 8000          #Set the total amount of time steps the advection-diffusion simulation should run for
 
 #κ = 0.01
 κ = 0.03 #updated diffusivity

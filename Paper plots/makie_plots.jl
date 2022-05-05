@@ -15,7 +15,7 @@ diff_expt_data = load(diff_expt_path)
 
 diff_expt_plot = Figure(resolution = (1200, 1200))
 
-titles = [L"(a) Initial time, $\hat{t} = 0" L"(a) Initial time, $\hat{t} = 0"; L"(a) Final time, $\hat{t} = 14" L"(a) Final time, $\hat{t} = 14"]
+titles = [L"(a) Initial time, $\hat{t} = 0" L"(b) Initial time, $\hat{t} = 0"; L"(c) Final time, $\hat{t} = 14" L"(d) Final time, $\hat{t} = 14"]
 xlabs = ["Amount of area in terms of 𝒜", L"\hat{x}", ]
 xscales = [log10, identity]
 ylabs = [L"Concentration ($\hat{C})", L"\hat{y}"]
@@ -57,6 +57,10 @@ save("av_area_de.png", av_area_de)
 # Tracer concentration throughout experiments
 ################################################################################################
 conc_data = load("SimulationData.jld2")
+dims = nondim2dim(conc_data)
+dims["Lx"] / 1000 # 7645km is zonal and meridional length
+(dims["Δt"] * 18000) / 86400 # 1555 days, 
+((dims["Δt"] * 18000) / 86400) / 365 # 4.2 years
 
 t = [conc_data["snapshots/t/"*string(i)] for i ∈ 0:100:18000]
 
@@ -97,7 +101,7 @@ for (i, axis) in enumerate(ax)
 
     plot_data = conc_plot_data[i]
     clims = (minimum(plot_data), maximum(plot_data))
-    heatmap!(axis, x̂, ŷ, plot_data, colormap = :deep)
+    CairoMakie.heatmap!(axis, x̂, ŷ, plot_data, colormap = :deep)
 
 end
 
@@ -106,7 +110,7 @@ for i ∈ 1:2, j ∈ 1:3
     plot_data = conc_plot_data[i, j]
     clims = (minimum(plot_data), maximum(plot_data))
     #cticks = round.(range(minimum(plot_data), maximum(plot_data), length = 3); sigdigits = 2)
-    Colorbar(tracer_plots[i, j][2, 1], limits = clims, vertical = false, flipaxis = false)
+    Colorbar(tracer_plots[i, j][2, 1], limits = clims, vertical = false, flipaxis = false, colormap = :deep, ticklabelrotation = 45)
 
 end
 tracer_plots
