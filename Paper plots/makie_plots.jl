@@ -175,6 +175,9 @@ ens_fit = load("saved_data.jld2")["First_moms/Ensemble_avg_lf"]
 member_diffs = load("saved_data.jld2")["Diffusivity/member_diffs"]
 ens_av_diffs = load("saved_data.jld2")["Diffusivity/ens_avg_diff" ]
 
+μᵤ, μₗ = mean(member_diffs[:, 1]), mean(member_diffs[:, 2])
+σᵤ_mem, σₗ_mem = std(member_diffs[:, 1]), std(member_diffs[:, 2])
+
 ## First moment in time plots
 first_moms_plot = Figure(resolution = (500, 1000))
 
@@ -221,6 +224,7 @@ save("first_moms.png", first_moms_plot)
 member_diffs = load("saved_data.jld2")["Diffusivity/member_diffs"]
 bootstrap_samples = load("saved_data.jld2")["Bootstrap/diff_samples"]
 bootstrap_samples_v2 = load("saved_data.jld2")["Bootstrap/diff_samples_v2"]
+σᵤ, σₗ = std(bootstrap_samples_v2[:, 1]), std(bootstrap_samples_v2[:, 2])
 diffs_hist = Figure(resolution = (600, 800))
 
 titles = ["(a) Upper Layer", "(b) Lower layer"]
@@ -416,7 +420,7 @@ ax = [Axis(spat_RMS[1, 1],
             title = "(a) RMS error for spatial subsets\nof tracer concetration data", 
             aspect = 1)]
 
-upper_spatial = CairoMakie.heatmap!(ax[1], zonal_subset, meridional_subset, log.(upper_spatial_rms_error))
+upper_spatial = CairoMakie.heatmap!(ax[1], zonal_subset, meridional_subset, log10.(upper_spatial_rms_error))
 Colorbar(spat_RMS[1, 1][1, 2], upper_spatial, 
         label = "log(RMS) error of diffusivity from ensemble\nmembers compared to 𝒦 (m²s⁻¹)")
 
@@ -429,7 +433,7 @@ ax = [Axis(temp_RMS[1, 1],
             title = "(b) RMS error for temporal subsets\nof tracer concetration data",
             aspect = 1)]
 
-upper_temp = lines!(ax[1], time_inc, log.(upper_tempoal_rms_error))
+upper_temp = lines!(ax[1], time_inc, log10.(upper_tempoal_rms_error))
 
 ax = [Axis(spat_temp_RMS[1, 1], 
             xlabel = "Time between data sampling (days)",
@@ -444,7 +448,7 @@ ax = [Axis(spat_temp_RMS[1, 1],
             aspect = 1,
             alignmode = Inside())]
 
-upper_spatio_temp = CairoMakie.heatmap!(ax[1], time_inc, meridional_subset, log.(upper_ts_rms_error))
+upper_spatio_temp = CairoMakie.heatmap!(ax[1], time_inc, meridional_subset, log10.(upper_ts_rms_error))
 Colorbar(spat_temp_RMS[1, 1][1, 2], upper_spatio_temp, 
         label = "log(RMS) error of diffusivity from ensemble\nmembers compared to 𝒦 (m²s⁻¹)")
 
