@@ -13,10 +13,10 @@ SimPath = joinpath("..", "Honours thesis/Experiment")
 diff_expt_path = joinpath(SimPath, "Output/Simulation: Lx̂ = Lŷ = 16, nx = 128, save_freq = 50, IC = GaussianBlob, Ensemble = false/SimulationData.jld2")
 diff_expt_data = load(diff_expt_path)
 
-diff_expt_plot = Figure(resolution = (1200, 1200))
+diff_expt_plot = Figure(resolution = (1200, 1200), fontsize = 20)
 
 titles = [L"(a) Initial time, $\hat{t} = 0" L"(b) Initial time, $\hat{t} = 0"; L"(c) Final time, $\hat{t} = 14" L"(d) Final time, $\hat{t} = 14"]
-xlabs = ["Amount of area in terms of 𝒜", L"\hat{x}", ]
+xlabs = ["Accumulated area in terms of 𝒜", L"\hat{x}"]
 xscales = [log10, identity]
 ylabs = [L"Concentration ($\hat{C})", L"\hat{y}"]
 ax = [Axis(diff_expt_plot[i, j],
@@ -81,7 +81,7 @@ IC_conc
 save("IC_conc.png", IC_conc)
 
 # Evolution of tracer patch
-tracer_plots = Figure(resolution = (1200, 1200))
+tracer_plots = Figure(resolution = (1200, 1200), fontsize = 17)
 plot_steps = 0:3000:15000
 plot_steps_mat = reshape(plot_steps, (2, 3))
 plot_times = round.(Int, [conc_data["snapshots/t/"*string(i)] for i ∈ plot_steps])
@@ -179,39 +179,54 @@ ens_av_diffs = load("saved_data.jld2")["Diffusivity/ens_avg_diff" ]
 σᵤ_mem, σₗ_mem = std(member_diffs[:, 1]), std(member_diffs[:, 2])
 
 ## First moment in time plots
-first_moms_plot = Figure(resolution = (500, 1000))
+first_moms_plot = Figure(resolution = (1000, 1000), fontsize = 17)
 
 plot_time = 1:length(t)
+short_plot_time = 1:findfirst(t .> 20)
 
-titles = ["(a) Upper Layer", "(b) Lower layer"]
-ax = [Axis(first_moms_plot[i, 1], 
+titles = [L"(a) Upper layer $\hat{t} = 0 - 80" L"(b) Upper layer $\hat{t} = 0 - 20";  L"(c) Lower layer $\hat{t} = 0 - 80" L"(d) Lower layer $\hat{t} = 0 - 20"]
+ax = [Axis(first_moms_plot[i, j], 
             xlabel = L"\hat{t}",
             ylabel = L"\langle \hat{A} \rangle",
-            title = titles[i], 
-            aspect = 1) for i ∈ 1:2]
+            title = titles[i, j], 
+            aspect = 1) for j ∈ 1:2, i ∈ 1:2]
 
 for i ∈ 1:length(member_first_moms[1, 1, :])
     if i == 1
         lines!(ax[1], t[plot_time], member_first_moms[plot_time, 1, i], color = :grey, label = "Ensemble member average area growth")
-        lines!(ax[2], t[plot_time], member_first_moms[plot_time, 2, i], color = :grey, label = "Ensemble member average area growth")
+        lines!(ax[3], t[plot_time], member_first_moms[plot_time, 2, i], color = :grey, label = "Ensemble member average area growth")
+        lines!(ax[2], t[short_plot_time], member_first_moms[short_plot_time, 1, i], color = :grey, label = "Ensemble member average area growth")
+        lines!(ax[4], t[short_plot_time], member_first_moms[short_plot_time, 2, i], color = :grey, label = "Ensemble member average area growth")
     else
         lines!(ax[1], t[plot_time], member_first_moms[plot_time, 1, i], color = :grey)
-        lines!(ax[2], t[plot_time], member_first_moms[plot_time, 2, i], color = :grey)
+        lines!(ax[3], t[plot_time], member_first_moms[plot_time, 2, i], color = :grey)
+        lines!(ax[2], t[short_plot_time], member_first_moms[short_plot_time, 1, i], color = :grey)
+        lines!(ax[4], t[short_plot_time], member_first_moms[short_plot_time, 2, i], color = :grey)
     end
 end
 
-lines!(ax[1], t[plot_time], ens_av_first_mom[plot_time, 1], label = "Ensemble average concentration\nfield average area growth")
+lines!(ax[1], t[plot_time], ens_av_first_mom[plot_time, 1], label = "Ensemble average concentration field average area growth")
 lines!(ax[1], t[plot_time], ens_fit[1, 1] .+ t[plot_time] .* ens_fit[2, 1], 
         linestyle = :dash, 
         linewidth = 4,
-        label = "Linear fit to the average area growth of\nthe ensemble average concentration field")
-lines!(ax[2], t[plot_time], ens_av_first_mom[plot_time, 2], label = "Ensemble average concentration\nfield average area growth")
-lines!(ax[2], t[plot_time], ens_fit[1, 2] .+ t[plot_time] .* ens_fit[2, 2], 
+        label = "Linear fit to the average area growth of the ensemble average concentration field")
+lines!(ax[2], t[short_plot_time], ens_av_first_mom[short_plot_time, 1], label = "Ensemble average concentration field average area growth")
+lines!(ax[2], t[short_plot_time], ens_fit[1, 1] .+ t[short_plot_time] .* ens_fit[2, 1], 
         linestyle = :dash, 
         linewidth = 4,
-        label = "Linear fit to the average area growth of\nthe ensemble average concentration field")
+        label = "Linear fit to the average area growth of the ensemble average concentration field")
+lines!(ax[3], t[plot_time], ens_av_first_mom[plot_time, 2], label = "Ensemble average concentration\nfield average area growth")
+lines!(ax[3], t[plot_time], ens_fit[1, 2] .+ t[plot_time] .* ens_fit[2, 2], 
+        linestyle = :dash, 
+        linewidth = 4,
+        label = "Linear fit to the average area growth of the ensemble average concentration field")
+lines!(ax[4], t[short_plot_time], ens_av_first_mom[short_plot_time, 2], label = "Ensemble average concentration\nfield average area growth")
+lines!(ax[4], t[short_plot_time], ens_fit[1, 2] .+ t[short_plot_time] .* ens_fit[2, 2], 
+        linestyle = :dash, 
+        linewidth = 4,
+        label = "Linear fit to the average area growth of the ensemble average concentration field")
 
-Legend(first_moms_plot[3, 1], ax[1])
+Legend(first_moms_plot[3, :], ax[1])
 rowsize!(first_moms_plot.layout, 1, Relative(0.425))
 rowsize!(first_moms_plot.layout, 2, Relative(0.425))
 first_moms_plot
@@ -266,15 +281,20 @@ for i ∈ 1:2
 
     hist!(ax[i], member_diffs[:, i], normalization = :probability, bins = 10,
         label = "Diffusivity of ensemble members")
-    CairoMakie.scatter!(ax[i], [mean(member_diffs[:, i])], [0], 
-                    label = "Mean diffusivity of ensemble members",
-                    color = :red)
-    CairoMakie.scatter!(ax[i], 
-                        [mean(member_diffs[:, i]) - std(member_diffs[:, i]), mean(member_diffs[:, i]) + std(member_diffs[:, i])], [0, 0], 
-                        label = "Mean diffusivity ± σ of ensemble members",
-                        color = :green)
     hist!(ax[i], bootstrap_samples_v2[:, i], normalization = :probability,
         label = "Bootstrapped diffusivity of ensemble average\nconcentration field")
+    scatter!(ax[i], [mean(member_diffs[:, i])], [0], 
+        label = "Mean diffusivity of ensemble members",
+        color = :red)
+    scatter!(ax[i], 
+            [mean(member_diffs[:, i]) - std(member_diffs[:, i]), mean(member_diffs[:, i]) + std(member_diffs[:, i])], [0, 0], 
+            label = "Mean diffusivity ± σ of ensemble members",
+            color = :green)
+    scatter!(ax[i], [ens_av_diffs[i]], [0],
+            label = "Assumed \"true\" diffusvity",
+            color = :magenta,
+            marker = :diamond,
+            markersize = 10)
 
 end
 
@@ -421,14 +441,14 @@ ax = [Axis(spat_RMS[1, 1],
             aspect = 1)]
 
 upper_spatial = CairoMakie.heatmap!(ax[1], zonal_subset, meridional_subset, log10.(upper_spatial_rms_error))
-Colorbar(spat_RMS[1, 1][1, 2], upper_spatial, 
-        label = "log(RMS) error of diffusivity from ensemble\nmembers compared to 𝒦 (m²s⁻¹)")
+Colorbar(spat_RMS[1, 1][1, 2], upper_spatial,
+        label = "log10(RMS) error of diffusivity from\nensemble members compared to 𝒦 (m²s⁻¹)")
 
 ax = [Axis(temp_RMS[1, 1], 
             xlabel = "Time between data sampling (days)",
             xticks = time_inc,
             xtickformat = ts -> [string(t .* 8) for t ∈ time_inc],
-            ylabel = "log(RMS) error of diffusivity from ensemble\nmembers compared to 𝒦 (m²s⁻¹)",
+            ylabel = "log10(RMS) error of diffusivity from\nensemble members compared to 𝒦 (m²s⁻¹)",
             xscale = log2,
             title = "(b) RMS error for temporal subsets\nof tracer concetration data",
             aspect = 1)]
@@ -444,13 +464,13 @@ ax = [Axis(spat_temp_RMS[1, 1],
             ytickformat = ys -> [string(y .* 15) for y ∈ meridional_subset],
             xscale = log2,
             yscale = log2,
-            title = "(c) RMS error for spatio-temporal subsets\nof tracer concetration data",
+            title = "(c) RMS error for spatio-temporal\nsubsets of tracer concetration data",
             aspect = 1,
             alignmode = Inside())]
 
 upper_spatio_temp = CairoMakie.heatmap!(ax[1], time_inc, meridional_subset, log10.(upper_ts_rms_error))
 Colorbar(spat_temp_RMS[1, 1][1, 2], upper_spatio_temp, 
-        label = "log(RMS) error of diffusivity from ensemble\nmembers compared to 𝒦 (m²s⁻¹)")
+        label = "log10(RMS) error of diffusivity from\nensemble members compared to 𝒦 (m²s⁻¹)")
 
 upper_err_plot
 
@@ -532,7 +552,7 @@ ax = [Axis(spat_RMS[1, 1],
             title = "(a) RMS error for spatial subsets\nof tracer concetration data", 
             aspect = 1)]
 
-upper_spatial = CairoMakie.heatmap!(ax[1], zonal_subset[1:end-2], meridional_subset[1:end-2], log.(upper_spatial_rms_error[1:end-2, 1:end-2]))
+upper_spatial = CairoMakie.heatmap!(ax[1], zonal_subset[1:end-2], meridional_subset[1:end-2], log10.(upper_spatial_rms_error[1:end-2, 1:end-2]))
 Colorbar(spat_RMS[1, 1][1, 2], upper_spatial, #scale = log2,
         label = "log(RMS) error of diffusivity from ensemble\nmembers compared to 𝒦 (m²s⁻¹)")
 
@@ -545,7 +565,7 @@ ax = [Axis(temp_RMS[1, 1],
             title = "(b) RMS error for temporal subsets\nof tracer concetration data",
             aspect = 1)]
 
-upper_temp = lines!(ax[1], time_inc, log.(upper_tempoal_rms_error))
+upper_temp = lines!(ax[1], time_inc, log10.(upper_tempoal_rms_error))
 
 ax = [Axis(spat_temp_RMS[1, 1], 
             xlabel = "Time between data sampling (days)",
@@ -560,8 +580,64 @@ ax = [Axis(spat_temp_RMS[1, 1],
             aspect = 1,
             alignmode = Inside())]
 
-upper_spatio_temp = CairoMakie.heatmap!(ax[1], time_inc, meridional_subset[1:end-2], log.(upper_ts_rms_error[:, 1:end-2]))
-Colorbar(spat_temp_RMS[1, 1][1, 2], upper_spatio_temp, #scale = log2,
+upper_spatio_temp = CairoMakie.heatmap!(ax[1], time_inc, meridional_subset[1:end-2], log10.(upper_ts_rms_error[:, 1:end-2]))
+Colorbar(spat_temp_RMS[1, 1][1, 2], upper_spatio_temp, #scale = log10,
         label = "log(RMS) error of diffusivity from ensemble\nmembers compared to 𝒦 (m²s⁻¹)")
+
+upper_err_plot
+################################################################################################
+# Using percentage of true diffusivity
+################################################################################################
+## Version one, all spatial subsets no non linear colour scale as percentage
+upper_err_plot = Figure(resolution = (600, 1200))
+
+spat_RMS = upper_err_plot[1, 1]
+temp_RMS = upper_err_plot[2, 1]
+spat_temp_RMS = upper_err_plot[3, 1]
+
+ax = [Axis(spat_RMS[1, 1], 
+            xlabel = "Zonal distance between\ndata samples (km)",
+            xticks = zonal_subset,
+            xtickformat = xs -> [string(x .* 15) for x ∈ zonal_subset],
+            xticklabelrotation = 45.0,
+            ylabel = "Meridional distance between\ndata samples (km)",
+            yticks = meridional_subset,
+            ytickformat = ys -> [string(y .* 15) for y ∈ meridional_subset],
+            xscale = log2, 
+            yscale = log2,
+            title = "(a) RMS error for spatial subsets\nof tracer concetration data", 
+            aspect = 1)]
+
+upper_spatial = CairoMakie.heatmap!(ax[1], zonal_subset, meridional_subset, log10.(upper_spatial_per))
+Colorbar(spat_RMS[1, 1][1, 2], upper_spatial,
+        label = "log10(RMS) error of diffusivity\nas a percentage of 𝒦")
+
+ax = [Axis(temp_RMS[1, 1], 
+            xlabel = "Time between data sampling (days)",
+            xticks = time_inc,
+            xtickformat = ts -> [string(t .* 8) for t ∈ time_inc],
+            ylabel = "log10(RMS) error of diffusivity\nas a percentage of 𝒦",
+            xscale = log2,
+            title = "(b) RMS error for temporal subsets\nof tracer concetration data",
+            aspect = 1)]
+
+upper_temp = lines!(ax[1], time_inc, log10.(100 .* upper_tempoal_rms_error ./ ens_av_diffs[1]))
+
+ax = [Axis(spat_temp_RMS[1, 1], 
+            xlabel = "Time between data sampling (days)",
+            xticks = time_inc,
+            xtickformat = ts -> [string(t .* 8) for t ∈ time_inc],
+            ylabel = "Zonal and meridional distance\nbetween data saplmes (km)",
+            yticks = meridional_subset,
+            ytickformat = ys -> [string(y .* 15) for y ∈ meridional_subset],
+            xscale = log2,
+            yscale = log2,
+            title = "(c) RMS error for spatio-temporal\nsubsets of tracer concetration data",
+            aspect = 1,
+            alignmode = Inside())]
+
+upper_spatio_temp = CairoMakie.heatmap!(ax[1], time_inc, meridional_subset, log10.(upper_ts_per))
+Colorbar(spat_temp_RMS[1, 1][1, 2], upper_spatio_temp,
+        label = "log10(RMS) error of diffusivity\nas a percentage of 𝒦")
 
 upper_err_plot
