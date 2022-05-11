@@ -1,11 +1,15 @@
 # These are plots for the tracer mixing paper.
 # 
 
-using CairoMakie, JLD2, Statistics
+using CairoMakie, JLD2, Statistics, GLM
 
 cd(joinpath(pwd(), "Paper plots"))
 SimPath = joinpath("..", "Honours thesis/Experiment")
 
+# If needed
+cd("/Users/Joey/Documents/GitHub/QGTracerAdvection/Modules")
+include(joinpath(pwd(), "MeasureMixing.jl"))
+using .MeasureMixing
 ################################################################################################
 # Diffusion experiments
 ################################################################################################
@@ -53,6 +57,20 @@ axislegend(ax, position = :rb)
 av_area_de
 save("av_area_de.png", av_area_de)
 
+## Linear fit to diffusion data
+t_diff = time_vec(diff_expt_data)
+t_mat = [ones(length(t_diff)) t_diff]
+first_moms_diff_expt = reshape(first_moment(diff_expt_data), :)
+diff_model = lm(t_mat, first_moms_diff_expt)
+int, slope = coef(diff_model)
+r2(diff_model)
+
+slope / (4*π)
+
+# Plotting to see if fit is linear.
+lines!(ax, t, int .+ t .* slope)
+av_area_de
+save("av_area_de.png", av_area_de)
 ################################################################################################
 # Tracer concentration throughout experiments
 ################################################################################################
@@ -97,10 +115,10 @@ ax = [Axis(tracer_plots[i, j],
         title = L"%$(plot_letters[i, j]) \quad \hat{t} = %$(string(plot_times[i, j]))",
         aspect = 1
         ) for j ∈ 1:3, i ∈ 1:2]
+
 for (i, axis) in enumerate(ax)
 
     plot_data = conc_plot_data[i]
-    clims = (minimum(plot_data), maximum(plot_data))
     CairoMakie.heatmap!(axis, x̂, ŷ, plot_data, colormap = :deep)
 
 end
@@ -110,7 +128,9 @@ for i ∈ 1:2, j ∈ 1:3
     plot_data = conc_plot_data[i, j]
     clims = (minimum(plot_data), maximum(plot_data))
     #cticks = round.(range(minimum(plot_data), maximum(plot_data), length = 3); sigdigits = 2)
-    Colorbar(tracer_plots[i, j][2, 1], limits = clims, vertical = false, flipaxis = false, colormap = :deep, ticklabelrotation = 45.0)
+    Colorbar(tracer_plots[i, j][2, 1], label = L"Concentration ($\hat{C}$)",
+            limits = clims, vertical = false, 
+            flipaxis = false, colormap = :deep, ticklabelrotation = 45.0)
 
 end
 tracer_plots
@@ -177,6 +197,21 @@ ens_av_diffs = load("saved_data.jld2")["Diffusivity/ens_avg_diff" ]
 
 μᵤ, μₗ = mean(member_diffs[:, 1]), mean(member_diffs[:, 2])
 σᵤ_mem, σₗ_mem = std(member_diffs[:, 1]), std(member_diffs[:, 2])
+
+# variability compared to ``true" diffusivity
+100 * (μᵤ - σᵤ_mem) / ens_av_diffs[1]
+100 * (μᵤ + σᵤ_mem) / ens_av_diffs[1]
+
+100 * (μₗ - σₗ_mem) / ens_av_diffs[2]
+100 * (μₗ + σₗ_mem) / ens_av_diffs[2]
+
+# R² for linear fit to ensemble average
+lm_data = [ones(length(t)) t]
+linear_mod = lm(lm_data, ens_av_first_mom[:, 1])
+r2(linear_mod)
+lm_data = [ones(length(t)) t]
+linear_mod = lm(lm_data, ens_av_first_mom[:, 2])
+r2(linear_mod)
 
 ## First moment in time plots
 first_moms_plot = Figure(resolution = (1000, 1000), fontsize = 17)
@@ -331,6 +366,7 @@ lower_spatial_per = @. 100 * lower_spatial_rms_error / ens_av_diffs[2]
 
 upper_ts_per = @. 100 * upper_ts_rms_error / ens_av_diffs[1]
 lower_ts_per = @. 100 * lower_ts_rms_error / ens_av_diffs[2]
+
 ## Spatial subset of the data
 spatial = Figure(resolution = (600, 800))
 
@@ -380,7 +416,7 @@ save("temporal.png", temporal)
 
 # RMS percentage increase
 
-(upper_tempoal_rms_error[end] - upper_tempoal_rms_error[1]) / upper_tempoal_rms_error[1]
+100 * (upper_tempoal_rms_error[end] - upper_tempoal_rms_error[1]) / upper_tempoal_rms_error[1]
 (lower_tempoal_rms_error[end] - lower_tempoal_rms_error[1]) / lower_tempoal_rms_error[1]
 
 ## Spatio temporal subset of the data
