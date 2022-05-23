@@ -1,5 +1,4 @@
-# These are plots for the tracer mixing paper.
-# 
+# These are plots for the tracer mixing paper. 
 
 using CairoMakie, JLD2, Statistics, GLM
 
@@ -7,8 +6,8 @@ cd(joinpath(pwd(), "Paper plots"))
 SimPath = joinpath("..", "Honours thesis/Experiment")
 
 # If needed
-cd("/Users/Joey/Documents/GitHub/QGTracerAdvection/Modules")
-include(joinpath(pwd(), "MeasureMixing.jl"))
+module_path = "/Users/Joey/Documents/GitHub/QGTracerAdvection/Modules"
+include(joinpath(module_path, "MeasureMixing.jl"))
 using .MeasureMixing
 ################################################################################################
 # Diffusion experiments
@@ -99,7 +98,7 @@ IC_conc
 save("IC_conc.png", IC_conc)
 
 # Evolution of tracer patch
-tracer_plots = Figure(resolution = (1200, 1200), fontsize = 17)
+tracer_plots = Figure(resolution = (1200, 1400), fontsize = 16)
 plot_steps = 0:3000:15000
 plot_steps_mat = reshape(plot_steps, (2, 3))
 plot_times = round.(Int, [conc_data["snapshots/t/"*string(i)] for i ∈ plot_steps])
@@ -109,8 +108,9 @@ ŷ = conc_data["grid/y"]
 conc_plot_data = [abs.(conc_data["snapshots/Concentration/"*string(plot_steps_mat[j, i])][:, :, 1]) for j ∈ 1:2, i ∈ 1:3]
 plot_letters = ["(a)" "(b)" "(c)"; "(d)" "(e)" "(f)"]
 
+newline = "\n"
 ax = [Axis(tracer_plots[i, j],
-        xlabel = L"\hat{x}",
+        xlabel = L"\hat{x} %$(newline)",
         ylabel = L"\hat{y}",
         title = L"%$(plot_letters[i, j]) \quad \hat{t} = %$(string(plot_times[i, j]))",
         aspect = 1
@@ -219,7 +219,8 @@ first_moms_plot = Figure(resolution = (1000, 1000), fontsize = 17)
 plot_time = 1:length(t)
 short_plot_time = 1:findfirst(t .> 20)
 
-titles = [L"(a) Upper layer $\hat{t} = 0 - 80" L"(b) Upper layer $\hat{t} = 0 - 20";  L"(c) Lower layer $\hat{t} = 0 - 80" L"(d) Lower layer $\hat{t} = 0 - 20"]
+titles = ["(a) Upper layer" "(b) Lower layer"]
+titles = [L"(a) Upper layer $\hat{t} = 0 - 90" L"(b) Upper layer $\hat{t} = 0 - 20";  L"(c) Lower layer $\hat{t} = 0 - 90" L"(d) Lower layer $\hat{t} = 0 - 20"]
 ax = [Axis(first_moms_plot[i, j], 
             xlabel = L"\hat{t}",
             ylabel = L"\langle \hat{A} \rangle",
