@@ -148,14 +148,14 @@ square_inc = joinpath(SimPath, "Output/Square area increase blob")
 files_square = [joinpath(square_inc, "SimulationData_32.jld2"), joinpath(square_inc, "SimulationData_64.jld2"),
         joinpath(square_inc, "SimulationData_128.jld2"), joinpath(square_inc, "SimulationData_256.jld2")]
 
-area_inc = Figure(resolution = (400, 800))
+area_inc = Figure(resolution = (400, 400))
 
 titles = ["(a) Upper layer - square increase", "(b) Upper layer - meridional increase"]
-ax = [Axis(area_inc[i, 1],
-    title = titles[i],
+ax = [Axis(area_inc[1, 1],
+    title = "Upper layer",
     xlabel = L"\hat{t}",
     ylabel = L"\langle \hat{A} \rangle",
-) for i ∈ 1:2]
+)]
 
 for files ∈ files_square
 
@@ -164,7 +164,7 @@ for files ∈ files_square
     t = time_vec(data)
     first_mom_square = first_moment(data)
     lines!(ax[1], t, first_mom_square[:, 1],
-        label = "Lx̂ = Lŷ = "*string(Lx))
+        label = L"L\hat{x} = L\hat{y} = %$(string(Lx)) "#=*string(Lx)=#)
 
 end
 
@@ -182,8 +182,9 @@ end
 for i ∈ 1:2
     axislegend(ax[i], position = :lt)
 end
+axislegend(ax[1], position = :lt)
 area_inc
-save("area_inc.png", area_inc)
+save("area_inc_sq.png", area_inc)
 ################################################################################################
 # Tracer experiment results and linear fits
 ################################################################################################
