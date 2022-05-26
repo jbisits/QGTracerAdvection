@@ -16,10 +16,10 @@ using .MeasureMixing
 diff_expt_path = joinpath(SimPath, "Output/Simulation: Lx̂ = Lŷ = 16, nx = 128, save_freq = 50, IC = GaussianBlob, Ensemble = false/SimulationData.jld2")
 diff_expt_data = load(diff_expt_path)
 
-diff_expt_plot = Figure(resolution = (1200, 1200), fontsize = 20)
+diff_expt_plot = Figure(resolution = (1200, 1200), fontsize = 17)
 
-titles = [L"(a) Initial time, $\hat{t} = 0" L"(b) Initial time, $\hat{t} = 0"; L"(c) Final time, $\hat{t} = 14" L"(d) Final time, $\hat{t} = 14"]
-xlabs = ["Accumulated area in terms of 𝒜", L"\hat{x}"]
+titles = ["(a) Initial time" "(b) Initial time"; "(c) Final time" "(d) Final time"]
+xlabs = ["Accumulated area", L"\hat{x}"]
 xscales = [log10, identity]
 ylabs = [L"Concentration ($\hat{C})", L"\hat{y}"]
 ax = [Axis(diff_expt_plot[i, j],
