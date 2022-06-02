@@ -230,10 +230,10 @@ ax = [Axis(first_moms_plot[i, j],
 
 for i ∈ 1:length(member_first_moms[1, 1, :])
     if i == 1
-        lines!(ax[1], t[plot_time], member_first_moms[plot_time, 1, i], color = :grey, label = "Ensemble member average area growth")
-        lines!(ax[3], t[plot_time], member_first_moms[plot_time, 2, i], color = :grey, label = "Ensemble member average area growth")
-        lines!(ax[2], t[short_plot_time], member_first_moms[short_plot_time, 1, i], color = :grey, label = "Ensemble member average area growth")
-        lines!(ax[4], t[short_plot_time], member_first_moms[short_plot_time, 2, i], color = :grey, label = "Ensemble member average area growth")
+        lines!(ax[1], t[plot_time], member_first_moms[plot_time, 1, i], color = :grey, label = "Ensemble member")
+        lines!(ax[3], t[plot_time], member_first_moms[plot_time, 2, i], color = :grey, label = "Ensemble member")
+        lines!(ax[2], t[short_plot_time], member_first_moms[short_plot_time, 1, i], color = :grey, label = "Ensemble member")
+        lines!(ax[4], t[short_plot_time], member_first_moms[short_plot_time, 2, i], color = :grey, label = "Ensemble member")
     else
         lines!(ax[1], t[plot_time], member_first_moms[plot_time, 1, i], color = :grey)
         lines!(ax[3], t[plot_time], member_first_moms[plot_time, 2, i], color = :grey)
@@ -242,30 +242,31 @@ for i ∈ 1:length(member_first_moms[1, 1, :])
     end
 end
 
-lines!(ax[1], t[plot_time], ens_av_first_mom[plot_time, 1], label = "Ensemble average concentration field average area growth")
+lines!(ax[1], t[plot_time], ens_av_first_mom[plot_time, 1], label = "Ensemble mean")
 lines!(ax[1], t[plot_time], ens_fit[1, 1] .+ t[plot_time] .* ens_fit[2, 1], 
         linestyle = :dash, 
         linewidth = 4,
-        label = "Linear fit to the average area growth of the ensemble average concentration field")
-lines!(ax[2], t[short_plot_time], ens_av_first_mom[short_plot_time, 1], label = "Ensemble average concentration field average area growth")
+        label = "Linear fit")
+lines!(ax[2], t[short_plot_time], ens_av_first_mom[short_plot_time, 1], label = "Ensemble mean")
 lines!(ax[2], t[short_plot_time], ens_fit[1, 1] .+ t[short_plot_time] .* ens_fit[2, 1], 
         linestyle = :dash, 
         linewidth = 4,
-        label = "Linear fit to the average area growth of the ensemble average concentration field")
-lines!(ax[3], t[plot_time], ens_av_first_mom[plot_time, 2], label = "Ensemble average concentration\nfield average area growth")
+        label = "Linear fit")
+lines!(ax[3], t[plot_time], ens_av_first_mom[plot_time, 2], label = "Ensemble mean")
 lines!(ax[3], t[plot_time], ens_fit[1, 2] .+ t[plot_time] .* ens_fit[2, 2], 
         linestyle = :dash, 
         linewidth = 4,
-        label = "Linear fit to the average area growth of the ensemble average concentration field")
-lines!(ax[4], t[short_plot_time], ens_av_first_mom[short_plot_time, 2], label = "Ensemble average concentration\nfield average area growth")
+        label = "Linear fit")
+lines!(ax[4], t[short_plot_time], ens_av_first_mom[short_plot_time, 2], label = "Ensemble mean")
 lines!(ax[4], t[short_plot_time], ens_fit[1, 2] .+ t[short_plot_time] .* ens_fit[2, 2], 
         linestyle = :dash, 
         linewidth = 4,
-        label = "Linear fit to the average area growth of the ensemble average concentration field")
+        label = "Linear fit")
 
-Legend(first_moms_plot[3, :], ax[1])
-rowsize!(first_moms_plot.layout, 1, Relative(0.425))
-rowsize!(first_moms_plot.layout, 2, Relative(0.425))
+axislegend(ax[1]; position = :lt)        
+#Legend(first_moms_plot[3, :], ax[1])
+#rowsize!(first_moms_plot.layout, 1, Relative(0.425))
+#rowsize!(first_moms_plot.layout, 2, Relative(0.425))
 first_moms_plot
 save("first_moms.png", first_moms_plot)
 
@@ -363,11 +364,19 @@ spatio_temp_subset = load("saved_data.jld2")["Spatio_temp_subset/RMS_error"]
 upper_ts_rms_error = reshape(spatio_temp_subset[:, 1, :, :], length(time_inc), length(meridional_subset))
 lower_ts_rms_error = reshape(spatio_temp_subset[:, 2, :, :], length(time_inc), length(meridional_subset))
 
+# As percentage
 upper_spatial_per = @. 100 * upper_spatial_rms_error / ens_av_diffs[1]
 lower_spatial_per = @. 100 * lower_spatial_rms_error / ens_av_diffs[2]
 
 upper_ts_per = @. 100 * upper_ts_rms_error / ens_av_diffs[1]
 lower_ts_per = @. 100 * lower_ts_rms_error / ens_av_diffs[2]
+
+# As decimal
+upper_spatial_dec = @. upper_spatial_rms_error / ens_av_diffs[1]
+lower_spatial_dec = @. lower_spatial_rms_error / ens_av_diffs[2]
+
+upper_ts_dec = @. upper_ts_rms_error / ens_av_diffs[1]
+lower_ts_dec = @. lower_ts_rms_error / ens_av_diffs[2]
 
 ## Spatial subset of the data
 spatial = Figure(resolution = (600, 800))
@@ -679,3 +688,154 @@ Colorbar(spat_temp_RMS[1, 1][1, 2], upper_spatio_temp,
         label = "log10(RMS) error of diffusivity\nas a percentage of 𝒦")
 
 upper_err_plot
+################################################################################################
+# Using RMSe / 𝒦ᵤ as the scale
+################################################################################################
+## As decimal
+upper_spatial_dec = @. upper_spatial_rms_error / ens_av_diffs[1]
+upper_temporal_dec = @. upper_tempoal_rms_error ./ ens_av_diffs[1]
+upper_ts_dec = @. upper_ts_rms_error / ens_av_diffs[1]
+
+zonal_subset_nl = 0:8
+meridional_subset_nl = 0:8
+temporal_subset_nl = 0:6
+
+upper_err_plot = Figure(resolution = (600, 1200))
+
+spat_RMS = upper_err_plot[1, 1]
+temp_RMS = upper_err_plot[2, 1]
+spat_temp_RMS = upper_err_plot[3, 1]
+
+ax = [Axis(spat_RMS[1, 1], 
+            xlabel = "Zonal distance between\ndata samples (km)",
+            xticks = zonal_subset_nl,
+            xtickformat = xs -> [string(x .* 15) for x ∈ zonal_subset],
+            xticklabelrotation = 45.0,
+            ylabel = "Meridional distance between\ndata samples (km)",
+            yticks = meridional_subset_nl,
+            ytickformat = ys -> [string(y .* 15) for y ∈ meridional_subset],
+            title = "(a) RMS error for spatial subsets\nof tracer concetration data", 
+            aspect = 1)]
+
+upper_spatial = CairoMakie.heatmap!(ax[1], zonal_subset_nl, meridional_subset_nl, log10.(upper_spatial_dec))
+
+spatial_grid_vals = [Point(x, y) for x ∈ zonal_subset_nl for y ∈ meridional_subset_nl]
+spatial_vals = string.(round.(reshape(100 * upper_spatial_dec', :); digits = 1))
+text!(ax[1], spatial_vals, position = spatial_grid_vals, align = (:center, :center), color = :red, textsize = 10)
+upper_err_plot
+Colorbar(spat_RMS[1, 1][1, 2], upper_spatial,
+        label = "log10(RMSe / 𝒦ᵤ)")
+
+#temporal_ticks = range(-1.95, -1.55, step = 0.1)
+ax = [Axis(temp_RMS[1, 1], 
+            xlabel = "Time between data sampling (days)",
+            xticks = temporal_subset_nl,
+            xtickformat = ts -> [string(t * 8) for t ∈ time_inc],
+            yticks = temporal_ticks,
+            #ytickformat =  ts -> [string(round(100 *(10 ^ y); digits = 2)) for y ∈ temporal_ticks],
+            ylabel = "log10(RMSe / 𝒦ᵤ)",
+            title = "(b) RMS error for temporal subsets\nof tracer concetration data",
+            aspect = 1)]
+
+ax2 = [Axis(temp_RMS[1, 1], 
+        #xlabel = "Time between data sampling (days)",
+        #xticks = temporal_subset_nl,
+        #xtickformat = ts -> [string(t * 8) for t ∈ time_inc],
+        yticks = temporal_ticks,
+        ytickformat =  ts -> [string(round(100 * y; digits = 1)) for y ∈ upper_temporal_dec],
+        #ylabel = "(RMSe / 𝒦ᵤ) * 100",
+        yticklabelcolor = :red,
+        yaxisposition = :right,
+        #title = "(b) RMS error for temporal subsets\nof tracer concetration data",
+        aspect = 1)]        
+   
+hidespines!(ax2[1])
+hidexdecorations!(ax2[1])
+upper_temp = lines!(ax[1], temporal_subset_nl, log10.(upper_temporal_dec))
+lines!(ax2[1], temporal_subset_nl, log10.(upper_temporal_dec), overdraw = false)
+
+ax = [Axis(spat_temp_RMS[1, 1], 
+            xlabel = "Time between data sampling (days)",
+            xticks = temporal_subset_nl,
+            xtickformat = ts -> [string(t .* 8) for t ∈ time_inc],
+            ylabel = "Zonal and meridional distance\nbetween data saplmes (km)",
+            yticks = meridional_subset_nl,
+            ytickformat = ys -> [string(y .* 15) for y ∈ meridional_subset],
+            title = "(c) RMS error for spatio-temporal\nsubsets of tracer concetration data",
+            aspect = 1,
+            alignmode = Inside())]
+
+upper_spatio_temp = CairoMakie.heatmap!(ax[1], temporal_subset_nl, meridional_subset_nl, log10.(upper_ts_dec))
+
+st_grid_vals = [Point(x, y) for x ∈ temporal_subset_nl for y ∈ meridional_subset_nl]
+st_vals = string.(round.(reshape(100 * upper_ts_dec', :); digits = 1))
+text!(ax[1], st_vals, position = st_grid_vals, align = (:center, :center), color = :red, textsize = 10)
+
+Colorbar(spat_temp_RMS[1, 1][1, 2], upper_spatio_temp,
+        label = "log10(RMSe / 𝒦ᵤ)")
+
+upper_err_plot
+
+## Adding text values to the heatmap
+
+spatial_grid_vals = [Point(x, y) for x ∈ zonal_subset for y ∈ meridional_subset]
+spatial_vals = string.(round.(reshape(100 * upper_spatial_dec, :); digits = 2))
+#scatter!(ax[1], spatial_grid_vals, marker = :circle)
+
+text!(spat_RMS[1, 1], spatial_vals, position = spatial_grid_vals, justification = :center, color = (:black, 0.5))
+
+for i ∈ 1:length(spatial_vals)
+
+    t = text!(ax[1], spatial_vals[i],
+              position = spatial_grid_vals[i],
+              align = (:center, :center)
+    )
+
+end
+
+
+###################################
+## Figuring `text!`
+###################################
+f = Figure(resolution = (800, 800))
+
+points = [Point(x, y) .* 200 for x in 1:3 for y in 1:3]
+ax = Axis(f[1, 1])
+scatter!(ax, points, marker = :circle, markersize = 10px)
+
+symbols = (:left, :center, :right)
+
+for ((justification, halign), point) in zip(Iterators.product(symbols, symbols), points)
+
+    t = text!(ax, "a\nshort\nparagraph",
+        color = (:black, 0.5),
+        position = point,
+        align = (halign, :center),
+        justification = justification)
+
+    #bb = boundingbox(t)
+    #wireframe!(f, bb, color = (:red, 0.2))
+end
+
+for (p, al) in zip(points[3:3:end], (:left, :center, :right))
+    text!(ax, "align :" * string(al), position = p .+ (0, 80),
+        align = (:center, :baseline))
+end
+
+for (p, al) in zip(points[7:9], (:left, :center, :right))
+    text!(ax, "justification\n:" * string(al), position = p .+ (80, 0),
+        align = (:center, :top), rotation = pi/2)
+end
+
+f
+
+## Problem occurs on the log2 scale.. Maybe I can re do the above plots not on log scale
+f = Figure(resolution = (800, 800))
+
+points = [Point(x, y) for x ∈ zonal_subset for y ∈ meridional_subset]
+ax = Axis(f[1, 1], xscale = log2, yscale = log2)
+scatter!(ax, points, marker = :circle, markersize = 10px)
+
+text!(ax, "Works?", position = (log2(64), log2(8)), textsize = 5)
+
+f
