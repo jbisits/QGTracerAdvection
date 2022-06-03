@@ -154,7 +154,7 @@ titles = ["(a) Upper layer - square increase", "(b) Upper layer - meridional inc
 ax = [Axis(area_inc[1, 1],
     title = "Upper layer",
     xlabel = L"\hat{t}",
-    ylabel = L"\langle \hat{A} \rangle",
+    ylabel = L"%$(lang) \hat{A} \rangle",
 )]
 
 for files ∈ files_square
@@ -167,6 +167,9 @@ for files ∈ files_square
         label = L"L\hat{x} = L\hat{y} = %$(string(Lx)) "#=*string(Lx)=#)
 
 end
+axislegend(ax[1], position = :lt)
+area_inc
+save("area_inc_sq.png", area_inc)
 
 for files ∈ files_merid
 
@@ -220,7 +223,7 @@ first_moms_plot = Figure(resolution = (1000, 1000), fontsize = 17)
 plot_time = 1:length(t)
 short_plot_time = 1:findfirst(t .> 20)
 
-titles = ["(a) Upper layer" "(b) Lower layer"]
+#titles = ["(a) Upper layer" "(b) Lower layer"]
 titles = [L"(a) Upper layer $\hat{t} = 0 - 90" L"(b) Upper layer $\hat{t} = 0 - 20";  L"(c) Lower layer $\hat{t} = 0 - 90" L"(d) Lower layer $\hat{t} = 0 - 20"]
 ax = [Axis(first_moms_plot[i, j], 
             xlabel = L"\hat{t}",
@@ -722,16 +725,16 @@ upper_spatial = CairoMakie.heatmap!(ax[1], zonal_subset_nl, meridional_subset_nl
 spatial_grid_vals = [Point(x, y) for x ∈ zonal_subset_nl for y ∈ meridional_subset_nl]
 spatial_vals = string.(round.(reshape(100 * upper_spatial_dec', :); digits = 1))
 text!(ax[1], spatial_vals, position = spatial_grid_vals, align = (:center, :center), color = :red, textsize = 10)
-upper_err_plot
+
 Colorbar(spat_RMS[1, 1][1, 2], upper_spatial,
         label = "log10(RMSe / 𝒦ᵤ)")
 
-#temporal_ticks = range(-1.95, -1.55, step = 0.1)
+yidx = [1, 5, 6, 7]
 ax = [Axis(temp_RMS[1, 1], 
             xlabel = "Time between data sampling (days)",
             xticks = temporal_subset_nl,
             xtickformat = ts -> [string(t * 8) for t ∈ time_inc],
-            yticks = temporal_ticks,
+            yticks = round.(log10.(upper_temporal_dec)[yidx]; digits = 2),
             #ytickformat =  ts -> [string(round(100 *(10 ^ y); digits = 2)) for y ∈ temporal_ticks],
             ylabel = "log10(RMSe / 𝒦ᵤ)",
             title = "(b) RMS error for temporal subsets\nof tracer concetration data",
@@ -741,8 +744,8 @@ ax2 = [Axis(temp_RMS[1, 1],
         #xlabel = "Time between data sampling (days)",
         #xticks = temporal_subset_nl,
         #xtickformat = ts -> [string(t * 8) for t ∈ time_inc],
-        yticks = temporal_ticks,
-        ytickformat =  ts -> [string(round(100 * y; digits = 1)) for y ∈ upper_temporal_dec],
+        yticks = round.(log10.(upper_temporal_dec)[yidx]; digits = 2),
+        ytickformat =  ts -> [string(round(100 * y; digits = 1)) for y ∈ upper_temporal_dec[yidx]],
         #ylabel = "(RMSe / 𝒦ᵤ) * 100",
         yticklabelcolor = :red,
         yaxisposition = :right,
@@ -751,6 +754,7 @@ ax2 = [Axis(temp_RMS[1, 1],
    
 hidespines!(ax2[1])
 hidexdecorations!(ax2[1])
+hideydecorations!(ax2[1], ticks = false)
 upper_temp = lines!(ax[1], temporal_subset_nl, log10.(upper_temporal_dec))
 lines!(ax2[1], temporal_subset_nl, log10.(upper_temporal_dec), overdraw = false)
 
