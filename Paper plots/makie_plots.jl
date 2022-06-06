@@ -154,7 +154,7 @@ titles = ["(a) Upper layer - square increase", "(b) Upper layer - meridional inc
 ax = [Axis(area_inc[1, 1],
     title = "Upper layer",
     xlabel = L"\hat{t}",
-    ylabel = L"%$(lang) \hat{A} \rangle",
+    ylabel = L"\langle \hat{A} \rangle",
 )]
 
 for files ∈ files_square
@@ -321,9 +321,9 @@ ax = [Axis(bootstrap_hist[i, 1],
 for i ∈ 1:2
 
     hist!(ax[i], member_diffs[:, i], normalization = :probability, bins = 10,
-        label = "Diffusivity of ensemble members")
+        label = "Ensemble member diffusivity estimates")
     hist!(ax[i], bootstrap_samples_v2[:, i], normalization = :probability,
-        label = "Bootstrapped diffusivity of ensemble average\nconcentration field")
+        label = "Ensemble mean diffusivity estimates")
     scatter!(ax[i], [mean(member_diffs[:, i])], [0], 
         label = "Mean diffusivity of ensemble members",
         color = :red)
@@ -779,6 +779,27 @@ Colorbar(spat_temp_RMS[1, 1][1, 2], upper_spatio_temp,
         label = "log10(RMSe / 𝒦ᵤ)")
 
 upper_err_plot
+
+##########################################################
+## Checking calculations
+##########################################################
+
+conc_data = load("SimulationData.jld2")
+dims = nondim2dim(conc_data)
+
+g = 9.81
+ρ₁ = 1034
+ρ₂ = 1035
+
+gprime = g * ((ρ₂ -  ρ₁)/ ρ₂)
+H = 1500
+f₀ = 2 * 7.29e-5 * sin(π / 3)
+Ld = sqrt(gprime * H) / f₀
+
+gprime = (Ld * f₀) ^ 2 / H
+g = gprime * ρ₂ / (ρ₂ - ρ₁)
+
+f0 = 2 * 2 * π / 86400 * sin(60 * π / 180)
 
 ## Adding text values to the heatmap
 
