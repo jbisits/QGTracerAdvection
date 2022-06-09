@@ -1,6 +1,43 @@
 using JLD2, Plots, Printf
 
+## Testing output from `PassiveTracerFlows.jl`
 cd(joinpath(pwd(), "PTF test"))
+
+## One dimensional Gaussian
+
+file = jldopen("advection-diffusion1D_timedep.jld2")
+
+iterations = parse.(Int, keys(file["snapshots/t"]))
+t = [file["snapshots/t/$i"] for i ∈ iterations]
+
+c = [file["snapshots/concentration/$i"] for i ∈ iterations]
+nothing # hide
+
+x  = file["grid/x"]
+Lx = file["grid/Lx"]
+
+plot_args = (xlabel = "x",
+             ylabel = "c",
+             framestyle = :box,
+             xlims = (-Lx/2, Lx/2),
+             ylims = (0, maximum(c[1])),
+             legend = :false,
+             color = :balance)
+
+p = plot(x, Array(c[1]), title = "concentration, t = " * @sprintf("%.2f", t[1]); plot_args...)
+
+nothing # hide
+
+# Create a movie of the tracer with the streamlines.
+
+anim = @animate for i ∈ 1:length(t)
+  p[1][:title] = "concentration, t = " * @sprintf("%.2f", t[i])
+  p[1][1][:y] = Array(c[i])
+end
+
+mp4(anim, "1D_advection-diffusion.mp4", fps = 12)
+close(file)
+## Two dimensional turbulent
 
 file = load("advection-diffusion_1.jld2")
 
