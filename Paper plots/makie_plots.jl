@@ -1,6 +1,6 @@
 # These are plots for the tracer mixing paper. 
 
-using CairoMakie, JLD2, Statistics, GLM
+using CairoMakie, JLD2, Statistics, GLM, Printf
 
 cd(joinpath(pwd(), "Paper plots"))
 SimPath = joinpath("..", "Honours thesis/Experiment")
@@ -12,28 +12,38 @@ using .MeasureMixing
 ################################################################################################
 # Diffusion experiments
 ################################################################################################
+plot_font = "CMU Modern Serif"
 
 diff_expt_path = joinpath(SimPath, "Output/Simulation: Lx̂ = Lŷ = 16, nx = 128, save_freq = 50, IC = GaussianBlob, Ensemble = false/SimulationData.jld2")
 diff_expt_data = load(diff_expt_path)
 
-diff_expt_plot = Figure(resolution = (1200, 1200), fontsize = 17)
+plot_fs = 26
+latex_fs = 29
+ticksize = 21
+
+diff_expt_plot = Figure(resolution = (1200, 1200), fontsize = plot_fs, font = plot_font)
 
 titles = ["(a) Initial time" "(b) Initial time"; "(c) Final time" "(d) Final time"]
-xlabs = ["Accumulated area", L"\hat{x}"]
+xlab1 = "Accumulated area"
+xlabs = [L"%$(xlab1)$ $", L"\hat{x}"]
 xscales = [log10, identity]
-ylabs = [L"Concentration ($\hat{C})", L"\hat{y}"]
+ylabs = [L"Concentration ($\hat{C}$)", L"\hat{y}"]
 ax = [Axis(diff_expt_plot[i, j],
             title = titles[i, j],
             xlabel = xlabs[j],
             xscale = xscales[j],
-            ylabel = ylabs[j]) for i ∈ 1:2, j ∈ 1:2]
+            xlabelsize = latex_fs,
+            xticksize = ticksize,
+            ylabel = ylabs[j],
+            ylabelsize = latex_fs,
+            yticksize = ticksize) for i ∈ 1:2, j ∈ 1:2]
 
 x, y = diff_expt_data["grid/x"], diff_expt_data["grid/y"]
 for i ∈ 0:1
 
     hm = CairoMakie.heatmap!(ax[3 + i], x, y, diff_expt_data["snapshots/Concentration/"*string(i * 7000)],
                 colormap = :deep)
-    Colorbar(diff_expt_plot[1 + i, 3], hm, label = L"Concentration $(\hat{C})$") # color bar hidden
+    Colorbar(diff_expt_plot[1 + i, 3], hm, label = L"Concentration $(\hat{C})$", labelsize = latex_fs) # color bar hidden
     lines!(ax[1 + i], 1:length(reshape(diff_expt_data["snapshots/Concentration/"*string(i * 7000)], :)), sort(reshape(diff_expt_data["snapshots/Concentration/"*string(i * 7000)], :), rev = true))
     CairoMakie.ylims!(ax[1 + i], high = maximum(diff_expt_data["snapshots/Concentration/"*string(0)]))
 
@@ -98,7 +108,9 @@ IC_conc
 save("IC_conc.png", IC_conc)
 
 # Evolution of tracer patch
-tracer_plots = Figure(resolution = (1200, 1400), fontsize = 16)
+plot_fs = 20
+latex_fs = 29
+tracer_plots = Figure(resolution = (1200, 1400), fontsize = plot_fs, font = plot_font)
 plot_steps = 0:3000:15000
 plot_steps_mat = reshape(plot_steps, (2, 3))
 plot_times = round.(Int, [conc_data["snapshots/t/"*string(i)] for i ∈ plot_steps])
@@ -110,9 +122,12 @@ plot_letters = ["(a)" "(b)" "(c)"; "(d)" "(e)" "(f)"]
 
 newline = "\n"
 ax = [Axis(tracer_plots[i, j],
-        xlabel = L"\hat{x} %$(newline)",
+        xlabel = L"\hat{x}",
+        xlabelsize = latex_fs,
         ylabel = L"\hat{y}",
+        ylabelsize = latex_fs,
         title = L"%$(plot_letters[i, j]) \quad \hat{t} = %$(string(plot_times[i, j]))",
+        titlesize = latex_fs,
         aspect = 1
         ) for j ∈ 1:3, i ∈ 1:2]
 
@@ -127,10 +142,13 @@ for i ∈ 1:2, j ∈ 1:3
 
     plot_data = conc_plot_data[i, j]
     clims = (minimum(plot_data), maximum(plot_data))
-    #cticks = round.(range(minimum(plot_data), maximum(plot_data), length = 3); sigdigits = 2)
-    Colorbar(tracer_plots[i, j][2, 1], label = L"Concentration ($\hat{C}$)",
-            limits = clims, vertical = false, 
-            flipaxis = false, colormap = :deep, ticklabelrotation = 45.0)
+    cticks = range(clims[1], clims[2], length = 4)
+    ctickstyle = [@sprintf("%.2E", ticks) for ticks ∈ cticks]
+    println(ctickstyle)
+    Colorbar(tracer_plots[i, j][2, 1], label = L"Concentration ($\hat{C}$)", labelsize = latex_fs,
+            limits = clims, ticks = cticks, tickformat = ct -> [@sprintf("%.2E", ticks) for ticks ∈ cticks],
+            vertical = false, flipaxis = false, colormap = :deep, 
+            ticklabelsize = plot_fs, ticklabelrotation = 45.0)
 
 end
 tracer_plots
@@ -148,13 +166,15 @@ square_inc = joinpath(SimPath, "Output/Square area increase blob")
 files_square = [joinpath(square_inc, "SimulationData_32.jld2"), joinpath(square_inc, "SimulationData_64.jld2"),
         joinpath(square_inc, "SimulationData_128.jld2"), joinpath(square_inc, "SimulationData_256.jld2")]
 
-area_inc = Figure(resolution = (400, 400))
+area_inc = Figure(resolution = (400, 400), fontsize = 17, font = "CMU Modern Serif")
 
 titles = ["(a) Upper layer - square increase", "(b) Upper layer - meridional increase"]
 ax = [Axis(area_inc[1, 1],
     title = "Upper layer",
     xlabel = L"\hat{t}",
+    xlabelsize = 21,
     ylabel = L"\langle \hat{A} \rangle",
+    ylabelsize = 21
 )]
 
 for files ∈ files_square
@@ -164,7 +184,7 @@ for files ∈ files_square
     t = time_vec(data)
     first_mom_square = first_moment(data)
     lines!(ax[1], t, first_mom_square[:, 1],
-        label = L"L\hat{x} = L\hat{y} = %$(string(Lx)) "#=*string(Lx)=#)
+        label = L"L\hat{x} = L\hat{y} = %$(string(Lx)) ")
 
 end
 axislegend(ax[1], position = :lt)
@@ -218,7 +238,10 @@ linear_mod = lm(lm_data, ens_av_first_mom[:, 2])
 r2(linear_mod)
 
 ## First moment in time plots
-first_moms_plot = Figure(resolution = (1000, 1000), fontsize = 17)
+plot_fs = 24
+latex_fs = 29
+ticksize = 21
+first_moms_plot = Figure(resolution = (1200, 1200), fontsize = plot_fs, font = plot_font)
 
 plot_time = 1:length(t)
 short_plot_time = 1:findfirst(t .> 20)
@@ -227,8 +250,13 @@ short_plot_time = 1:findfirst(t .> 20)
 titles = [L"(a) Upper layer $\hat{t} = 0 - 90" L"(b) Upper layer $\hat{t} = 0 - 20";  L"(c) Lower layer $\hat{t} = 0 - 90" L"(d) Lower layer $\hat{t} = 0 - 20"]
 ax = [Axis(first_moms_plot[i, j], 
             xlabel = L"\hat{t}",
+            xticksize = ticksize,
+            xlabelsize = latex_fs,
             ylabel = L"\langle \hat{A} \rangle",
-            title = titles[i, j], 
+            yticksize = ticksize,
+            ylabelsize = latex_fs,
+            title = titles[i, j],
+            titlesize = latex_fs, 
             aspect = 1) for j ∈ 1:2, i ∈ 1:2]
 
 for i ∈ 1:length(member_first_moms[1, 1, :])
@@ -281,7 +309,7 @@ member_diffs = load("saved_data.jld2")["Diffusivity/member_diffs"]
 bootstrap_samples = load("saved_data.jld2")["Bootstrap/diff_samples"]
 bootstrap_samples_v2 = load("saved_data.jld2")["Bootstrap/diff_samples_v2"]
 σᵤ, σₗ = std(bootstrap_samples_v2[:, 1]), std(bootstrap_samples_v2[:, 2])
-diffs_hist = Figure(resolution = (600, 800))
+diffs_hist = Figure(resolution = (600, 1000))
 
 titles = ["(a) Upper Layer", "(b) Lower layer"]
 ax = [Axis(diffs_hist[i, 1], 
@@ -310,7 +338,8 @@ diffs_hist
 save("diffs_hist.png", diffs_hist)
 
 ## Member diffusivity and bootstrap samples
-bootstrap_hist = Figure(resolution = (600, 800))
+plot_fs = 22
+bootstrap_hist = Figure(resolution = (600, 1000), font = plot_font, fontsize = plot_fs)
 
 titles = ["(a) Upper Layer", "(b) Lower layer"]
 ax = [Axis(bootstrap_hist[i, 1], 
@@ -702,8 +731,11 @@ upper_ts_dec = @. upper_ts_rms_error / ens_av_diffs[1]
 zonal_subset_nl = 0:8
 meridional_subset_nl = 0:8
 temporal_subset_nl = 0:6
+temp_ticks = vcat("8.5", [string(round(Int, t * 8.5)) for t ∈ time_inc[2:end]])
 
-upper_err_plot = Figure(resolution = (600, 1200))
+plot_fs = 22
+
+upper_err_plot = Figure(resolution = (600, 1400), font = plot_font, fontsize = plot_fs)
 
 spat_RMS = upper_err_plot[1, 1]
 temp_RMS = upper_err_plot[2, 1]
@@ -727,16 +759,16 @@ spatial_vals = string.(round.(reshape(100 * upper_spatial_dec', :); digits = 1))
 text!(ax[1], spatial_vals, position = spatial_grid_vals, align = (:center, :center), color = :red, textsize = 10)
 
 Colorbar(spat_RMS[1, 1][1, 2], upper_spatial,
-        label = "log10(RMSe / 𝒦ᵤ)")
+        label = "log₁₀(RMSe / 𝒦ᵤ)")
 
 yidx = [1, 5, 6, 7]
 ax = [Axis(temp_RMS[1, 1], 
             xlabel = "Time between data sampling (days)",
-            xticks = temporal_subset_nl,
-            xtickformat = ts -> [string(t * 8) for t ∈ time_inc],
+            xticks = (temporal_subset_nl, temp_ticks),
+            #xtickformat = ts -> [string(t * 8.5) for t ∈ time_inc],
             yticks = round.(log10.(upper_temporal_dec)[yidx]; digits = 2),
             #ytickformat =  ts -> [string(round(100 *(10 ^ y); digits = 2)) for y ∈ temporal_ticks],
-            ylabel = "log10(RMSe / 𝒦ᵤ)",
+            ylabel = "log₁₀(RMSe / 𝒦ᵤ)",
             title = "(b) RMS error for temporal subsets\nof tracer concetration data",
             aspect = 1)]
 
@@ -744,24 +776,26 @@ ax2 = [Axis(temp_RMS[1, 1],
         #xlabel = "Time between data sampling (days)",
         #xticks = temporal_subset_nl,
         #xtickformat = ts -> [string(t * 8) for t ∈ time_inc],
+        ylabel = "100(RMSe / 𝒦ᵤ)",
         yticks = round.(log10.(upper_temporal_dec)[yidx]; digits = 2),
         ytickformat =  ts -> [string(round(100 * y; digits = 1)) for y ∈ upper_temporal_dec[yidx]],
         #ylabel = "(RMSe / 𝒦ᵤ) * 100",
         yticklabelcolor = :red,
+        ylabelcolor = :red,
         yaxisposition = :right,
         #title = "(b) RMS error for temporal subsets\nof tracer concetration data",
         aspect = 1)]        
    
 hidespines!(ax2[1])
 hidexdecorations!(ax2[1])
-hideydecorations!(ax2[1], ticks = false)
+#hideydecorations!(ax2[1], ticks = false)
 upper_temp = lines!(ax[1], temporal_subset_nl, log10.(upper_temporal_dec))
 lines!(ax2[1], temporal_subset_nl, log10.(upper_temporal_dec), overdraw = false)
 
 ax = [Axis(spat_temp_RMS[1, 1], 
             xlabel = "Time between data sampling (days)",
-            xticks = temporal_subset_nl,
-            xtickformat = ts -> [string(t .* 8) for t ∈ time_inc],
+            xticks = (temporal_subset_nl, temp_ticks),
+            #xtickformat = ts -> [string(t .* 8.5) for t ∈ time_inc],
             ylabel = "Zonal and meridional distance\nbetween data saplmes (km)",
             yticks = meridional_subset_nl,
             ytickformat = ys -> [string(y .* 15) for y ∈ meridional_subset],
@@ -776,10 +810,10 @@ st_vals = string.(round.(reshape(100 * upper_ts_dec', :); digits = 1))
 text!(ax[1], st_vals, position = st_grid_vals, align = (:center, :center), color = :red, textsize = 10)
 
 Colorbar(spat_temp_RMS[1, 1][1, 2], upper_spatio_temp,
-        label = "log10(RMSe / 𝒦ᵤ)")
+        label = "log₁₀(RMSe / 𝒦ᵤ)")
 
 upper_err_plot
-
+save("fig6_update.png", upper_err_plot)
 ##########################################################
 ## Checking calculations
 ##########################################################
