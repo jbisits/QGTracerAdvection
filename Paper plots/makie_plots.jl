@@ -731,7 +731,15 @@ upper_ts_dec = @. upper_ts_rms_error / ens_av_diffs[1]
 zonal_subset_nl = 0:8
 meridional_subset_nl = 0:8
 temporal_subset_nl = 0:6
-temp_ticks = vcat("8.5", [string(round(Int, t * 8.5)) for t ∈ time_inc[2:end]])
+#temp_ticks = vcat("8.5", [string(round(Int, t * 8.5)) for t ∈ time_inc[2:end]])
+snapshot_freq = 100 * 7466 / 86400
+temp_ticks = [round(t * snapshot_freq; sigdigits = 3) for t ∈ time_inc]
+temp_ticksInt = string.(round.(Int, temp_ticks[5:end]))
+temp_ticks_str = vcat(string.(temp_ticks[1:4]), temp_ticksInt)
+
+res_size = 0.5 * dims["Ld"]
+spat_ticks = [round(x * res_size; sigdigits = 3) for x ∈ zonal_subset] ./ 1000
+spat_ticks = vcat(string.(spat_ticks[1:3]), string.(round.(Int, spat_ticks[4:end])))
 
 plot_fs = 22
 
@@ -743,12 +751,12 @@ spat_temp_RMS = upper_err_plot[3, 1]
 
 ax = [Axis(spat_RMS[1, 1], 
             xlabel = "Zonal distance between\ndata samples (km)",
-            xticks = zonal_subset_nl,
-            xtickformat = xs -> [string(x .* 15) for x ∈ zonal_subset],
+            xticks = (zonal_subset_nl, spat_ticks),
+            #xtickformat = xs -> [string(x .* 15) for x ∈ zonal_subset],
             xticklabelrotation = 45.0,
             ylabel = "Meridional distance between\ndata samples (km)",
-            yticks = meridional_subset_nl,
-            ytickformat = ys -> [string(y .* 15) for y ∈ meridional_subset],
+            yticks = (meridional_subset_nl, spat_ticks),
+            #ytickformat = ys -> [string(y .* 15) for y ∈ meridional_subset],
             title = "(a) RMS error for spatial subsets\nof tracer concetration data", 
             aspect = 1)]
 
@@ -762,30 +770,34 @@ Colorbar(spat_RMS[1, 1][1, 2], upper_spatial,
         label = "log₁₀(RMSe / 𝒦ᵤ)")
 
 yidx = [1, 5, 6, 7]
+ytick_vals = round.(log10.(upper_temporal_dec)[yidx]; digits = 2)
+ytick_str = string.(ytick_vals)
+ytick_vals2 = [string(round(100 * y; digits = 1)) for y ∈ upper_temporal_dec[yidx]]
+ytick_str2 = string.(ytick_vals2)
 ax = [Axis(temp_RMS[1, 1], 
             xlabel = "Time between data sampling (days)",
-            xticks = (temporal_subset_nl, temp_ticks),
+            xticks = (temporal_subset_nl, temp_ticks_str),
+            xticklabelrotation = 45.0,
             #xtickformat = ts -> [string(t * 8.5) for t ∈ time_inc],
-            yticks = round.(log10.(upper_temporal_dec)[yidx]; digits = 2),
-            #ytickformat =  ts -> [string(round(100 *(10 ^ y); digits = 2)) for y ∈ temporal_ticks],
+            #yticks = (ytick_vals, ytick_str),
+            #ytickformat =  ts -> [string(round(100 *(10 ^ y); digits = 2)) for y ∈ temp_ticks],
             ylabel = "log₁₀(RMSe / 𝒦ᵤ)",
             title = "(b) RMS error for temporal subsets\nof tracer concetration data",
             aspect = 1)]
-
+ax[1].yticks = (ytick_vals, ytick_str)
 ax2 = [Axis(temp_RMS[1, 1], 
         #xlabel = "Time between data sampling (days)",
         #xticks = temporal_subset_nl,
         #xtickformat = ts -> [string(t * 8) for t ∈ time_inc],
         ylabel = "100(RMSe / 𝒦ᵤ)",
-        yticks = round.(log10.(upper_temporal_dec)[yidx]; digits = 2),
-        ytickformat =  ts -> [string(round(100 * y; digits = 1)) for y ∈ upper_temporal_dec[yidx]],
-        #ylabel = "(RMSe / 𝒦ᵤ) * 100",
+        #yticks = (ytick_vals, ytick_str2),
+        #ytickformat =  ts -> [string(round(100 * y; digits = 1)) for y ∈ upper_temporal_dec[yidx]],
         yticklabelcolor = :red,
         ylabelcolor = :red,
         yaxisposition = :right,
         #title = "(b) RMS error for temporal subsets\nof tracer concetration data",
         aspect = 1)]        
-   
+ax2[1].yticks = (ytick_vals, ytick_str2)
 hidespines!(ax2[1])
 hidexdecorations!(ax2[1])
 #hideydecorations!(ax2[1], ticks = false)
@@ -794,11 +806,12 @@ lines!(ax2[1], temporal_subset_nl, log10.(upper_temporal_dec), overdraw = false)
 
 ax = [Axis(spat_temp_RMS[1, 1], 
             xlabel = "Time between data sampling (days)",
-            xticks = (temporal_subset_nl, temp_ticks),
+            xticks = (temporal_subset_nl, temp_ticks_str),
+            xticklabelrotation = 45.0,
             #xtickformat = ts -> [string(t .* 8.5) for t ∈ time_inc],
             ylabel = "Zonal and meridional distance\nbetween data saplmes (km)",
-            yticks = meridional_subset_nl,
-            ytickformat = ys -> [string(y .* 15) for y ∈ meridional_subset],
+            yticks = (meridional_subset_nl, spat_ticks),
+            #ytickformat = ys -> [string(y .* 15) for y ∈ meridional_subset],
             title = "(c) RMS error for spatio-temporal\nsubsets of tracer concetration data",
             aspect = 1,
             alignmode = Inside())]
@@ -813,7 +826,7 @@ Colorbar(spat_temp_RMS[1, 1][1, 2], upper_spatio_temp,
         label = "log₁₀(RMSe / 𝒦ᵤ)")
 
 upper_err_plot
-save("fig6_update.png", upper_err_plot)
+save("fig6_norounding.png", upper_err_plot)
 ##########################################################
 ## Checking calculations
 ##########################################################
