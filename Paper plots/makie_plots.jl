@@ -221,13 +221,13 @@ ens_av_diffs = load("saved_data.jld2")["Diffusivity/ens_avg_diff" ]
 
 μᵤ, μₗ = mean(member_diffs[:, 1]), mean(member_diffs[:, 2])
 σᵤ_mem, σₗ_mem = std(member_diffs[:, 1]), std(member_diffs[:, 2])
-
+upper_var = μᵤ - 2σᵤ_mem, μᵤ + 2σᵤ_mem
+lower_var = μₗ - 2σₗ_mem, μᵤ + 2σₗ_mem
 # variability compared to ``true" diffusivity
-100 * (μᵤ - σᵤ_mem) / ens_av_diffs[1]
-100 * (μᵤ + σᵤ_mem) / ens_av_diffs[1]
-
-100 * (μₗ - σₗ_mem) / ens_av_diffs[2]
-100 * (μₗ + σₗ_mem) / ens_av_diffs[2]
+upper_low, upper_high = 100 * (μᵤ - 2*σᵤ_mem) / ens_av_diffs[1], 100 * (μᵤ + 2*σᵤ_mem) / ens_av_diffs[1]
+upper_low, upper_high # = (98.9054413539661, 102.51495856514808)
+lower_low, lower_high = 100 * (μₗ - 2*σₗ_mem) / ens_av_diffs[2], 100 * (μₗ + 2*σₗ_mem) / ens_av_diffs[2]
+lower_low, lower_high # = (97.83311977734115, 103.21910284635058)
 
 # R² for linear fit to ensemble average
 lm_data = [ones(length(t)) t]
@@ -309,6 +309,8 @@ member_diffs = load("saved_data.jld2")["Diffusivity/member_diffs"]
 bootstrap_samples = load("saved_data.jld2")["Bootstrap/diff_samples"]
 bootstrap_samples_v2 = load("saved_data.jld2")["Bootstrap/diff_samples_v2"]
 σᵤ, σₗ = std(bootstrap_samples_v2[:, 1]), std(bootstrap_samples_v2[:, 2])
+2σᵤ
+2σₗ
 diffs_hist = Figure(resolution = (600, 1000))
 
 titles = ["(a) Upper Layer", "(b) Lower layer"]
@@ -357,8 +359,8 @@ for i ∈ 1:2
         label = "Mean diffusivity of ensemble members",
         color = :red)
     scatter!(ax[i], 
-            [mean(member_diffs[:, i]) - std(member_diffs[:, i]), mean(member_diffs[:, i]) + std(member_diffs[:, i])], [0, 0], 
-            label = "Mean diffusivity ± σ of ensemble members",
+            [mean(member_diffs[:, i]) - 2*std(member_diffs[:, i]), mean(member_diffs[:, i]) + 2*std(member_diffs[:, i])], [0, 0], 
+            label = "Mean diffusivity ± 2σ of ensemble members",
             color = :green)
     scatter!(ax[i], [ens_av_diffs[i]], [0],
             label = "Assumed \"true\" diffusvity",
