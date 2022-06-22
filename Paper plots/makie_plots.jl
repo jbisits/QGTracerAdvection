@@ -229,6 +229,13 @@ upper_low, upper_high # = (98.9054413539661, 102.51495856514808)
 lower_low, lower_high = 100 * (μₗ - 2*σₗ_mem) / ens_av_diffs[2], 100 * (μₗ + 2*σₗ_mem) / ens_av_diffs[2]
 lower_low, lower_high # = (97.83311977734115, 103.21910284635058)
 
+# mean bias
+μᵤ - ens_av_diffs[1]
+μₗ - ens_av_diffs[2]
+# min/max diffs
+(minimum(member_diffs[:, 1]), maximum(member_diffs[:, 1]))
+(minimum(member_diffs[:, 2]), maximum(member_diffs[:, 2]))
+
 # R² for linear fit to ensemble average
 lm_data = [ones(length(t)) t]
 linear_mod = lm(lm_data, ens_av_first_mom[:, 1])
@@ -358,10 +365,10 @@ for i ∈ 1:2
     scatter!(ax[i], [mean(member_diffs[:, i])], [0], 
         label = "Mean diffusivity of ensemble members",
         color = :red)
-    scatter!(ax[i], 
+    #=scatter!(ax[i], 
             [mean(member_diffs[:, i]) - 2*std(member_diffs[:, i]), mean(member_diffs[:, i]) + 2*std(member_diffs[:, i])], [0, 0], 
             label = "Mean diffusivity ± 2σ of ensemble members",
-            color = :green)
+            color = :green)=#
     scatter!(ax[i], [ens_av_diffs[i]], [0],
             label = "Assumed \"true\" diffusvity",
             color = :magenta,
@@ -372,7 +379,7 @@ end
 
 Legend(bootstrap_hist[3, 1], ax[1])
 bootstrap_hist
-save("bootstrap_hist.png", bootstrap_hist)
+save("bootstrap_hist_nosd.png", bootstrap_hist)
 
 ## Percentage errors
 ((mean(member_diffs[:, 1]) - std(member_diffs[:, 1])), (mean(member_diffs[:, 1]) + std(member_diffs[:, 1])))
