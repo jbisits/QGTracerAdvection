@@ -1,6 +1,6 @@
 # QG tracer advection
 
-# NOTE: Passive tracer advection-diffusion has now been implemented in [`PassiveTracerFlows.jl`](https://github.com/FourierFlows/PassiveTracerFlows.jl) as of version 0.6.1. `PassiveTracerFlows.jl` will be maintained so I recommend you use it instead of this code repository which I am not maintaining. 
+## NOTE: Passive tracer advection-diffusion using a turbulent flow has now been implemented in [`PassiveTracerFlows.jl`](https://github.com/FourierFlows/PassiveTracerFlows.jl) as of version 0.6.1. `PassiveTracerFlows.jl` will be maintained so I recommend you use it instead of this code repository which I am not maintaining. 
 
 ## Passive tracer advection using quasigeostrophic flow
 
