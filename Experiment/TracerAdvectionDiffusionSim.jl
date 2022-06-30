@@ -2,7 +2,7 @@
 
 ## Load all packages
 #Change to the correct directory (if it was not already correct for some reason)
-SimPath = joinpath(pwd(), "Honours thesis/Experiment")
+SimPath = joinpath(pwd(), "Experiment")
 cd(SimPath)
 #Load in all the required packages for the simulation
 include("PackageSetup.jl")

@@ -1,6 +1,6 @@
 # A script similar to that in the notebook `gauss-diff.ipynb` from `Gaussian-diffusion` repo
 
-SimPath = joinpath(pwd(), "Honours thesis/Experiment")
+SimPath = joinpath(pwd(), "Experiment")
 cd(SimPath)
 #Load in all the required packages for the simulation
 include("PackageSetup.jl")

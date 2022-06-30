@@ -3,7 +3,7 @@
 using CairoMakie, JLD2, Statistics, GLM, Printf
 
 cd(joinpath(pwd(), "Paper plots"))
-SimPath = joinpath("..", "Honours thesis/Experiment")
+SimPath = joinpath("..", "Experiment")
 
 # If needed
 module_path = "/Users/Joey/Documents/GitHub/QGTracerAdvection/Modules"
