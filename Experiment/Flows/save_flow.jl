@@ -97,3 +97,18 @@ lines!(ax[1], y, time_zonal_mean_upper)
 lines!(ax[2], y, time_zonal_mean_lower)        
 fig2
 save("tzmean_zonalvelocity.png", fig2)
+
+## Eddy size
+# Take the minimum from time-and-zonal mean zonal velocity and find the position where it is negative
+
+min = findmin(time_zonal_mean_upper)
+
+findfirst(time_zonal_mean_upper[min[2]:end] .>= 1)
+
+time_zonal_mean_upper[94:124]
+
+length(y[94:123]) # number of non-dimensional increments
+
+length(y[94:123]) * 15 # = 450km
+
+length(time_zonal_mean_upper[12:28]) * 15 # = 255 km 
