@@ -29,7 +29,7 @@ QGProb = MultiLayerQG.Problem(nlayers, dev; nx=nx, Lx=Lx̂, f₀=f̂₀, g=ĝ, 
 QGSol, QGClock, QGParams, QGVars, QGrid = QGProb.sol, QGProb.clock, QGProb.params, QGProb.vars, QGProb.grid
 
 seed!(1230) # reset of the random number generator for reproducibility
-q₀  = 1e-2 * ArrayType(dev)(randn((QGrid.nx, QGrid.ny, nlayers)))
+q₀  = 1e-2 * device_array(dev)(randn((QGrid.nx, QGrid.ny, nlayers)))
 q₀h = QGProb.timestepper.filter .* rfft(q₀, (1, 2)) # only apply rfft in dims=1, 2
 q₀  = irfft(q₀h, QGrid.nx, (1, 2)) # only apply irfft in dims=1, 2
 
