@@ -95,11 +95,14 @@ tracer_plots
 
 using LsqFit, GLM
 
-## Fit the concentration for a single time step
+## Fit the ensemble mean concentration for a single time step
 
 x,  y  = ens_file["grid/x"], ens_file["grid/y"]
 xy = hcat(x, y)
 
+# Target twoD Gaussian. The parameters fitted are the mean μ = (x₀, y₀),
+# the covarance matrix Σ = (1/σ²)[1 0; 0 1], where we assume isotropic width
+# and the amplitude.
 function twoD_Gaussian(xy, p)
     amplitude, x₀, y₀, σ = p
 
@@ -111,19 +114,22 @@ function twoD_Gaussian(xy, p)
     return g[:]
 end
 
+# Initial guess for parameters
 p₀ = [0.01, 3, 2, 0.2]
-conc_vals = reshape(c₁[165], :)
-
+# Data to fit parameters for
+conc_vals = reshape(c₁[1], :)
+# Fit and check values
 fit_Lsq = LsqFit.curve_fit(twoD_Gaussian, xy, conc_vals, p₀)
 fit_Lsq.param
 
+# Plotting to see if matches the data.
 MvNormal(fit_Lsq.param[2:3], fit_Lsq.param[4])
 test_fit(x, y) = pdf(MvNormal(fit_Lsq.param[2:3], fit_Lsq.param[4]), [x, y])
 
 xgrid, ygrid = ones(length(x)) * x', y * ones(length(y))'
 heatmap(x, y, test_fit.(xgrid, ygrid)')
 
-## Fit the Gaussian for all time steps and save the parameters
+## Fit the Gaussian for all time steps and save the parameters for upper layer
 
 params_t = Array{Float64}(undef, length(p₀), length(c₁))
 
@@ -138,6 +144,30 @@ end
 
 params_t
 σ²_t = params_t[4, :].^2
+
+## Lower layer
+params_t_lower = Array{Float64}(undef, length(p₀), length(c₂))
+
+for i ∈ eachindex(c₂)
+
+    @info "Snapshot $i"
+    conc_vals = reshape(c₂[i], :)
+    fit_Lsq = LsqFit.curve_fit(twoD_Gaussian, xy, conc_vals, p₀)
+    @. params_t_lower[:, i] = fit_Lsq.param
+
+end
+
+params_t_lower
+σ²_t = params_t_lower[4, :].^2
+
+# Save fitted parameters from upper and lower layer
+#jldsave("fitted_params.jld2"; upper_layer=params_t, lower_layer=params_t_lower)
+
+## Load in saved data
+
+layer = "lower"
+params_t = load("fitted_params.jld2")[layer*"_layer"]
+σ²_t = params_t[end, :].^2
 
 ## Check linear growth, looks like best bet use from beginning to 
 # around half way through
@@ -166,9 +196,10 @@ lines!(ax, t_half, int .+ t_half .* slope, label = "Linear fit")
 axislegend(ax; position = :lt)
 fig_sec_mom
 
-(slope / 2) * 0.02 * 29862 # = 5559.36 upper layer
+## Compute diffusivity from slope of linear fit
+(slope / 2) * 0.02 * 29862 # = 5559.36 upper layer, 5666.378 lower layer
 
-# slope / 2 because we are interested in the width of the Gaussian
+# slope / 2 because we are interested in the growth of the width of the Gaussian
 # as in Abernathy (2013), 0.5 * (dσ² / dt) = κ
 
 ## Same plots as ensemble mean above but using the fitted mean and variance
