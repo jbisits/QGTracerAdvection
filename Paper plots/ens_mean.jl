@@ -165,7 +165,7 @@ params_t_lower
 
 ## Load in saved data
 
-layer = "lower"
+layer = "upper"
 params_t = load("fitted_params.jld2")[layer*"_layer"]
 σ²_t = params_t[end, :].^2
 
@@ -185,17 +185,21 @@ sec_mom_model = lm(t_mat, σ²_t_half)
 int, slope = coef(sec_mom_model)
 r2(sec_mom_model)
 
-fig_sec_mom = Figure()
+# Plot the linear fit to the linear growth
+plot_font = "CMU Modern Serif"
+plot_fs = 20
+latex_fs = 29
+fig_sec_mom = Figure(fontsize = plot_fs, font = plot_font)
 ax = Axis(fig_sec_mom[1, 1], 
-          xlabel = "t̂", 
-          ylabel = "σ̂²(t)",
-          title = "Growth of second moment fitted to the concentration data")
+          xlabel = L"\hat{t}", 
+          ylabel = L"\hat{\sigma}^{2}(t)",
+          title = "Growth of second moment")
 
-lines!(ax, t_half, σ²_t_half, label = "Second moment (fitted to the data)")
-lines!(ax, t_half, int .+ t_half .* slope, label = "Linear fit")
+lines!(ax, t_half, σ²_t_half; label = "Second moment")
+lines!(ax, t_half, int .+ t_half .* slope; label = "Linear fit", linestyle = :dash, linewidth = 3)
 axislegend(ax; position = :lt)
 fig_sec_mom
-
+#save("growth_sec_mom.png", fig_sec_mom)
 ## Compute diffusivity from slope of linear fit
 (slope / 2) * 0.02 * 29862 # = 5559.36 upper layer, 5666.378 lower layer
 
