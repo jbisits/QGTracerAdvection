@@ -1,4 +1,4 @@
-# These are plots for the tracer mixing paper. 
+# These are plots for the tracer mixing paper.
 
 using CairoMakie, JLD2, Statistics, GLM, Printf
 
@@ -86,7 +86,7 @@ save("av_area_de.png", av_area_de)
 conc_data = load("SimulationData.jld2")
 dims = nondim2dim(conc_data)
 dims["Lx"] / 1000 # 7645km is zonal and meridional length
-(dims["Δt"] * 18000) / 86400 # 1555 days, 
+(dims["Δt"] * 18000) / 86400 # 1555 days,
 ((dims["Δt"] * 18000) / 86400) / 365 # 4.2 years
 
 t = [conc_data["snapshots/t/"*string(i)] for i ∈ 0:100:18000]
@@ -147,7 +147,7 @@ for i ∈ 1:2, j ∈ 1:3
     println(ctickstyle)
     Colorbar(tracer_plots[i, j][2, 1], label = L"Concentration ($\hat{C}$)", labelsize = latex_fs,
             limits = clims, ticks = cticks, tickformat = ct -> [@sprintf("%.2E", ticks) for ticks ∈ cticks],
-            vertical = false, flipaxis = false, colormap = :deep, 
+            vertical = false, flipaxis = false, colormap = :deep,
             ticklabelsize = plot_fs, ticklabelrotation = 45.0)
 
 end
@@ -159,7 +159,7 @@ save("tracer_plots.png", tracer_plots)
 
 ## Load in the data
 merid_area_inc = joinpath(SimPath, "Output/Meridional area increase blob")
-files_merid = [joinpath(merid_area_inc, "SimulationData_64_64.jld2"), joinpath(merid_area_inc, "SimulationData_64_128.jld2"), 
+files_merid = [joinpath(merid_area_inc, "SimulationData_64_64.jld2"), joinpath(merid_area_inc, "SimulationData_64_128.jld2"),
         joinpath(merid_area_inc, "SimulationData_64_256.jld2")]
 
 square_inc = joinpath(SimPath, "Output/Square area increase blob")
@@ -197,7 +197,7 @@ for files ∈ files_merid
     Ly = round(Int, data["grid/Ly"])
     t = time_vec(data)
     first_mom_merid = first_moment(data)
-    lines!(ax[2], t, first_mom_merid[:, 1], 
+    lines!(ax[2], t, first_mom_merid[:, 1],
     label = "Lŷ = "*string(Ly))
 
 end
@@ -255,7 +255,7 @@ short_plot_time = 1:findfirst(t .> 20)
 
 #titles = ["(a) Upper layer" "(b) Lower layer"]
 titles = [L"(a) Upper layer $\hat{t} = 0 - 90" L"(b) Upper layer $\hat{t} = 0 - 20";  L"(c) Lower layer $\hat{t} = 0 - 90" L"(d) Lower layer $\hat{t} = 0 - 20"]
-ax = [Axis(first_moms_plot[i, j], 
+ax = [Axis(first_moms_plot[i, j],
             xlabel = L"\hat{t}",
             xticksize = ticksize,
             xlabelsize = latex_fs,
@@ -263,7 +263,7 @@ ax = [Axis(first_moms_plot[i, j],
             yticksize = ticksize,
             ylabelsize = latex_fs,
             title = titles[i, j],
-            titlesize = latex_fs, 
+            titlesize = latex_fs,
             aspect = 1) for j ∈ 1:2, i ∈ 1:2]
 
 for i ∈ 1:length(member_first_moms[1, 1, :])
@@ -281,27 +281,27 @@ for i ∈ 1:length(member_first_moms[1, 1, :])
 end
 
 lines!(ax[1], t[plot_time], ens_av_first_mom[plot_time, 1], label = "Ensemble mean")
-lines!(ax[1], t[plot_time], ens_fit[1, 1] .+ t[plot_time] .* ens_fit[2, 1], 
-        linestyle = :dash, 
+lines!(ax[1], t[plot_time], ens_fit[1, 1] .+ t[plot_time] .* ens_fit[2, 1],
+        linestyle = :dash,
         linewidth = 4,
         label = "Linear fit")
 lines!(ax[2], t[short_plot_time], ens_av_first_mom[short_plot_time, 1], label = "Ensemble mean")
-lines!(ax[2], t[short_plot_time], ens_fit[1, 1] .+ t[short_plot_time] .* ens_fit[2, 1], 
-        linestyle = :dash, 
+lines!(ax[2], t[short_plot_time], ens_fit[1, 1] .+ t[short_plot_time] .* ens_fit[2, 1],
+        linestyle = :dash,
         linewidth = 4,
         label = "Linear fit")
 lines!(ax[3], t[plot_time], ens_av_first_mom[plot_time, 2], label = "Ensemble mean")
-lines!(ax[3], t[plot_time], ens_fit[1, 2] .+ t[plot_time] .* ens_fit[2, 2], 
-        linestyle = :dash, 
+lines!(ax[3], t[plot_time], ens_fit[1, 2] .+ t[plot_time] .* ens_fit[2, 2],
+        linestyle = :dash,
         linewidth = 4,
         label = "Linear fit")
 lines!(ax[4], t[short_plot_time], ens_av_first_mom[short_plot_time, 2], label = "Ensemble mean")
-lines!(ax[4], t[short_plot_time], ens_fit[1, 2] .+ t[short_plot_time] .* ens_fit[2, 2], 
-        linestyle = :dash, 
+lines!(ax[4], t[short_plot_time], ens_fit[1, 2] .+ t[short_plot_time] .* ens_fit[2, 2],
+        linestyle = :dash,
         linewidth = 4,
         label = "Linear fit")
 
-axislegend(ax[1]; position = :lt)        
+axislegend(ax[1]; position = :lt)
 #Legend(first_moms_plot[3, :], ax[1])
 #rowsize!(first_moms_plot.layout, 1, Relative(0.425))
 #rowsize!(first_moms_plot.layout, 2, Relative(0.425))
@@ -321,7 +321,7 @@ bootstrap_samples_v2 = load("saved_data.jld2")["Bootstrap/diff_samples_v2"]
 diffs_hist = Figure(resolution = (600, 1000))
 
 titles = ["(a) Upper Layer", "(b) Lower layer"]
-ax = [Axis(diffs_hist[i, 1], 
+ax = [Axis(diffs_hist[i, 1],
             xlabel = "Diffusivity (m²s⁻¹)",
             ylabel = "Prortion of members",
             title = titles[i]) for i ∈ 1:2]
@@ -329,15 +329,15 @@ ax = [Axis(diffs_hist[i, 1],
 for i ∈ 1:2
 
     hist!(ax[i], member_diffs[:, i], normalization = :probability, bins = 10)
-    CairoMakie.scatter!(ax[i], [mean(member_diffs[:, i])], [0], 
+    CairoMakie.scatter!(ax[i], [mean(member_diffs[:, i])], [0],
                     label = "Mean diffusivity of ensemble members",
                     color = :red)
-    CairoMakie.scatter!(ax[i], 
-                        [minimum(member_diffs[:, i])], [0], 
+    CairoMakie.scatter!(ax[i],
+                        [minimum(member_diffs[:, i])], [0],
                         label = "Minimum diffusivity of ensemble members",
                         color = :orange)
-    CairoMakie.scatter!(ax[i], 
-                        [maximum(member_diffs[:, i])], [0], 
+    CairoMakie.scatter!(ax[i],
+                        [maximum(member_diffs[:, i])], [0],
                         label = "Maximum diffusivity of ensemble members",
                         color = :green)
 
@@ -351,7 +351,7 @@ plot_fs = 22
 bootstrap_hist = Figure(resolution = (600, 1000), font = plot_font, fontsize = plot_fs)
 
 titles = ["(a) Upper Layer", "(b) Lower layer"]
-ax = [Axis(bootstrap_hist[i, 1], 
+ax = [Axis(bootstrap_hist[i, 1],
             xlabel = "Diffusivity (m²s⁻¹)",
             ylabel = "Prortion of members",
             title = titles[i]) for i ∈ 1:2]
@@ -362,11 +362,11 @@ for i ∈ 1:2
         label = "Ensemble member diffusivity estimates")
     hist!(ax[i], bootstrap_samples_v2[:, i], normalization = :probability,
         label = "Ensemble mean diffusivity estimates")
-    scatter!(ax[i], [mean(member_diffs[:, i])], [0], 
+    scatter!(ax[i], [mean(member_diffs[:, i])], [0],
         label = "Mean diffusivity of ensemble members",
         color = :red)
-    #=scatter!(ax[i], 
-            [mean(member_diffs[:, i]) - 2*std(member_diffs[:, i]), mean(member_diffs[:, i]) + 2*std(member_diffs[:, i])], [0, 0], 
+    #=scatter!(ax[i],
+            [mean(member_diffs[:, i]) - 2*std(member_diffs[:, i]), mean(member_diffs[:, i]) + 2*std(member_diffs[:, i])], [0, 0],
             label = "Mean diffusivity ± 2σ of ensemble members",
             color = :green)=#
     scatter!(ax[i], [ens_av_diffs[i]], [0],
@@ -423,7 +423,7 @@ lower_ts_dec = @. lower_ts_rms_error / ens_av_diffs[2]
 spatial = Figure(resolution = (600, 800))
 
 titles = ["(a) Upper Layer", "(b) Lower layer"]
-ax = [Axis(spatial[i, 1], 
+ax = [Axis(spatial[i, 1],
             xlabel = "Zonal distance between\ndata samples (km)",
             xticks = zonal_subset,
             xtickformat = xs -> [string(x .* 15) for x ∈ zonal_subset],
@@ -431,9 +431,9 @@ ax = [Axis(spatial[i, 1],
             ylabel = "Meridional distance between\ndata samples (km)",
             yticks = meridional_subset,
             ytickformat = ys -> [string(y .* 15) for y ∈ meridional_subset],
-            xscale = log2, 
+            xscale = log2,
             yscale = log2,
-            title = titles[i], 
+            title = titles[i],
             aspect = 1) for i ∈ 1:2]
 
 upper_spatial = CairoMakie.heatmap!(ax[1], zonal_subset, meridional_subset, upper_spatial_per)
@@ -450,7 +450,7 @@ save("spatial.png", spatial)
 
 temporal = Figure(resolution = (600, 800))
 
-ax = [Axis(temporal[i, 1], 
+ax = [Axis(temporal[i, 1],
             xlabel = "Time between data sampling (days)",
             xticks = time_inc,
             xtickformat = ts -> [string(t .* 8) for t ∈ time_inc],
@@ -476,7 +476,7 @@ save("temporal.png", temporal)
 spatio_temp = Figure(resolution = (600, 800))
 
 titles = ["(a) Upper Layer", "(b) Lower layer"]
-ax = [Axis(spatio_temp[i, 1], 
+ax = [Axis(spatio_temp[i, 1],
             xlabel = "Time between data sampling (days)",
             xticks = time_inc,
             xtickformat = ts -> [string(t .* 8) for t ∈ time_inc],
@@ -504,7 +504,7 @@ save("spatio_temp.png", spatio_temp)
 @. round(Int, 100 * (lower_ts_rms_error[end, :] - lower_ts_rms_error[1, :]) / lower_ts_rms_error[1, :])
 
 #####################################################################################
-## Upper layer error plots 
+## Upper layer error plots
 #####################################################################################
 # These are just upper layer error plots which will be used in the paper
 
@@ -515,7 +515,7 @@ spat_RMS = upper_err_plot[1, 1]
 temp_RMS = upper_err_plot[2, 1]
 spat_temp_RMS = upper_err_plot[3, 1]
 
-ax = [Axis(spat_RMS[1, 1], 
+ax = [Axis(spat_RMS[1, 1],
             xlabel = "Zonal distance between\ndata samples (km)",
             xticks = zonal_subset,
             xtickformat = xs -> [string(x .* 15) for x ∈ zonal_subset],
@@ -523,16 +523,16 @@ ax = [Axis(spat_RMS[1, 1],
             ylabel = "Meridional distance between\ndata samples (km)",
             yticks = meridional_subset,
             ytickformat = ys -> [string(y .* 15) for y ∈ meridional_subset],
-            xscale = log2, 
+            xscale = log2,
             yscale = log2,
-            title = "(a) RMS error for spatial subsets\nof tracer concetration data", 
+            title = "(a) RMS error for spatial subsets\nof tracer concetration data",
             aspect = 1)]
 
 upper_spatial = CairoMakie.heatmap!(ax[1], zonal_subset, meridional_subset, log10.(upper_spatial_rms_error))
 Colorbar(spat_RMS[1, 1][1, 2], upper_spatial,
         label = "log10(RMS) error of diffusivity from\nensemble members compared to 𝒦 (m²s⁻¹)")
 
-ax = [Axis(temp_RMS[1, 1], 
+ax = [Axis(temp_RMS[1, 1],
             xlabel = "Time between data sampling (days)",
             xticks = time_inc,
             xtickformat = ts -> [string(t .* 8) for t ∈ time_inc],
@@ -543,7 +543,7 @@ ax = [Axis(temp_RMS[1, 1],
 
 upper_temp = lines!(ax[1], time_inc, log10.(upper_tempoal_rms_error))
 
-ax = [Axis(spat_temp_RMS[1, 1], 
+ax = [Axis(spat_temp_RMS[1, 1],
             xlabel = "Time between data sampling (days)",
             xticks = time_inc,
             xtickformat = ts -> [string(t .* 8) for t ∈ time_inc],
@@ -557,7 +557,7 @@ ax = [Axis(spat_temp_RMS[1, 1],
             alignmode = Inside())]
 
 upper_spatio_temp = CairoMakie.heatmap!(ax[1], time_inc, meridional_subset, log10.(upper_ts_rms_error))
-Colorbar(spat_temp_RMS[1, 1][1, 2], upper_spatio_temp, 
+Colorbar(spat_temp_RMS[1, 1][1, 2], upper_spatio_temp,
         label = "log10(RMS) error of diffusivity from\nensemble members compared to 𝒦 (m²s⁻¹)")
 
 upper_err_plot
@@ -571,7 +571,7 @@ spat_RMS = upper_err_plot[1, 1]
 temp_RMS = upper_err_plot[2, 1]
 spat_temp_RMS = upper_err_plot[3, 1]
 
-ax = [Axis(spat_RMS[1, 1], 
+ax = [Axis(spat_RMS[1, 1],
             xlabel = "Zonal distance between\ndata samples (km)",
             xticks = zonal_subset,
             xtickformat = xs -> [string(x .* 15) for x ∈ zonal_subset[1:end-1]],
@@ -579,16 +579,16 @@ ax = [Axis(spat_RMS[1, 1],
             ylabel = "Meridional distance between\ndata samples (km)",
             yticks = meridional_subset,
             ytickformat = ys -> [string(y .* 15) for y ∈ meridional_subset[1:end-1]],
-            xscale = log2, 
+            xscale = log2,
             yscale = log2,
-            title = "(a) RMS error for spatial subsets\nof tracer concetration data", 
+            title = "(a) RMS error for spatial subsets\nof tracer concetration data",
             aspect = 1)]
 
 upper_spatial = CairoMakie.heatmap!(ax[1], zonal_subset[1:end-1], meridional_subset[1:end-1], upper_spatial_rms_error[1:end-1, 1:end-1])
-Colorbar(spat_RMS[1, 1][1, 2], upper_spatial, 
+Colorbar(spat_RMS[1, 1][1, 2], upper_spatial,
         label = "RMS error of diffusivity from ensemble\nmembers compared to 𝒦 (m²s⁻¹)")
 
-ax = [Axis(temp_RMS[1, 1], 
+ax = [Axis(temp_RMS[1, 1],
             xlabel = "Time between data sampling (days)",
             xticks = time_inc,
             xtickformat = ts -> [string(t .* 8) for t ∈ time_inc],
@@ -599,7 +599,7 @@ ax = [Axis(temp_RMS[1, 1],
 
 upper_temp = lines!(ax[1], time_inc, upper_tempoal_rms_error)
 
-ax = [Axis(spat_temp_RMS[1, 1], 
+ax = [Axis(spat_temp_RMS[1, 1],
             xlabel = "Time between data sampling (days)",
             xticks = time_inc,
             xtickformat = ts -> [string(t .* 8) for t ∈ time_inc],
@@ -613,7 +613,7 @@ ax = [Axis(spat_temp_RMS[1, 1],
             alignmode = Inside())]
 
 upper_spatio_temp = CairoMakie.heatmap!(ax[1], time_inc, meridional_subset[1:end-1], upper_ts_rms_error[:, 1:end-1])
-Colorbar(spat_temp_RMS[1, 1][1, 2], upper_spatio_temp, 
+Colorbar(spat_temp_RMS[1, 1][1, 2], upper_spatio_temp,
         label = "RMS error of diffusivity from ensemble members compared to 𝒦 (m²s⁻¹)")
 
 upper_err_plot
@@ -627,7 +627,7 @@ spat_RMS = upper_err_plot[1, 1]
 temp_RMS = upper_err_plot[2, 1]
 spat_temp_RMS = upper_err_plot[3, 1]
 
-ax = [Axis(spat_RMS[1, 1], 
+ax = [Axis(spat_RMS[1, 1],
             xlabel = "Zonal distance between\ndata samples (km)",
             xticks = zonal_subset,
             xtickformat = xs -> [string(x .* 15) for x ∈ zonal_subset[1:end-2]],
@@ -635,16 +635,16 @@ ax = [Axis(spat_RMS[1, 1],
             ylabel = "Meridional distance between\ndata samples (km)",
             yticks = meridional_subset,
             ytickformat = ys -> [string(y .* 15) for y ∈ meridional_subset[1:end-2]],
-            xscale = log2, 
+            xscale = log2,
             yscale = log2,
-            title = "(a) RMS error for spatial subsets\nof tracer concetration data", 
+            title = "(a) RMS error for spatial subsets\nof tracer concetration data",
             aspect = 1)]
 
 upper_spatial = CairoMakie.heatmap!(ax[1], zonal_subset[1:end-2], meridional_subset[1:end-2], log10.(upper_spatial_rms_error[1:end-2, 1:end-2]))
 Colorbar(spat_RMS[1, 1][1, 2], upper_spatial, #scale = log2,
         label = "log(RMS) error of diffusivity from ensemble\nmembers compared to 𝒦 (m²s⁻¹)")
 
-ax = [Axis(temp_RMS[1, 1], 
+ax = [Axis(temp_RMS[1, 1],
             xlabel = "Time between data sampling (days)",
             xticks = time_inc,
             xtickformat = ts -> [string(t .* 8) for t ∈ time_inc],
@@ -655,7 +655,7 @@ ax = [Axis(temp_RMS[1, 1],
 
 upper_temp = lines!(ax[1], time_inc, log10.(upper_tempoal_rms_error))
 
-ax = [Axis(spat_temp_RMS[1, 1], 
+ax = [Axis(spat_temp_RMS[1, 1],
             xlabel = "Time between data sampling (days)",
             xticks = time_inc,
             xtickformat = ts -> [string(t .* 8) for t ∈ time_inc],
@@ -683,7 +683,7 @@ spat_RMS = upper_err_plot[1, 1]
 temp_RMS = upper_err_plot[2, 1]
 spat_temp_RMS = upper_err_plot[3, 1]
 
-ax = [Axis(spat_RMS[1, 1], 
+ax = [Axis(spat_RMS[1, 1],
             xlabel = "Zonal distance between\ndata samples (km)",
             xticks = zonal_subset,
             xtickformat = xs -> [string(x .* 15) for x ∈ zonal_subset],
@@ -691,16 +691,16 @@ ax = [Axis(spat_RMS[1, 1],
             ylabel = "Meridional distance between\ndata samples (km)",
             yticks = meridional_subset,
             ytickformat = ys -> [string(y .* 15) for y ∈ meridional_subset],
-            xscale = log2, 
+            xscale = log2,
             yscale = log2,
-            title = "(a) RMS error for spatial subsets\nof tracer concetration data", 
+            title = "(a) RMS error for spatial subsets\nof tracer concetration data",
             aspect = 1)]
 
 upper_spatial = CairoMakie.heatmap!(ax[1], zonal_subset, meridional_subset, log10.(upper_spatial_per))
 Colorbar(spat_RMS[1, 1][1, 2], upper_spatial,
         label = "log10(RMS) error of diffusivity\nas a percentage of 𝒦")
 
-ax = [Axis(temp_RMS[1, 1], 
+ax = [Axis(temp_RMS[1, 1],
             xlabel = "Time between data sampling (days)",
             xticks = time_inc,
             xtickformat = ts -> [string(t .* 8) for t ∈ time_inc],
@@ -711,7 +711,7 @@ ax = [Axis(temp_RMS[1, 1],
 
 upper_temp = lines!(ax[1], time_inc, log10.(100 .* upper_tempoal_rms_error ./ ens_av_diffs[1]))
 
-ax = [Axis(spat_temp_RMS[1, 1], 
+ax = [Axis(spat_temp_RMS[1, 1],
             xlabel = "Time between data sampling (days)",
             xticks = time_inc,
             xtickformat = ts -> [string(t .* 8) for t ∈ time_inc],
@@ -758,7 +758,7 @@ spat_RMS = upper_err_plot[1, 1]
 temp_RMS = upper_err_plot[2, 1]
 spat_temp_RMS = upper_err_plot[3, 1]
 
-ax = [Axis(spat_RMS[1, 1], 
+ax = [Axis(spat_RMS[1, 1],
             xlabel = "Zonal distance between\ndata samples (km)",
             xticks = (zonal_subset_nl, spat_ticks),
             #xtickformat = xs -> [string(x .* 15) for x ∈ zonal_subset],
@@ -766,7 +766,7 @@ ax = [Axis(spat_RMS[1, 1],
             ylabel = "Meridional distance between\ndata samples (km)",
             yticks = (meridional_subset_nl, spat_ticks),
             #ytickformat = ys -> [string(y .* 15) for y ∈ meridional_subset],
-            title = "(a) RMS error for spatial subsets\nof tracer concetration data", 
+            title = "(a) RMS error for spatial subsets\nof tracer concetration data",
             aspect = 1)]
 
 upper_spatial = CairoMakie.heatmap!(ax[1], zonal_subset_nl, meridional_subset_nl, log10.(upper_spatial_dec))
@@ -783,7 +783,7 @@ ytick_vals = round.(log10.(upper_temporal_dec)[yidx]; digits = 2)
 ytick_str = string.(ytick_vals)
 ytick_vals2 = [string(round(100 * y; digits = 1)) for y ∈ upper_temporal_dec[yidx]]
 ytick_str2 = string.(ytick_vals2)
-ax = [Axis(temp_RMS[1, 1], 
+ax = [Axis(temp_RMS[1, 1],
             xlabel = "Time between data sampling (days)",
             xticks = (temporal_subset_nl, temp_ticks_str),
             xticklabelrotation = 45.0,
@@ -794,7 +794,7 @@ ax = [Axis(temp_RMS[1, 1],
             title = "(b) RMS error for temporal subsets\nof tracer concetration data",
             aspect = 1)]
 ax[1].yticks = (ytick_vals, ytick_str)
-ax2 = [Axis(temp_RMS[1, 1], 
+ax2 = [Axis(temp_RMS[1, 1],
         #xlabel = "Time between data sampling (days)",
         #xticks = temporal_subset_nl,
         #xtickformat = ts -> [string(t * 8) for t ∈ time_inc],
@@ -805,7 +805,7 @@ ax2 = [Axis(temp_RMS[1, 1],
         ylabelcolor = :red,
         yaxisposition = :right,
         #title = "(b) RMS error for temporal subsets\nof tracer concetration data",
-        aspect = 1)]        
+        aspect = 1)]
 ax2[1].yticks = (ytick_vals, ytick_str2)
 hidespines!(ax2[1])
 hidexdecorations!(ax2[1])
@@ -813,7 +813,7 @@ hidexdecorations!(ax2[1])
 upper_temp = lines!(ax[1], temporal_subset_nl, log10.(upper_temporal_dec))
 lines!(ax2[1], temporal_subset_nl, log10.(upper_temporal_dec), overdraw = false)
 
-ax = [Axis(spat_temp_RMS[1, 1], 
+ax = [Axis(spat_temp_RMS[1, 1],
             xlabel = "Time between data sampling (days)",
             xticks = (temporal_subset_nl, temp_ticks_str),
             xticklabelrotation = 45.0,
