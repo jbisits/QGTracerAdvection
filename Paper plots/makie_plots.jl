@@ -58,8 +58,8 @@ first_moms_diff_expt = first_moment(diff_expt_data)
 
 av_area_de = Figure(resolution = (400, 400))
 ax = Axis(av_area_de[1, 1],
-        xlabel = "t̂",
-        ylabel = "⟨Â⟩")
+        xlabel = L"\hat{t}",
+        ylabel = L"\langle \hat{A} \rangle")
 lines!(ax, t, first_moms_diff_expt[:, 1],
     label = "Growth of area\nof tracer patch")
 axislegend(ax, position = :rb)
