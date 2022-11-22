@@ -43,14 +43,19 @@ for i ∈ 0:1
 
     hm = CairoMakie.heatmap!(ax[3 + i], x, y, diff_expt_data["snapshots/Concentration/"*string(i * 7000)],
                 colormap = :deep)
+    #contour!(ax[3 + i],  x, y, diff_expt_data["snapshots/Concentration/"*string(i * 7000)],
+    #        levels = [0.1], color = :red)
     Colorbar(diff_expt_plot[1 + i, 3], hm, label = L"Concentration $(\hat{C})$", labelsize = latex_fs) # color bar hidden
-    lines!(ax[1 + i], 1:length(reshape(diff_expt_data["snapshots/Concentration/"*string(i * 7000)], :)), sort(reshape(diff_expt_data["snapshots/Concentration/"*string(i * 7000)], :), rev = true))
+    csort = sort(reshape(diff_expt_data["snapshots/Concentration/"*string(i * 7000)], :), rev = true)
+    lines!(ax[1 + i], 1:length(reshape(diff_expt_data["snapshots/Concentration/"*string(i * 7000)], :)),
+            csort)
+    #scatter!(ax[1 + i], findfirst(csort .< 0.1), 0.1, color = :red)
     CairoMakie.ylims!(ax[1 + i], high = maximum(diff_expt_data["snapshots/Concentration/"*string(0)]))
 
 end
 colsize!(diff_expt_plot.layout, 2, Aspect(1, 1))
 diff_expt_plot
-save("diff_expt_plot.png", diff_expt_plot)
+save("diff_expt_plot_amos.png", diff_expt_plot)
 
 ## Average area during diffusion experiment
 t = time_vec(diff_expt_data)
