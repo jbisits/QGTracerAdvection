@@ -82,12 +82,59 @@ for i ∈ 1:2, j ∈ 1:3
     println(ctickstyle)
     Colorbar(tracer_plots[i, j][2, 1], label = L"Concentration ($\hat{C}$)", labelsize = latex_fs,
             limits = clims, ticks = cticks, tickformat = ct -> [@sprintf("%.2E", ticks) for ticks ∈ cticks],
-            vertical = false, flipaxis = false, colormap = :deep, 
+            vertical = false, flipaxis = false, colormap = :deep,
             ticklabelsize = plot_fs, ticklabelrotation = 45.0)
 
 end
 tracer_plots
 #save("ens_tracer_plots.png", tracer_plots)
+
+## Start, middle end plot
+plot_font = "CMU Modern Serif"
+plot_fs = 20
+latex_fs = 29
+tracer_plots = Figure(resolution = (1200, 1400), fontsize = plot_fs, font = plot_font)
+plot_steps = 0:9000:18000
+plot_times = round.(Int, [ens_file["snapshots/t/"*string(i)] for i ∈ plot_steps])
+x̂ = ens_file["grid/x"]
+ŷ = ens_file["grid/y"]
+conc_plot_data = [abs.(ens_file["snapshots/Concentration/"*string(plot_steps[i])][:, :, 1]) for i ∈ 1:3]
+plot_letters = ["(d)", "(e)", "(f)"]
+
+newline = "\n"
+ax = [Axis(tracer_plots[1, j],
+        xlabel = L"\hat{x}",
+        xlabelsize = latex_fs,
+        ylabel = L"\hat{y}",
+        ylabelsize = latex_fs,
+        title = L"%$(plot_letters[j]) \quad \hat{t} = %$(string(plot_times[j]))",
+        titlesize = latex_fs,
+        aspect = 1
+        ) for j ∈ 1:3]
+
+for (i, axis) in enumerate(ax)
+
+    plot_data = conc_plot_data[i]
+    CairoMakie.heatmap!(axis, x̂, ŷ, plot_data, colormap = :deep)
+
+end
+
+for j ∈ 1:3
+
+    plot_data = conc_plot_data[j]
+    clims = (minimum(plot_data), maximum(plot_data))
+    cticks = range(clims[1], clims[2], length = 4)
+    ctickstyle = [@sprintf("%.2E", ticks) for ticks ∈ cticks]
+    println(ctickstyle)
+    Colorbar(tracer_plots[2, j], label = L"Concentration ($\hat{C}$)", labelsize = latex_fs,
+            limits = clims, ticks = cticks, tickformat = ct -> [@sprintf("%.2E", ticks) for ticks ∈ cticks],
+            vertical = false, flipaxis = false, colormap = :deep,
+            ticklabelsize = plot_fs, ticklabelrotation = 45.0)
+
+end
+rowsize!(tracer_plots.layout, 1, Aspect(1, 1.0))
+tracer_plots
+#save("ens_tracer_plots_amos.png", tracer_plots)
 
 ## Fit a Gaussian to the concentration
 
@@ -169,7 +216,7 @@ layer = "upper"
 params_t = load("fitted_params.jld2")[layer*"_layer"]
 σ²_t = params_t[end, :].^2
 
-## Check linear growth, looks like best bet use from beginning to 
+## Check linear growth, looks like best bet use from beginning to
 # around half way through
 lines(t, σ²_t)
 
@@ -190,8 +237,8 @@ plot_font = "CMU Modern Serif"
 plot_fs = 20
 latex_fs = 29
 fig_sec_mom = Figure(fontsize = plot_fs, font = plot_font)
-ax = Axis(fig_sec_mom[1, 1], 
-          xlabel = L"\hat{t}", 
+ax = Axis(fig_sec_mom[1, 1],
+          xlabel = L"\hat{t}",
           ylabel = L"\hat{\sigma}^{2}(t)",
           title = "Growth of second moment")
 

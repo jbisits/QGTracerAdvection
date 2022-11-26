@@ -24,10 +24,15 @@ ticksize = 21
 diff_expt_plot = Figure(resolution = (1200, 1200), fontsize = plot_fs, font = plot_font)
 
 titles = ["(a) Initial time" "(b) Initial time"; "(c) Final time" "(d) Final time"]
+titles = ["Gridded concentration data, c(x, y)" "Concentration data as a function of area, C(A)";
+         "Gridded concentration data, c(x, y)" "Concentration data as\na function of area, C(A)"]
 xlab1 = "Accumulated area"
 xlabs = [L"%$(xlab1)$ $", L"\hat{x}"]
+xlabs_rev = reverse(xlabs)
 xscales = [log10, identity]
+xscales_rev = reverse(xscales)
 ylabs = [L"Concentration ($\hat{C}$)", L"\hat{y}"]
+ylabs_rev = reverse(ylabs)
 ax = [Axis(diff_expt_plot[i, j],
             title = titles[i, j],
             xlabel = xlabs[j],
@@ -43,9 +48,10 @@ for i ∈ 0:1
 
     hm = CairoMakie.heatmap!(ax[3 + i], x, y, diff_expt_data["snapshots/Concentration/"*string(i * 7000)],
                 colormap = :deep)
-    #contour!(ax[3 + i],  x, y, diff_expt_data["snapshots/Concentration/"*string(i * 7000)],
-    #        levels = [0.1], color = :red)
-    Colorbar(diff_expt_plot[1 + i, 3], hm, label = L"Concentration $(\hat{C})$", labelsize = latex_fs) # color bar hidden
+    # contour!(ax[3 + i],  x, y, diff_expt_data["snapshots/Concentration/"*string(i * 7000)],
+    #         levels = [0.1], color = :red)
+    Colorbar(diff_expt_plot[1 + i, 3], hm, label = L"Concentration $(\hat{C})$",
+            labelsize = latex_fs) # color bar hidden
     csort = sort(reshape(diff_expt_data["snapshots/Concentration/"*string(i * 7000)], :), rev = true)
     lines!(ax[1 + i], 1:length(reshape(diff_expt_data["snapshots/Concentration/"*string(i * 7000)], :)),
             csort)
@@ -158,6 +164,53 @@ for i ∈ 1:2, j ∈ 1:3
 end
 tracer_plots
 save("tracer_plots.png", tracer_plots)
+
+## Start, middle end plot
+plot_font = "CMU Modern Serif"
+plot_fs = 20
+latex_fs = 29
+tracer_plots = Figure(resolution = (1200, 1400), fontsize = plot_fs, font = plot_font)
+plot_steps = 0:9000:18000
+plot_times = round.(Int, [conc_data["snapshots/t/"*string(i)] for i ∈ plot_steps])
+x̂ = conc_data["grid/x"]
+ŷ = conc_data["grid/y"]
+conc_plot_data = [abs.(conc_data["snapshots/Concentration/"*string(plot_steps[i])][:, :, 1]) for i ∈ 1:3]
+plot_letters = ["(a)", "(b)", "(c)"]
+
+newline = "\n"
+ax = [Axis(tracer_plots[1, j],
+        xlabel = L"\hat{x}",
+        xlabelsize = latex_fs,
+        ylabel = L"\hat{y}",
+        ylabelsize = latex_fs,
+        title = L"%$(plot_letters[j]) \quad \hat{t} = %$(string(plot_times[j]))",
+        titlesize = latex_fs,
+        aspect = 1
+        ) for j ∈ 1:3]
+
+for (i, axis) in enumerate(ax)
+
+    plot_data = conc_plot_data[i]
+    CairoMakie.heatmap!(axis, x̂, ŷ, plot_data, colormap = :deep)
+
+end
+
+for j ∈ 1:3
+
+    plot_data = conc_plot_data[j]
+    clims = (minimum(plot_data), maximum(plot_data))
+    cticks = range(clims[1], clims[2], length = 4)
+    ctickstyle = [@sprintf("%.2E", ticks) for ticks ∈ cticks]
+    println(ctickstyle)
+    Colorbar(tracer_plots[2, j], label = L"Concentration ($\hat{C}$)", labelsize = latex_fs,
+            limits = clims, ticks = cticks, tickformat = ct -> [@sprintf("%.2E", ticks) for ticks ∈ cticks],
+            vertical = false, flipaxis = false, colormap = :deep,
+            ticklabelsize = plot_fs, ticklabelrotation = 45.0)
+
+end
+rowsize!(tracer_plots.layout, 1, Aspect(1, 1.0))
+tracer_plots
+save("tracer_plot_amos.png", tracer_plots)
 ################################################################################################
 # Growth of area
 ################################################################################################
