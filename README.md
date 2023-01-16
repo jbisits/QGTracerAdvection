@@ -2,7 +2,7 @@
 
 This repository contains all the code to generate the tracer release simulations and analysis of the resulting data for the paper *"Can we accurately quantify a lateral diffusivity from a single tracer release?"* submitted to JPO in July 2022.
 
-## NOTE: Passive tracer advection-diffusion using a turbulent flow has now been implemented in [`PassiveTracerFlows.jl`](https://github.com/FourierFlows/PassiveTracerFlows.jl) as of version 0.6.1. `PassiveTracerFlows.jl` will be maintained so I recommend you use it instead of this code repository which I am not maintaining. 
+## NOTE: This repository has been archived as it is not actively maintained any more. Passive tracer advection-diffusion using a turbulent flow has now been implemented in [`PassiveTracerFlows.jl`](https://github.com/FourierFlows/PassiveTracerFlows.jl) as of version 0.6.1. `PassiveTracerFlows.jl` will be maintained so I recommend you use it instead of this code repository which I am not maintaining. 
 
 ## Passive tracer advection using quasigeostrophic flow
 
